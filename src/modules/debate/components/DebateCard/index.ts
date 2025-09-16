@@ -1,0 +1,1 @@
+export { DebateCard } from './DebateCard'

@@ -1,0 +1,1 @@
+export { useDebates, useDebate } from './useDebates'
