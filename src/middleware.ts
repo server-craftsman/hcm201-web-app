@@ -64,14 +64,15 @@ export async function middleware(request: NextRequest) {
             ].join('; ')
         )
     } else {
-        // Stricter CSP for production using nonces and strict-dynamic
+        // Production CSP prefers nonce; allows inline as fallback for Next internal scripts
         const cspParts = [
             "default-src 'self'",
-            `script-src 'self' 'strict-dynamic' 'nonce-${nonce}'`,
+            `script-src 'self' 'nonce-${nonce}' 'unsafe-inline'`,
+            `script-src-elem 'self' 'nonce-${nonce}' 'unsafe-inline'`,
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: https:",
-            "connect-src 'self'",
+            "connect-src 'self' https: wss:",
             "base-uri 'self'",
             "object-src 'none'",
         ]
