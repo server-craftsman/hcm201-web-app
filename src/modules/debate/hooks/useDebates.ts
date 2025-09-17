@@ -86,8 +86,12 @@ export function useDebates(params: UseDebatesParams = {}): UseDebatesReturn {
             tags: ['độc lập', 'toàn cầu hóa', 'dân tộc'],
             authorId: '1',
             status: 'published' as const,
-            createdAt: new Date(),
-            updatedAt: new Date().toISOString(),
+            lastActivityAt: new Date().toISOString(),
+            isFeatured: false,
+            isPinned: false,
+            viewCount: 0,
+            argumentCount: 0,
+            participantCount: 0,
         },
         // Add more mock debates as needed
     ]
@@ -124,9 +128,13 @@ export function useDebates(params: UseDebatesParams = {}): UseDebatesReturn {
             id: Date.now().toString(),
             ...data,
             authorId: '1',
-            status: 'active',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+            status: 'published',
+            lastActivityAt: new Date().toISOString(),
+            isFeatured: false,
+            isPinned: false,
+            viewCount: 0,
+            argumentCount: 0,
+            participantCount: 0,
         }
 
         setState(prev => ({
@@ -254,8 +262,12 @@ export function useDebate(id: string) {
                 tags: ['mock', 'demo'],
                 authorId: '1',
                 status: 'active',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
+                lastActivityAt: new Date().toISOString(),
+                isFeatured: false,
+                isPinned: false,
+                viewCount: 0,
+                argumentCount: 0,
+                participantCount: 0,
             }
 
             setDebate(mockDebate)

@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for hcm201-web-app-shy-pond-3190 on 2025-09-17T17:36:34+07:00
+# fly.toml app configuration file generated for hcm201-web-app on 2025-09-17T17:43:38+07:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'hcm201-web-app-shy-pond-3190'
+app = 'hcm201-web-app'
 primary_region = 'sin'
 kill_signal = 'SIGINT'
 kill_timeout = '5s'

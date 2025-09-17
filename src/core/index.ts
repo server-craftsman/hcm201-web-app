@@ -6,7 +6,7 @@ export { default as authConfig } from './config/auth.config'
 export * from './constants'
 
 // // Core types
-// export * from './types'
+export * from './types'
 
 // // Core utilities
 // export * from './utils'

@@ -374,7 +374,7 @@ export const StudyCard: React.FC<StudyCardProps> = ({
                         )}
                     </div>
                 )}
-            </div>
+            </motion.div>
         )
     }
 
