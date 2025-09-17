@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "avatars.githubusercontent.com" },
       { protocol: "https", hostname: "scontent.fsgn2-10.fna.fbcdn.net" },
+      { protocol: "https", hostname: "upload.wikimedia.org" },
     ],
   },
   eslint: {

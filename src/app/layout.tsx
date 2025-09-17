@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { AppProviders, MainLayout } from '@/shared'
 import '@/styles/index.css'
+import icon from '@/shared/assets/images/icon.jpg'
 
 const inter = Inter({
   subsets: ['latin', 'vietnamese'],
@@ -64,11 +65,24 @@ export const metadata: Metadata = {
     description: 'Nền tảng thảo luận và học tập về Tư tưởng Hồ Chí Minh cho sinh viên',
     images: ['/images/og-image.jpg'],
   },
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png',
-  },
+  icons: [
+    {
+      url: icon.src,
+      sizes: '32x32',
+      type: 'image/jpeg',
+    },
+    {
+      url: icon.src,
+      sizes: '16x16',
+      type: 'image/jpeg',
+    },
+    {
+      url: icon.src,
+      sizes: '180x180',
+      type: 'image/jpeg',
+      rel: 'apple-touch-icon',
+    },
+  ],
   manifest: '/site.webmanifest',
   verification: {
     google: process.env.GOOGLE_SITE_VERIFICATION,

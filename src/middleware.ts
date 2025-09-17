@@ -41,7 +41,8 @@ export async function middleware(request: NextRequest) {
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
                 "font-src 'self' https://fonts.gstatic.com",
                 "img-src 'self' data: https:",
-                "connect-src 'self' ws: wss:",
+                "media-src 'self' https:",
+                "connect-src 'self' ws: wss: https:",
                 "base-uri 'self'",
                 "object-src 'none'",
             ].join('; ')
@@ -55,6 +56,7 @@ export async function middleware(request: NextRequest) {
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: https:",
+            "media-src 'self' https:",
             "connect-src 'self' https: wss:",
             "base-uri 'self'",
             "object-src 'none'",

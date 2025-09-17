@@ -20,11 +20,20 @@ import {
   GlobeAltIcon,
   ShieldCheckIcon,
   ChevronLeftIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  MusicalNoteIcon,
+  CalendarDaysIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import Image from 'next/image'
 import Banner from '@/shared/assets/images/banner.jpg'
+// import static imgs
+import staticImg1 from '@/shared/assets/images/overview/1.jpg'
+import staticImg2 from '@/shared/assets/images/overview/2.jpg'
+import staticImg3 from '@/shared/assets/images/overview/3.jpg'
+import staticImg4 from '@/shared/assets/images/overview/4.jpg'
+import staticImg5 from '@/shared/assets/images/overview/5.jpg'
+
 
 const metadata: Metadata = {
   title: 'Trang chủ - Tư tưởng Hồ Chí Minh',
@@ -76,6 +85,92 @@ export default function HomePage() {
       icon: ArrowTrendingUpIcon,
       iconSecondary: ChartBarIcon
     }
+  ]
+
+  const lifeTimeline = [
+    {
+      year: '1890',
+      title: 'Sinh ra tại Nghệ An',
+      description: 'Chào đời tại làng Kim Liên, Nam Đàn, Nghệ An, mở đầu hành trình lịch sử.',
+      image: staticImg1,
+    },
+    {
+      year: '1911',
+      title: 'Rời Tổ quốc ra đi tìm đường cứu nước',
+      description: 'Lên tàu rời bến Nhà Rồng, bắt đầu hành trình khắp năm châu bốn biển.',
+      image: staticImg2,
+    },
+    {
+      year: '1930',
+      title: 'Sáng lập Đảng Cộng sản Việt Nam',
+      description: 'Đặt nền móng cho con đường giải phóng dân tộc, thống nhất đất nước.',
+      image: staticImg3,
+    },
+    {
+      year: '1945',
+      title: 'Tuyên ngôn độc lập',
+      description: 'Khai sinh nước Việt Nam Dân chủ Cộng hoà tại Quảng trường Ba Đình.',
+      image: staticImg4,
+    },
+    {
+      year: '1969',
+      title: 'Di sản tư tưởng, đạo đức',
+      description: 'Để lại di sản tư tưởng, đạo đức, phong cách vô giá cho các thế hệ sau.',
+      image: staticImg5,
+    },
+  ]
+
+  const podcasts = [
+    {
+      title: 'Bài Ca Hồ Chí Minh',
+      subtitle: 'Bài ca tự hào của dân tộc Việt Nam',
+      cover: '/audios/cover/1.jpg',
+      src: '/audios/bai-ca-ho-chi-minh.mp3',
+      duration: '03:31',
+    },
+    {
+      title: 'Ca ngợi Hồ Chủ tịch',
+      subtitle: 'Giai điệu trang trọng dành cho lãnh tụ kính yêu',
+      cover: '/audios/cover/2.jpg',
+      src: '/audios/ca-ngoi-ho-chu-tich.mp3',
+      duration: '03:36',
+    },
+    {
+      title: 'Như có Bác Hồ trong ngày vui đại thắng',
+      subtitle: 'Âm hưởng rộn ràng của ngày thống nhất',
+      cover: '/audios/cover/3.jpg',
+      src: '/audios/nhu-co-bac-ho-trong-ngay-vui-dai-thang.mp3',
+      duration: '03:11',
+    },
+    {
+      title: 'Tiếng hát giữa rừng Pác Bó',
+      subtitle: 'Âm vang chiến khu và niềm tin cách mạng',
+      cover: '/audios/cover/4.jpg',
+      src: '/audios/tieng-hat-giua-rung-pac-bo.mp3',
+      duration: '05:42',
+    },
+    {
+      title: 'Bác đang cùng chúng cháu hành quân',
+      subtitle: 'Tình cảm của thế hệ trẻ dành cho Bác',
+      cover: '/audios/cover/5.jpg',
+      src: '/audios/bac-dang-cung-chung-chau-hanh-quan.mp3',
+      duration: '03:56',
+    },
+
+    {
+      title: 'Bác Hồ một tình yêu bao la',
+      subtitle: 'Thiêng liêng và sâu lắng',
+      cover: '/audios/cover/6.jpg',
+      src: '/audios/bac-ho-mot-tinh-yeu-bao-la.mp3',
+      duration: '04:28',
+    },
+    {
+      title: 'Hồ Chí Minh đẹp nhất tên Người',
+      subtitle: 'Khúc ca ngợi Bác sâu nặng nghĩa tình',
+      cover: '/audios/cover/7.jpg',
+      src: '/audios/ho-chi-minh-dep-nhat-ten-nguoi.mp3',
+      duration: '04:27',
+    },
   ]
 
   const features = [
@@ -323,33 +418,77 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Section */}
+
+
+      {/* Life Overview Section */}
+      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Tổng quan cuộc đời Bác Hồ</h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">Những cột mốc quan trọng trong hành trình vì độc lập tự do của dân tộc</p>
+          </div>
+
+          <div className="relative">
+            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-red-200 via-red-300 to-red-200 -translate-x-1/2" />
+            <div className="space-y-10">
+              {lifeTimeline.map((item, idx) => (
+                <div key={idx} className="relative flex flex-col md:flex-row items-center md:items-stretch">
+                  <div className="hidden md:block w-1/2" />
+                  <div className="z-10 flex items-center justify-center w-12 h-12 rounded-full bg-white border border-red-200 shadow-md mx-6">
+                    <CalendarDaysIcon className="w-6 h-6 text-red-600" />
+                  </div>
+                  <div className="hidden md:block w-1/2" />
+
+                  <div className={`w-full md:w-[46%] ${idx % 2 === 0 ? 'md:ml-auto md:pr-10' : 'md:mr-auto md:pl-10'}`}>
+                    <div className="group relative rounded-2xl border border-gray-100 bg-white/70 backdrop-blur p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-red-50 to-yellow-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="relative">
+                        <div className="mb-4 relative w-full h-40 overflow-hidden rounded-xl">
+                          <Image src={item.image} alt={item.title} fill className="object-cover" />
+                        </div>
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="inline-flex items-center justify-center px-3 py-1 text-sm font-semibold rounded-full bg-red-600 text-white shadow-sm">{item.year}</span>
+                          <h3 className="text-xl font-bold text-gray-900">{item.title}</h3>
+                        </div>
+                        <p className="text-gray-600 leading-relaxed">{item.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Audio Podcast Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Tại sao chọn chúng tôi?
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Khám phá những tính năng độc đáo giúp bạn học tập và hiểu sâu hơn về tư tưởng Hồ Chí Minh
-            </p>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Audio Podcast</h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">Lắng nghe những bản nhạc, câu chuyện gắn với thời đại Hồ Chí Minh</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <div key={index} className="group text-center">
-                <div className="relative">
-                  <div className={`w-20 h-20 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
-                    <feature.icon className="h-10 w-10 text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {podcasts.map((pod, i) => (
+              <div key={i} className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+                <div className="relative h-44 w-full overflow-hidden">
+                  <Image src={pod.cover} alt={pod.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="absolute top-3 left-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/90 text-red-600 text-sm font-semibold shadow">
+                    <MusicalNoteIcon className="w-4 h-4" />
+                    {pod.duration}
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-yellow-500/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-red-600 transition-colors duration-300">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {feature.description}
-                </p>
+                <div className="p-5">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-red-600 transition-colors">{pod.title}</h3>
+                  <p className="text-gray-600 mb-4">{pod.subtitle}</p>
+                  <div className="flex items-center gap-3">
+                    <audio className="w-full" controls preload="none">
+                      <source src={pod.src} type="audio/mpeg" />
+                    </audio>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -415,6 +554,39 @@ export default function HomePage() {
         </div>
         <div className="absolute bottom-10 right-10 opacity-20 z-20">
           <FireIcon className="h-16 w-16 text-yellow-300" />
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Tại sao chọn chúng tôi?
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Khám phá những tính năng độc đáo giúp bạn học tập và hiểu sâu hơn về tư tưởng Hồ Chí Minh
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <div key={index} className="group text-center">
+                <div className="relative">
+                  <div className={`w-20 h-20 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+                    <feature.icon className="h-10 w-10 text-white" />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-yellow-500/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-red-600 transition-colors duration-300">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
