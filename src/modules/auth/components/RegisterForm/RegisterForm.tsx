@@ -1,10 +1,12 @@
 'use client'
 
 import React, { useState } from 'react'
+import { motion } from 'framer-motion'
 import { Button, Input, Card } from '@/shared/components/ui'
 import { useAuth } from '../../hooks'
 import { RegisterData } from '@/shared/types'
 import { isValidEmail } from '@/shared/utils'
+import Image from 'next/image'
 
 interface RegisterFormProps {
     onSuccess?: () => void
@@ -107,127 +109,44 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     }
 
     return (
-        <Card className={className} padding="lg">
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold text-neutral-900 mb-2">
-                        Tạo tài khoản
-                    </h2>
-                    <p className="text-neutral-600">
-                        Tham gia cộng đồng tranh luận về tư tưởng Hồ Chí Minh
-                    </p>
-                </div>
-
-                <div className="space-y-4">
-                    <Input
-                        type="email"
-                        label="Email"
-                        placeholder="Nhập email của bạn"
-                        value={formData.email}
-                        onChange={handleChange('email')}
-                        error={errors.email}
-                        required
-                        fullWidth
-                    />
-
-                    <Input
-                        type="text"
-                        label="Tên đăng nhập"
-                        placeholder="Chọn tên đăng nhập"
-                        value={formData.username}
-                        onChange={handleChange('username')}
-                        error={errors.username}
-                        hint="Chỉ được chứa chữ cái, số và dấu gạch dưới"
-                        required
-                        fullWidth
-                    />
-
-                    <Input
-                        type="text"
-                        label="Tên hiển thị"
-                        placeholder="Tên hiển thị của bạn"
-                        value={formData.displayName}
-                        onChange={handleChange('displayName')}
-                        error={errors.displayName}
-                        required
-                        fullWidth
-                    />
-
-                    <Input
-                        type="password"
-                        label="Mật khẩu"
-                        placeholder="Tạo mật khẩu mạnh"
-                        value={formData.password}
-                        onChange={handleChange('password')}
-                        error={errors.password}
-                        hint="Ít nhất 8 ký tự, có chữ hoa, chữ thường và số"
-                        required
-                        fullWidth
-                    />
-
-                    <Input
-                        type="password"
-                        label="Xác nhận mật khẩu"
-                        placeholder="Nhập lại mật khẩu"
-                        value={formData.confirmPassword}
-                        onChange={handleChange('confirmPassword')}
-                        error={errors.confirmPassword}
-                        required
-                        fullWidth
-                    />
-
-                    <div className="space-y-2">
-                        <div className="flex items-start">
-                            <input
-                                type="checkbox"
-                                id="agreeToTerms"
-                                checked={formData.agreeToTerms}
-                                onChange={handleChange('agreeToTerms')}
-                                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded mt-1"
-                            />
-                            <label htmlFor="agreeToTerms" className="ml-2 block text-sm text-neutral-900">
-                                Tôi đồng ý với{' '}
-                                <a href="/terms" className="text-primary-600 hover:text-primary-700 font-medium">
-                                    điều khoản sử dụng
-                                </a>{' '}
-                                và{' '}
-                                <a href="/privacy" className="text-primary-600 hover:text-primary-700 font-medium">
-                                    chính sách bảo mật
-                                </a>
-                            </label>
-                        </div>
-                        {errors.agreeToTerms && (
-                            <p className="form-error">{errors.agreeToTerms}</p>
-                        )}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+            <Card padding="lg" className={className}>
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="text-center">
+                        <h2 className="text-2xl font-bold text-neutral-900">Tạo tài khoản</h2>
                     </div>
-                </div>
 
-                <div className="space-y-4">
-                    <Button
-                        type="submit"
-                        variant="vietnamese"
-                        size="lg"
-                        isLoading={isLoading}
-                    >
+                    <div className="grid grid-cols-1 gap-4">
+                        <Input type="email" label="Email" placeholder="you@example.com" value={formData.email} onChange={handleChange('email')} error={errors.email} required fullWidth />
+                        <Input type="text" label="Tên hiển thị" placeholder="Nguyễn Văn A" value={formData.displayName} onChange={handleChange('displayName')} error={errors.displayName} required fullWidth />
+                        <Input type="text" label="Tên đăng nhập" placeholder="ten_dang_nhap" value={formData.username} onChange={handleChange('username')} error={errors.username} hint="Chỉ gồm chữ, số và gạch dưới" required fullWidth />
+                        <Input type="password" label="Mật khẩu" placeholder="••••••••" value={formData.password} onChange={handleChange('password')} error={errors.password} hint="Ít nhất 8 ký tự, có chữ hoa, chữ thường và số" required fullWidth />
+                        <Input type="password" label="Xác nhận mật khẩu" placeholder="••••••••" value={formData.confirmPassword} onChange={handleChange('confirmPassword')} error={errors.confirmPassword} required fullWidth />
+                        <label className="inline-flex items-start gap-3 text-sm text-neutral-800">
+                            <input type="checkbox" checked={formData.agreeToTerms} onChange={handleChange('agreeToTerms')} className="h-4 w-4 rounded border-neutral-300 text-red-600 focus:ring-red-500 mt-0.5" />
+                            <span>
+                                Tôi đồng ý với <a href="/terms" className="text-red-600 hover:text-red-700 font-medium">điều khoản sử dụng</a> và <a href="/privacy" className="text-red-600 hover:text-red-700 font-medium">chính sách bảo mật</a>
+                            </span>
+                        </label>
+                        {errors.agreeToTerms && (<p className="form-error">{errors.agreeToTerms}</p>)}
+                    </div>
+
+                    <Button type="submit" variant="luxury" size="lg" isLoading={isLoading}>
                         {isLoading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản'}
                     </Button>
 
-                    {onSwitchToLogin && (
-                        <div className="text-center pt-4 border-t border-neutral-200">
-                            <p className="text-neutral-600">
-                                Đã có tài khoản?{' '}
-                                <button
-                                    type="button"
-                                    onClick={onSwitchToLogin}
-                                    className="text-primary-600 hover:text-primary-700 font-medium"
-                                >
-                                    Đăng nhập ngay
-                                </button>
-                            </p>
-                        </div>
-                    )}
-                </div>
-            </form>
-        </Card>
+                    <div className="my-4 flex items-center gap-4">
+                        <div className="h-px flex-1 bg-neutral-200" />
+                        <span className="text-xs uppercase tracking-wider text-neutral-500">hoặc</span>
+                        <div className="h-px flex-1 bg-neutral-200" />
+                    </div>
+
+                    <a href="/api/auth/google" className="group flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-200 bg-white py-3 shadow-sm hover:shadow transition-all">
+                        <Image src="/images/google.svg" alt="Google" width={20} height={20} />
+                        <span className="font-medium text-neutral-700 group-hover:text-neutral-900">Đăng ký với Google</span>
+                    </a>
+                </form>
+            </Card>
+        </motion.div>
     )
 }

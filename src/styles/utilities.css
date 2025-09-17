@@ -4,6 +4,7 @@
   .animate-float-luxury { animation: float 6s ease-in-out infinite; }
   .animate-luxury-float { animation: var(--animate-luxury-float); }
   .animate-luxury-glow { animation: luxuryGlow 3s ease-in-out infinite alternate; }
+  .animate-float { animation: float 6s ease-in-out infinite; }
 
   .animate-shimmer-luxury { position: relative; overflow: hidden; }
   .animate-shimmer-luxury::before {
