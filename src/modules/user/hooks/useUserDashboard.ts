@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useCallback } from 'react'
 import { useState, useEffect, useCallback } from 'react'
 import { User } from '@/shared/types'
 
@@ -10,13 +9,18 @@ interface DashboardStats {
     totalArguments: number
     totalComments: number
     studyProgress: number
+    upcomingReviews?: number
+    achievements?: Array<{ name: string; description: string; icon?: string }>
+    strongAreas?: string[]
+    weakAreas?: string[]
 }
 
 interface UserActivity {
     id: string
-    type: 'debate' | 'argument' | 'comment' | 'study'
+    type: 'debate_created' | 'argument_submitted' | 'comment_posted' | 'study_session_completed' | 'achievement_unlocked' | string
     title: string
     date: string
+    points?: number
 }
 
 interface UserDashboardState {
@@ -31,6 +35,37 @@ interface UseUserDashboardReturn extends UserDashboardState {
     loadActivity: (params?: any) => Promise<void>
     refreshDashboard: () => Promise<void>
     clearError: () => void
+}
+
+// Temporary frontend-only mock service. Replace with real HTTP calls.
+const UserApiService = {
+    async getDashboardStats(): Promise<DashboardStats> {
+        // Mocked data for UI; integrate your real API client here
+        return Promise.resolve({
+            totalDebates: 5,
+            totalArguments: 23,
+            totalComments: 41,
+            studyProgress: 72,
+            upcomingReviews: 8,
+            achievements: [
+                { name: 'Bắt đầu', description: 'Hoàn thành phiên học đầu tiên', icon: '🎯' },
+                { name: 'Thảo luận sôi nổi', description: 'Tạo 3 tranh luận', icon: '🗣️' },
+                { name: 'Chăm chỉ', description: 'Học 3 ngày liên tiếp', icon: '🔥' }
+            ],
+            strongAreas: ['Đạo đức', 'Tư tưởng', 'Lịch sử'],
+            weakAreas: ['Kinh tế'],
+        })
+    },
+    async getUserActivity(params?: any): Promise<{ data: UserActivity[] }> {
+        const now = new Date()
+        return Promise.resolve({
+            data: [
+                { id: '1', type: 'debate_created', title: 'Tạo tranh luận mới', date: now.toISOString(), points: 10 },
+                { id: '2', type: 'argument_submitted', title: 'Gửi luận điểm', date: now.toISOString(), points: 5 },
+                { id: '3', type: 'study_session_completed', title: 'Hoàn thành phiên học', date: now.toISOString(), points: 8 },
+            ]
+        })
+    }
 }
 
 export function useUserDashboard(): UseUserDashboardReturn {

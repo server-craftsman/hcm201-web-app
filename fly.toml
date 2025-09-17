@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for hcm201-web-app on 2025-09-17T17:43:38+07:00
+# fly.toml app configuration file generated for hcm201-web-app-aged-grass-7467 on 2025-09-17T18:02:13+07:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'hcm201-web-app'
+app = 'hcm201-web-app-aged-grass-7467'
 primary_region = 'sin'
 kill_signal = 'SIGINT'
 kill_timeout = '5s'

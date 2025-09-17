@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Card, Button } from '@/shared/components/ui'
-import { useUserDashboard } from '../hooks'
+import { useUserDashboard } from '../../hooks/useUserDashboard'
 import { formatRelativeTime, cn } from '@/shared/utils'
 
 interface DashboardProps {
@@ -43,7 +43,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ className }) => {
                         <Button onClick={clearError} variant="outline">
                             Đóng
                         </Button>
-                        <Button onClick={loadDashboard} variant="primary">
+                        <Button onClick={loadDashboard} variant="default">
                             Thử lại
                         </Button>
                     </div>
@@ -81,7 +81,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ className }) => {
                 <Card className="text-center" padding="lg">
                     <div className="space-y-2">
                         <div className="text-3xl font-bold text-primary-600">
-                            {stats?.debatesCreated || 0}
+                            {stats?.totalDebates || 0}
                         </div>
                         <div className="text-sm text-neutral-600">Tranh luận đã tạo</div>
                     </div>
@@ -90,7 +90,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ className }) => {
                 <Card className="text-center" padding="lg">
                     <div className="space-y-2">
                         <div className="text-3xl font-bold text-secondary-600">
-                            {stats?.argumentsSubmitted || 0}
+                            {stats?.totalArguments || 0}
                         </div>
                         <div className="text-sm text-neutral-600">Luận điểm đã đóng góp</div>
                     </div>
@@ -99,7 +99,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ className }) => {
                 <Card className="text-center" padding="lg">
                     <div className="space-y-2">
                         <div className="text-3xl font-bold text-success-600">
-                            {Math.floor((stats?.studyHours || 0) / 60)}h {(stats?.studyHours || 0) % 60}m
+                            {Math.floor((stats?.studyProgress || 0) / 60)}h {(stats?.studyProgress || 0) % 60}m
                         </div>
                         <div className="text-sm text-neutral-600">Thời gian học tập</div>
                     </div>
@@ -108,7 +108,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ className }) => {
                 <Card className="text-center" padding="lg">
                     <div className="space-y-2">
                         <div className="text-3xl font-bold text-warning-600">
-                            {stats?.currentStreak || 0}
+                            {stats?.studyProgress || 0}
                         </div>
                         <div className="text-sm text-neutral-600">Ngày liên tiếp</div>
                     </div>
@@ -141,16 +141,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ className }) => {
                                                 <h3 className="font-medium text-neutral-900 truncate">
                                                     {item.title}
                                                 </h3>
-                                                <p className="text-sm text-neutral-600 line-clamp-2">
-                                                    {item.description}
-                                                </p>
                                                 <div className="flex items-center gap-4 mt-2">
                                                     <span className="text-xs text-neutral-500">
-                                                        {formatRelativeTime(item.createdAt)}
+                                                        {formatRelativeTime(item.date)}
                                                     </span>
-                                                    {item.points && (
+                                                    {typeof (item as any).points === 'number' && (
                                                         <span className="text-xs bg-success-100 text-success-700 px-2 py-1 rounded">
-                                                            +{item.points} điểm
+                                                            +{(item as any).points} điểm
                                                         </span>
                                                     )}
                                                 </div>
@@ -180,12 +177,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ className }) => {
                                 <div>
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="text-sm text-neutral-600">Thẻ đã hoàn thành</span>
-                                        <span className="text-sm font-medium">{stats?.studyCardsCompleted || 0}</span>
+                                        <span className="text-sm font-medium">{stats?.studyProgress || 0}</span>
                                     </div>
                                     <div className="w-full bg-neutral-200 rounded-full h-2">
                                         <div
                                             className="bg-success-500 h-2 rounded-full transition-all duration-300"
-                                            style={{ width: `${Math.min(((stats?.studyCardsCompleted || 0) / 100) * 100, 100)}%` }}
+                                            style={{ width: `${Math.min(((stats?.studyProgress || 0) / 100) * 100, 100)}%` }}
                                         />
                                     </div>
                                 </div>
@@ -200,7 +197,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ className }) => {
                                 </div>
                             </div>
 
-                            <Button variant="primary" size="sm" fullWidth>
+                            <Button variant="success" size="sm" className="w-full">
                                 📚 Tiếp tục học tập
                             </Button>
                         </div>
@@ -213,7 +210,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ className }) => {
 
                             {stats?.achievements && stats.achievements.length > 0 ? (
                                 <div className="space-y-3">
-                                    {stats.achievements.slice(0, 3).map((achievement, index) => (
+                                    {stats.achievements.slice(0, 3).map((achievement: any, index: number) => (
                                         <div key={index} className="flex items-center gap-3 p-3 bg-success-50 rounded-lg">
                                             <div className="text-2xl">{achievement.icon || '🏆'}</div>
                                             <div className="flex-1">
@@ -230,7 +227,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ className }) => {
                                 </div>
                             )}
 
-                            <Button variant="outline" size="sm" fullWidth>
+                            <Button variant="outline" size="sm" >
                                 Xem tất cả thành tích
                             </Button>
                         </div>
@@ -246,7 +243,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ className }) => {
                                     <div className="text-sm font-medium text-neutral-700 mb-2">Điểm mạnh</div>
                                     {stats?.strongAreas && stats.strongAreas.length > 0 ? (
                                         <div className="flex flex-wrap gap-2">
-                                            {stats.strongAreas.slice(0, 3).map((area, index) => (
+                                            {stats.strongAreas.slice(0, 3).map((area: string, index: number) => (
                                                 <span key={index} className="px-2 py-1 bg-success-100 text-success-700 text-xs rounded">
                                                     {area}
                                                 </span>
@@ -261,7 +258,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ className }) => {
                                     <div className="text-sm font-medium text-neutral-700 mb-2">Cần cải thiện</div>
                                     {stats?.weakAreas && stats.weakAreas.length > 0 ? (
                                         <div className="flex flex-wrap gap-2">
-                                            {stats.weakAreas.slice(0, 3).map((area, index) => (
+                                            {stats.weakAreas.slice(0, 3).map((area: string, index: number) => (
                                                 <span key={index} className="px-2 py-1 bg-warning-100 text-warning-700 text-xs rounded">
                                                     {area}
                                                 </span>
