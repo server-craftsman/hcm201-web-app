@@ -1,0 +1,9 @@
+{
+    "name": "HCM201",
+    "short_name": "HCM201",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#111827",
+    "icons": []
+}
