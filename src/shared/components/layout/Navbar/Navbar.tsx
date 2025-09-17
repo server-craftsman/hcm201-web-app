@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
     Bars3Icon,
@@ -12,10 +12,11 @@ import {
     UserCircleIcon,
     ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline'
+import Image from 'next/image'
 import { Button } from '@/shared/components/ui'
 import { useAuthContext } from '@/modules/auth'
 import { cn } from '@/shared/utils/shadcn'
-// import { motion } from 'framer-motion' // Will be added when framer-motion is installed
+import logo from '@/shared/assets/images/logo.png'
 
 const navigation = [
     { name: 'Trang chủ', href: '/', icon: HomeIcon },
@@ -25,7 +26,17 @@ const navigation = [
 
 export const Navbar: React.FC = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [isScrolled, setIsScrolled] = useState(false)
     const { user, isAuthenticated, logout } = useAuthContext()
+
+    // Handle scroll effect
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20)
+        }
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
 
     const handleLogout = async () => {
         try {
@@ -36,127 +47,150 @@ export const Navbar: React.FC = () => {
     }
 
     return (
-        <nav className="glass-luxury border-b border-white/20 sticky top-0 z-50 shadow-luxury">
-            <div className="container-luxury">
+        <nav className={cn(
+            "sticky top-0 z-50 transition-all duration-500 ease-out",
+            "backdrop-blur-xl bg-white/80 border-b border-red-200/50",
+            "shadow-lg shadow-red-500/10",
+            isScrolled && "bg-white/95 shadow-xl shadow-red-500/20 border-red-300/60"
+        )}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-20">
                     {/* Logo */}
                     <Link href="/" className="flex items-center space-x-4 group">
-                        <div className="relative w-14 h-14 hcm-gradient-luxury rounded-2xl flex items-center justify-center shadow-luxury group-hover:shadow-premium transition-all duration-300 group-hover:scale-105 group-hover:rotate-3">
-                            <span className="text-white font-bold text-2xl font-serif">H</span>
-                            {/* Shine effect */}
-                            <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="relative w-16 h-12 bg-gradient-to-br from-red-600 via-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/25 group-hover:shadow-xl group-hover:shadow-red-500/40 transition-all duration-500 ease-out group-hover:scale-110 group-hover:rotate-2 group-hover:bg-gradient-to-br group-hover:from-red-500 group-hover:via-red-400 group-hover:to-red-600">
+                            <Image
+                                src={logo}
+                                alt="Logo"
+                                width={64}
+                                height={48}
+                                className="object-contain rounded-lg transition-transform duration-300 group-hover:scale-110"
+                            />
+                            {/* Animated shine effect */}
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-white/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out" />
+                            {/* Pulse effect */}
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-red-600 to-red-600 opacity-0 group-hover:opacity-20 animate-pulse transition-opacity duration-300" />
                         </div>
                         <div className="hidden sm:block">
-                            <h1 className="hcm-text-gradient-luxury font-bold text-2xl font-serif">
-                                Tranh luận Tư tưởng HCM
-                            </h1>
-                            <p className="text-sm text-neutral-600 font-medium">
+                            <h1 className="text-2xl text-red-500 font-bold transition-colors duration-300 group-hover:text-gray-700">Tư tưởng Hồ Chí Minh</h1>
+                            <p className="text-sm text-gray-600 font-medium transition-colors duration-300 group-hover:text-gray-700">
                                 Nền tảng học tập và thảo luận chuyên nghiệp
                             </p>
                         </div>
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center space-x-2">
-                        {navigation.map((item) => (
+                    <div className="hidden md:flex items-center space-x-1">
+                        {navigation.map((item, index) => (
                             <Link
                                 key={item.name}
                                 href={item.href}
-                                className="nav-link-luxury"
+                                className="group relative flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:text-red-600 transition-all duration-300 ease-out hover:bg-red-50/80 hover:shadow-md hover:shadow-red-500/10 hover:scale-105 hover:-translate-y-0.5"
+                                style={{ animationDelay: `${index * 100}ms` }}
                             >
-                                <item.icon className="h-5 w-5" />
-                                <span>{item.name}</span>
+                                <item.icon className="h-5 w-5 transition-all duration-300 group-hover:scale-110 group-hover:text-red-600" />
+                                <span className="transition-all duration-300 group-hover:font-semibold">{item.name}</span>
+                                {/* Active indicator */}
+                                <div className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-red-500 to-yellow-400 rounded-full transition-all duration-300 group-hover:w-3/4 group-hover:left-1/4" />
                             </Link>
                         ))}
                         {isAuthenticated && (
                             <Link
                                 href="/dashboard"
-                                className="nav-link-luxury"
+                                className="group relative flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:text-red-600 transition-all duration-300 ease-out hover:bg-red-50/80 hover:shadow-md hover:shadow-red-500/10 hover:scale-105 hover:-translate-y-0.5"
                             >
-                                <ChartBarIcon className="h-5 w-5" />
-                                <span>Bảng điều khiển</span>
+                                <ChartBarIcon className="h-5 w-5 transition-all duration-300 group-hover:scale-110 group-hover:text-red-600" />
+                                <span className="transition-all duration-300 group-hover:font-semibold">Bảng điều khiển</span>
+                                <div className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-red-500 to-yellow-400 rounded-full transition-all duration-300 group-hover:w-3/4 group-hover:left-1/4" />
                             </Link>
                         )}
                     </div>
 
                     {/* User menu */}
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-3">
                         {isAuthenticated ? (
-                            <div className="flex items-center space-x-4">
-                                <div className="hidden sm:flex items-center space-x-3 px-4 py-2 bg-white/60 backdrop-blur-lg rounded-2xl border border-white/30">
-                                    <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
+                            <div className="flex items-center space-x-3">
+                                <div className="hidden sm:flex items-center space-x-3 px-4 py-2.5 bg-gradient-to-r from-white/80 to-red-50/60 backdrop-blur-lg rounded-2xl border border-red-200/50 shadow-md shadow-red-500/10 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/20 hover:scale-105">
+                                    <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-yellow-400 rounded-xl flex items-center justify-center shadow-md transition-all duration-300 hover:scale-110 hover:rotate-3">
                                         <UserCircleIcon className="h-5 w-5 text-white" />
                                     </div>
-                                    <span className="text-sm font-medium text-neutral-700">Chào {user?.displayName}</span>
+                                    <span className="text-sm font-medium text-gray-700 transition-colors duration-300">Chào {user?.displayName}</span>
                                 </div>
-                                <Button
-                                    variant="glass"
-                                    size="sm"
+                                <button
                                     onClick={handleLogout}
-                                    leftIcon={<ArrowRightOnRectangleIcon className="h-4 w-4" />}
+                                    className="group relative flex items-center space-x-2 px-4 py-2.5 bg-white/80 backdrop-blur-lg border border-red-200/50 rounded-xl text-sm font-medium text-gray-700 hover:text-red-600 transition-all duration-300 ease-out hover:bg-red-50/80 hover:shadow-md hover:shadow-red-500/10 hover:scale-105 hover:-translate-y-0.5"
                                 >
-                                    <span className="hidden sm:inline">Đăng xuất</span>
-                                </Button>
+                                    <ArrowRightOnRectangleIcon className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-red-600" />
+                                    <span className="hidden sm:inline transition-all duration-300 group-hover:font-semibold">Đăng xuất</span>
+                                </button>
                             </div>
                         ) : (
                             <div className="flex items-center space-x-3">
                                 <Link href="/login">
-                                    <Button variant="glass" size="sm">
-                                        Đăng nhập
-                                    </Button>
+                                    <button className="group relative flex items-center space-x-2 px-4 py-2.5 bg-white/80 backdrop-blur-lg border border-gray-200/50 rounded-xl text-sm font-medium text-gray-700 hover:text-red-600 transition-all duration-300 ease-out hover:bg-red-50/80 hover:shadow-md hover:shadow-red-500/10 hover:scale-105 hover:-translate-y-0.5">
+                                        <span className="transition-all duration-300 group-hover:font-semibold">Đăng nhập</span>
+                                    </button>
                                 </Link>
                                 <Link href="/register">
-                                    <Button variant="luxury" size="sm" shimmer>
-                                        Đăng ký
-                                    </Button>
+                                    <button className="group relative flex items-center space-x-2 px-4 py-2.5 bg-red-600 rounded-xl text-sm font-medium text-white shadow-lg shadow-red-500/25 transition-all duration-300 ease-out hover:shadow-xl hover:shadow-red-500/40 hover:scale-105 hover:-translate-y-0.5 hover:from-red-400 hover:to-red-500">
+                                        <span className="transition-all duration-300 group-hover:font-semibold">Đăng ký</span>
+                                        {/* Shimmer effect */}
+                                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+                                    </button>
                                 </Link>
                             </div>
                         )}
 
                         {/* Mobile menu button */}
-                        <Button
-                            variant="glass"
-                            size="icon"
-                            className="md:hidden"
+                        <button
+                            className="md:hidden group relative flex items-center justify-center w-10 h-10 bg-white/80 backdrop-blur-lg border border-gray-200/50 rounded-xl text-gray-700 hover:text-red-600 transition-all duration-300 ease-out hover:bg-red-50/80 hover:shadow-md hover:shadow-red-500/10 hover:scale-110 hover:rotate-90"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                         >
-                            {isMobileMenuOpen ? (
-                                <XMarkIcon className="h-6 w-6" />
-                            ) : (
-                                <Bars3Icon className="h-6 w-6" />
-                            )}
-                        </Button>
+                            <div className="relative w-6 h-6">
+                                <Bars3Icon className={cn(
+                                    "absolute inset-0 h-6 w-6 transition-all duration-300 ease-out",
+                                    isMobileMenuOpen ? "opacity-0 rotate-180 scale-0" : "opacity-100 rotate-0 scale-100"
+                                )} />
+                                <XMarkIcon className={cn(
+                                    "absolute inset-0 h-6 w-6 transition-all duration-300 ease-out",
+                                    isMobileMenuOpen ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-180 scale-0"
+                                )} />
+                            </div>
+                        </button>
                     </div>
                 </div>
 
                 {/* Mobile menu */}
-                {isMobileMenuOpen && (
-                    <div className="md:hidden border-t border-white/20 mt-4 pt-4">
-                        <div className="px-2 pb-4 space-y-2">
-                            {navigation.map((item) => (
+                <div className={cn(
+                    "md:hidden overflow-hidden transition-all duration-500 ease-out",
+                    isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                )}>
+                    <div className="border-t border-red-200/50 mt-4 pt-4 pb-4">
+                        <div className="px-2 space-y-1">
+                            {navigation.map((item, index) => (
                                 <Link
                                     key={item.name}
                                     href={item.href}
-                                    className="flex items-center space-x-3 px-4 py-3 rounded-2xl text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-white/60 backdrop-blur-lg transition-all duration-300 hover:translate-x-2"
+                                    className="group flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium text-gray-600 hover:text-red-600 hover:bg-red-50/80 backdrop-blur-lg transition-all duration-300 ease-out hover:translate-x-2 hover:shadow-md hover:shadow-red-500/10"
+                                    style={{ animationDelay: `${index * 100}ms` }}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
-                                    <item.icon className="h-6 w-6" />
-                                    <span>{item.name}</span>
+                                    <item.icon className="h-6 w-6 transition-all duration-300 group-hover:scale-110 group-hover:text-red-600" />
+                                    <span className="transition-all duration-300 group-hover:font-semibold">{item.name}</span>
                                 </Link>
                             ))}
                             {isAuthenticated && (
                                 <Link
                                     href="/dashboard"
-                                    className="flex items-center space-x-3 px-4 py-3 rounded-2xl text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-white/60 backdrop-blur-lg transition-all duration-300 hover:translate-x-2"
+                                    className="group flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium text-gray-600 hover:text-red-600 hover:bg-red-50/80 backdrop-blur-lg transition-all duration-300 ease-out hover:translate-x-2 hover:shadow-md hover:shadow-red-500/10"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
-                                    <ChartBarIcon className="h-6 w-6" />
-                                    <span>Bảng điều khiển</span>
+                                    <ChartBarIcon className="h-6 w-6 transition-all duration-300 group-hover:scale-110 group-hover:text-red-600" />
+                                    <span className="transition-all duration-300 group-hover:font-semibold">Bảng điều khiển</span>
                                 </Link>
                             )}
                         </div>
                     </div>
-                )}
+                </div>
             </div>
         </nav>
     )

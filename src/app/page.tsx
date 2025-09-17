@@ -1,4 +1,7 @@
+'use client'
+
 import { Metadata } from 'next'
+import React, { useState, useEffect } from 'react'
 import {
   ChartBarIcon,
   TrophyIcon,
@@ -9,287 +12,437 @@ import {
   AcademicCapIcon,
   SparklesIcon,
   ArrowTrendingUpIcon,
-  PlusIcon
+  PlusIcon,
+  PlayIcon,
+  StarIcon,
+  HeartIcon,
+  LightBulbIcon,
+  GlobeAltIcon,
+  ShieldCheckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
+import Image from 'next/image'
+import Banner from '@/shared/assets/images/banner.jpg'
 
-export const metadata: Metadata = {
-  title: 'Dashboard - Trang chủ',
-  description: 'Dashboard quản lý học tập và thảo luận về tư tưởng Hồ Chí Minh.',
+const metadata: Metadata = {
+  title: 'Trang chủ - Tư tưởng Hồ Chí Minh',
+  description: 'Nền tảng học tập và thảo luận chuyên nghiệp về tư tưởng Hồ Chí Minh. Khám phá, học hỏi và chia sẻ kiến thức cùng cộng đồng.',
   openGraph: {
-    title: 'HCM201 Dashboard - Trang chủ',
-    description: 'Dashboard quản lý học tập và thảo luận về tư tưởng Hồ Chí Minh',
+    title: 'Tư tưởng Hồ Chí Minh - Nền tảng học tập chuyên nghiệp',
+    description: 'Nền tảng học tập và thảo luận chuyên nghiệp về tư tưởng Hồ Chí Minh',
   },
 }
 
 export default function HomePage() {
-  const stats = [
-    {
-      title: 'Cuộc tranh luận',
-      value: '12',
-      change: '+2 tuần này',
-      icon: ChatBubbleLeftRightIcon,
-      color: 'from-blue-500 to-blue-600'
-    },
-    {
-      title: 'Bài học hoàn thành',
-      value: '24',
-      change: '+8 tuần này',
-      icon: BookOpenIcon,
-      color: 'from-green-500 to-green-600'
-    },
-    {
-      title: 'Điểm số',
-      value: '1,450',
-      change: '+120 tuần này',
-      icon: TrophyIcon,
-      color: 'from-amber-500 to-amber-600'
-    },
-    {
-      title: 'Xếp hạng',
-      value: '#15',
-      change: '+3 vị trí',
-      icon: ArrowTrendingUpIcon,
-      color: 'from-purple-500 to-purple-600'
-    }
-  ]
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
 
-  const recentActivities = [
+  const sliderContent = [
     {
-      type: 'debate',
-      title: 'Tham gia tranh luận "Tư tưởng đạo đức HCM"',
-      time: '2 giờ trước',
-      icon: ChatBubbleLeftRightIcon
+      title: "Tư tưởng",
+      subtitle: "Hồ Chí Minh",
+      description: "Nền tảng học tập và thảo luận chuyên nghiệp về tư tưởng vĩ đại của Chủ tịch Hồ Chí Minh",
+      cta: "Bắt đầu học tập",
+      ctaSecondary: "Tham gia tranh luận",
+      icon: PlayIcon,
+      iconSecondary: ChatBubbleLeftRightIcon
     },
     {
-      type: 'study',
-      title: 'Hoàn thành bài học "Chủ nghĩa yêu nước"',
-      time: '1 ngày trước',
-      icon: BookOpenIcon
+      title: "Khám phá",
+      subtitle: "Tri thức",
+      description: "Học hỏi và hiểu sâu về những giá trị tư tưởng, đạo đức và nhân văn của Bác Hồ",
+      cta: "Khám phá ngay",
+      ctaSecondary: "Xem bài học",
+      icon: LightBulbIcon,
+      iconSecondary: BookOpenIcon
     },
     {
-      type: 'achievement',
-      title: 'Đạt huy hiệu "Người thảo luận tích cực"',
-      time: '3 ngày trước',
-      icon: TrophyIcon
-    }
-  ]
-
-  const quickActions = [
-    {
-      title: 'Tạo tranh luận mới',
-      description: 'Khởi tạo chủ đề thảo luận',
-      href: '/debates/create',
-      icon: PlusIcon,
-      color: 'bg-gradient-to-r from-red-500 to-amber-500'
-    },
-    {
-      title: 'Tiếp tục học tập',
-      description: 'Học bài tiếp theo',
-      href: '/study',
-      icon: AcademicCapIcon,
-      color: 'bg-gradient-to-r from-blue-500 to-purple-500'
-    },
-    {
-      title: 'Khám phá cộng đồng',
-      description: 'Kết nối với bạn bè',
-      href: '/community',
+      title: "Kết nối",
+      subtitle: "Cộng đồng",
+      description: "Tham gia thảo luận sôi nổi với hàng nghìn thành viên cùng chí hướng",
+      cta: "Tham gia ngay",
+      ctaSecondary: "Xem cộng đồng",
       icon: UsersIcon,
-      color: 'bg-gradient-to-r from-green-500 to-teal-500'
+      iconSecondary: HeartIcon
+    },
+    {
+      title: "Phát triển",
+      subtitle: "Bản thân",
+      description: "Nâng cao hiểu biết và phát triển kỹ năng tư duy phản biện qua các hoạt động học tập",
+      cta: "Bắt đầu phát triển",
+      ctaSecondary: "Xem tiến độ",
+      icon: ArrowTrendingUpIcon,
+      iconSecondary: ChartBarIcon
     }
   ]
+
+  const features = [
+    {
+      title: 'Học tập tương tác',
+      description: 'Khám phá tư tưởng Hồ Chí Minh qua các bài học đa phương tiện và tương tác',
+      icon: BookOpenIcon,
+      color: 'from-blue-500 to-indigo-600'
+    },
+    {
+      title: 'Tranh luận sôi nổi',
+      description: 'Tham gia thảo luận với cộng đồng về các chủ đề tư tưởng quan trọng',
+      icon: ChatBubbleLeftRightIcon,
+      color: 'from-green-500 to-emerald-600'
+    },
+    {
+      title: 'Cộng đồng học tập',
+      description: 'Kết nối với những người cùng chí hướng và chia sẻ kiến thức',
+      icon: UsersIcon,
+      color: 'from-purple-500 to-violet-600'
+    },
+    {
+      title: 'Tiến độ theo dõi',
+      description: 'Theo dõi quá trình học tập và đạt được các mục tiêu cá nhân',
+      icon: ChartBarIcon,
+      color: 'from-orange-500 to-amber-600'
+    }
+  ]
+
+  const stats = [
+    { value: '2,500+', label: 'Thành viên', icon: UsersIcon },
+    { value: '150+', label: 'Bài học', icon: BookOpenIcon },
+    { value: '500+', label: 'Tranh luận', icon: ChatBubbleLeftRightIcon },
+    { value: '98%', label: 'Hài lòng', icon: StarIcon }
+  ]
+
+  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0)
+
+  const quotes = [
+    {
+      text: "Học tập là một việc suốt đời",
+      author: "Chủ tịch Hồ Chí Minh"
+    },
+    {
+      text: "Đoàn kết, đoàn kết, đại đoàn kết. Thành công, thành công, đại thành công",
+      author: "Chủ tịch Hồ Chí Minh"
+    },
+    {
+      text: "Không có gì quý hơn độc lập, tự do",
+      author: "Chủ tịch Hồ Chí Minh"
+    },
+    {
+      text: "Cần, kiệm, liêm, chính, chí công vô tư",
+      author: "Chủ tịch Hồ Chí Minh"
+    }
+  ]
+
+  // Auto-play slider
+  useEffect(() => {
+    if (!isAutoPlaying) return
+
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % sliderContent.length)
+    }, 5000) // Change slide every 5 seconds
+
+    return () => clearInterval(interval)
+  }, [isAutoPlaying, sliderContent.length])
+
+  // Auto-play quotes slider
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentQuoteIndex((prev) => (prev + 1) % quotes.length)
+    }, 4000) // Change quote every 4 seconds
+
+    return () => clearInterval(interval)
+  }, [quotes.length])
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % sliderContent.length)
+    setIsAutoPlaying(false)
+  }
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + sliderContent.length) % sliderContent.length)
+    setIsAutoPlaying(false)
+  }
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index)
+    setIsAutoPlaying(false)
+  }
+
+  const nextQuote = () => {
+    setCurrentQuoteIndex((prev) => (prev + 1) % quotes.length)
+  }
+
+  const prevQuote = () => {
+    setCurrentQuoteIndex((prev) => (prev - 1 + quotes.length) % quotes.length)
+  }
+
+  const goToQuote = (index: number) => {
+    setCurrentQuoteIndex(index)
+  }
 
   return (
-    <div className="space-y-8">
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-red-500 via-red-600 to-amber-500 rounded-2xl p-8 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative z-10">
-          <h1 className="text-3xl font-bold mb-2 font-geist">
-            Chào mừng trở lại! 👋
-          </h1>
-          <p className="text-red-100 text-lg mb-6">
-            Tiếp tục hành trình khám phá tư tưởng Hồ Chí Minh cùng chúng tôi
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <button className="bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors px-4 py-2 rounded-lg text-sm font-medium">
-              Xem tiến độ học tập
-            </button>
-            <button className="bg-white text-red-600 hover:bg-red-50 transition-colors px-4 py-2 rounded-lg text-sm font-medium">
-              Tranh luận nổi bật
-            </button>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-red-50">
+      {/* Hero Section */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Background with Banner image */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src={Banner}
+            alt="Ho Chi Minh Banner"
+            fill
+            className="object-cover"
+            priority
+          />
+          {/* Animated overlay effects */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse z-20"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 z-20"></div>
         </div>
-        
-        {/* Decorative elements */}
-        <div className="absolute top-4 right-4 opacity-20">
-          <SparklesIcon className="h-20 w-20" />
-        </div>
-        <div className="absolute bottom-4 right-20 opacity-10">
-          <FireIcon className="h-16 w-16" />
-        </div>
-      </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <div
-            key={index}
-            className="bg-white dark:bg-neutral-800 rounded-xl p-6 border border-neutral-200 dark:border-neutral-700 hover:shadow-lg transition-all duration-300 group"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className={`w-12 h-12 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                <stat.icon className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-sm text-green-600 dark:text-green-400 font-medium">
-                {stat.change}
-              </span>
-            </div>
-            <div className="space-y-1">
-              <p className="text-2xl font-bold text-neutral-900 dark:text-white font-geist">
-                {stat.value}
-              </p>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                {stat.title}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Featured Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Today's Highlight */}
-          <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 border border-neutral-200 dark:border-neutral-700">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-neutral-900 dark:text-white font-geist">
-                Nổi bật hôm nay
-              </h2>
-              <span className="text-sm text-red-600 dark:text-red-400 font-medium">
-                Xem tất cả →
-              </span>
-            </div>
-            
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-700">
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <FireIcon className="h-6 w-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-neutral-900 dark:text-white mb-2">
-                    "Tư tưởng đạo đức của Hồ Chí Minh trong xã hội hiện đại"
-                  </h3>
-                  <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-3">
-                    Cuộc tranh luận sôi nổi với 156 lượt tham gia và 89 bình luận. Khám phá những quan điểm đa dạng về ứng dụng tư tưởng đạo đức...
-                  </p>
-                  <div className="flex items-center space-x-4 text-xs text-neutral-500 dark:text-neutral-400">
-                    <span className="flex items-center space-x-1">
-                      <UsersIcon className="h-4 w-4" />
-                      <span>156 người tham gia</span>
+        {/* Content */}
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="space-y-8">
+            {/* Main Title with Hyper Speed Effects */}
+            <div className="space-y-8">
+              <div className="relative">
+                <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+                  <span className="block animate-pulse hover:animate-none transition-all duration-300">
+                    <span className="inline-block hover:scale-110 hover:rotate-1 transition-transform duration-500 ease-out text-white drop-shadow-lg">
+                      {sliderContent[currentSlide].title}
                     </span>
-                    <span>•</span>
-                    <span>2 giờ trước</span>
-                  </div>
-                </div>
+                  </span>
+                  <span className="block relative">
+                    <span className="text-yellow-300 animate-pulse hover:animate-none transition-all duration-300 drop-shadow-lg">
+                      {sliderContent[currentSlide].subtitle}
+                    </span>
+                  </span>
+                </h1>
+                {/* Speed lines effect */}
+                <div className="absolute -top-4 -left-4 w-full h-2 bg-gradient-to-r from-transparent via-yellow-400/70 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+                <div className="absolute -bottom-4 -right-4 w-full h-2 bg-gradient-to-r from-transparent via-yellow-400/70 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 animate-pulse delay-150"></div>
+              </div>
+
+              <div className="relative">
+                <p className="text-xl md:text-2xl text-white max-w-3xl mx-auto leading-relaxed drop-shadow-lg">
+                  <span className="inline-block hover:scale-105 transition-transform duration-300 font-semibold">
+                    {sliderContent[currentSlide].description}
+                  </span>
+                </p>
+                {/* Hyper speed underline effect */}
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-1 bg-gradient-to-r from-yellow-300 to-yellow-100 opacity-0 hover:w-full hover:opacity-100 transition-all duration-500 ease-out shadow-lg"></div>
               </div>
             </div>
-          </div>
 
-          {/* Quick Actions */}
-          <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 border border-neutral-200 dark:border-neutral-700">
-            <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-6 font-geist">
-              Hành động nhanh
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {quickActions.map((action, index) => (
-                <Link
-                  key={index}
-                  href={action.href}
-                  className="group p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 transition-all duration-300 hover:shadow-md"
-                >
-                  <div className={`w-10 h-10 ${action.color} rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300`}>
-                    <action.icon className="h-5 w-5 text-white" />
+            {/* CTA Buttons with Hyper Speed Effects */}
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <Link href="/study" className="group relative">
+                <button className="relative px-8 py-4 bg-white text-red-600 font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:bg-red-50">
+                  <span className="relative flex items-center space-x-2">
+                    {React.createElement(sliderContent[currentSlide].icon, { className: "h-6 w-6 group-hover:scale-110 transition-transform duration-300" })}
+                    <span className="group-hover:font-bold transition-all duration-300">{sliderContent[currentSlide].cta}</span>
+                  </span>
+                </button>
+              </Link>
+              <Link href="/debates" className="group relative">
+                <button className="relative px-8 py-4 bg-transparent border-2 border-white text-white font-semibold text-lg rounded-xl hover:bg-white hover:text-red-600 transition-all duration-300 hover:scale-105">
+                  <span className="relative flex items-center space-x-2">
+                    {React.createElement(sliderContent[currentSlide].iconSecondary, { className: "h-6 w-6 group-hover:scale-110 transition-transform duration-300" })}
+                    <span className="group-hover:font-bold transition-all duration-300">{sliderContent[currentSlide].ctaSecondary}</span>
+                  </span>
+                </button>
+              </Link>
+            </div>
+
+            {/* Stats with Hyper Speed Effects */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+              {stats.map((stat, index) => (
+                <div key={index} className="text-center group relative">
+                  <div className="relative bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-105">
+                    <div className="relative">
+                      <stat.icon className="h-8 w-8 text-yellow-300 mx-auto mb-3 group-hover:scale-110 transition-transform duration-300" />
+                      <div className="text-3xl font-bold text-white mb-1 group-hover:scale-110 transition-transform duration-300">
+                        {stat.value}
+                      </div>
+                      <div className="text-white text-sm group-hover:text-yellow-200 transition-colors duration-300 font-semibold">
+                        {stat.label}
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="font-semibold text-neutral-900 dark:text-white mb-1 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
-                    {action.title}
-                  </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                    {action.description}
-                  </p>
-                </Link>
+                </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Recent Activity */}
-          <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 border border-neutral-200 dark:border-neutral-700">
-            <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4 font-geist">
-              Hoạt động gần đây
-            </h2>
-            <div className="space-y-4">
-              {recentActivities.map((activity, index) => (
-                <div key={index} className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-r from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <activity.icon className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-900 dark:text-white">
-                      {activity.title}
-                    </p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                      {activity.time}
-                    </p>
-                  </div>
-                </div>
+        {/* Floating Elements */}
+        <div className="absolute top-20 left-10">
+          <HeartIcon className="h-6 w-6 text-yellow-300 opacity-60 animate-bounce" />
+        </div>
+        <div className="absolute top-40 right-20">
+          <LightBulbIcon className="h-5 w-5 text-white opacity-50 animate-pulse" />
+        </div>
+        <div className="absolute bottom-40 left-20">
+          <StarIcon className="h-6 w-6 text-yellow-300 opacity-60 animate-bounce delay-1000" />
+        </div>
+        <div className="absolute bottom-20 right-10">
+          <GlobeAltIcon className="h-4 w-4 text-white opacity-50 animate-pulse delay-500" />
+        </div>
+
+        {/* Slider Navigation */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-40">
+          <div className="flex items-center space-x-4">
+            {/* Previous Button */}
+            <button
+              onClick={prevSlide}
+              className="p-2 bg-white/20 rounded-full border border-white/30 hover:bg-white/30 transition-all duration-300 group"
+            >
+              <ChevronLeftIcon className="h-5 w-5 text-white" />
+            </button>
+
+            {/* Dots Indicator */}
+            <div className="flex space-x-2">
+              {sliderContent.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentSlide
+                    ? 'bg-yellow-300'
+                    : 'bg-white/50 hover:bg-white/70'
+                    }`}
+                />
               ))}
             </div>
-            <button className="w-full mt-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-              Xem tất cả hoạt động
+
+            {/* Next Button */}
+            <button
+              onClick={nextSlide}
+              className="p-2 bg-white/20 rounded-full border border-white/30 hover:bg-white/30 transition-all duration-300 group"
+            >
+              <ChevronRightIcon className="h-5 w-5 text-white" />
             </button>
           </div>
+        </div>
+      </section>
 
-          {/* Progress Summary */}
-          <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 border border-neutral-200 dark:border-neutral-700">
-            <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4 font-geist">
-              Tiến độ tuần này
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Tại sao chọn chúng tôi?
             </h2>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-neutral-600 dark:text-neutral-400">Bài học</span>
-                  <span className="font-medium text-neutral-900 dark:text-white">8/10</span>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Khám phá những tính năng độc đáo giúp bạn học tập và hiểu sâu hơn về tư tưởng Hồ Chí Minh
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <div key={index} className="group text-center">
+                <div className="relative">
+                  <div className={`w-20 h-20 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+                    <feature.icon className="h-10 w-10 text-white" />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-yellow-500/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
-                <div className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full" style={{ width: '80%' }}></div>
-                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-red-600 transition-colors duration-300">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {feature.description}
+                </p>
               </div>
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-neutral-600 dark:text-neutral-400">Tranh luận</span>
-                  <span className="font-medium text-neutral-900 dark:text-white">3/5</span>
-                </div>
-                <div className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full" style={{ width: '60%' }}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-neutral-600 dark:text-neutral-400">Bài tập</span>
-                  <span className="font-medium text-neutral-900 dark:text-white">12/15</span>
-                </div>
-                <div className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-amber-500 to-amber-600 rounded-full" style={{ width: '80%' }}></div>
-                </div>
-              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Quote Slider Section */}
+      <section className="py-20 relative overflow-hidden min-h-[500px] flex items-center">
+        {/* Background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 z-0"></div>
+
+        {/* Content */}
+        <div className="relative z-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="space-y-8">
+            <ShieldCheckIcon className="h-16 w-16 text-yellow-300 mx-auto" />
+            <blockquote className="text-3xl md:text-4xl font-bold text-white leading-relaxed drop-shadow-lg">
+              "{quotes[currentQuoteIndex].text}"
+            </blockquote>
+            <cite className="text-xl text-red-100 font-medium drop-shadow-lg">
+              — {quotes[currentQuoteIndex].author}
+            </cite>
+          </div>
+        </div>
+
+        {/* Quote Navigation */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30">
+          <div className="flex items-center space-x-4">
+            {/* Previous Button */}
+            <button
+              onClick={prevQuote}
+              className="p-2 bg-white/20 rounded-full border border-white/30 hover:bg-white/30 transition-all duration-300 group"
+            >
+              <ChevronLeftIcon className="h-5 w-5 text-white" />
+            </button>
+
+            {/* Dots Indicator */}
+            <div className="flex space-x-2">
+              {quotes.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToQuote(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentQuoteIndex
+                    ? 'bg-yellow-300'
+                    : 'bg-white/50 hover:bg-white/70'
+                    }`}
+                />
+              ))}
+            </div>
+
+            {/* Next Button */}
+            <button
+              onClick={nextQuote}
+              className="p-2 bg-white/20 rounded-full border border-white/30 hover:bg-white/30 transition-all duration-300 group"
+            >
+              <ChevronRightIcon className="h-5 w-5 text-white" />
+            </button>
+          </div>
+        </div>
+
+        {/* Decorative elements */}
+        <div className="absolute top-10 left-10 opacity-20 z-20">
+          <SparklesIcon className="h-12 w-12 text-yellow-300" />
+        </div>
+        <div className="absolute bottom-10 right-10 opacity-20 z-20">
+          <FireIcon className="h-16 w-16 text-yellow-300" />
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="space-y-8">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900">
+              Sẵn sàng bắt đầu hành trình?
+            </h2>
+            <p className="text-xl text-gray-600">
+              Tham gia cộng đồng học tập và khám phá tư tưởng Hồ Chí Minh ngay hôm nay
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/register">
+                <button className="px-8 py-4 bg-red-600 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:bg-red-700">
+                  Đăng ký miễn phí
+                </button>
+              </Link>
+              <Link href="/study">
+                <button className="px-8 py-4 bg-white border-2 border-red-600 text-red-600 font-semibold text-lg rounded-xl hover:bg-red-600 hover:text-white transition-all duration-300 hover:scale-105">
+                  Khám phá ngay
+                </button>
+              </Link>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   )
 }
