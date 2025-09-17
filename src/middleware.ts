@@ -18,10 +18,15 @@ const authRoutes = [
 ]
 
 function generateNonce(): string {
-    // 16 bytes random base64
-    const array = new Uint8Array(16)
-    crypto.getRandomValues(array)
-    return Buffer.from(array).toString('base64')
+    // 16 bytes random, base64 using Web APIs (compatible with Edge runtime)
+    const bytes = new Uint8Array(16)
+    crypto.getRandomValues(bytes)
+    let binary = ''
+    for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i])
+    }
+    // btoa is available in the Edge runtime
+    return btoa(binary)
 }
 
 export async function middleware(request: NextRequest) {
