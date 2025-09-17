@@ -17,27 +17,10 @@ const authRoutes = [
     '/forgot-password',
 ]
 
-function generateNonce(): string {
-    // 16 bytes random, base64 using Web APIs (compatible with Edge runtime)
-    const bytes = new Uint8Array(16)
-    crypto.getRandomValues(bytes)
-    let binary = ''
-    for (let i = 0; i < bytes.length; i++) {
-        binary += String.fromCharCode(bytes[i])
-    }
-    // btoa is available in the Edge runtime
-    return btoa(binary)
-}
-
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
 
-    // Generate a per-request nonce and pass it downstream so Next can attach it to scripts
-    const nonce = generateNonce()
-    const requestHeaders = new Headers(request.headers)
-    requestHeaders.set('x-nonce', nonce)
-
-    const response = NextResponse.next({ request: { headers: requestHeaders } })
+    const response = NextResponse.next()
 
     // Add security headers
     response.headers.set('X-Frame-Options', 'DENY')
@@ -64,11 +47,11 @@ export async function middleware(request: NextRequest) {
             ].join('; ')
         )
     } else {
-        // Production CSP prefers nonce; allows inline as fallback for Next internal scripts
+        // Production CSP: allow inline/eval for Next internal scripts (can be tightened later with hashes)
         const cspParts = [
             "default-src 'self'",
-            `script-src 'self' 'nonce-${nonce}' 'unsafe-inline'`,
-            `script-src-elem 'self' 'nonce-${nonce}' 'unsafe-inline'`,
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+            "script-src-elem 'self' 'unsafe-inline' 'unsafe-eval'",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: https:",
