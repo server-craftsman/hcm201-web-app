@@ -14,7 +14,9 @@ export const Hero: React.FC = () => {
     const [isLoaded, setIsLoaded] = useState(false)
 
     useEffect(() => {
-        setQuoteIndex(Math.floor(Math.random() * HO_CHI_MINH_QUOTES.length))
+        // Use a more deterministic approach to avoid hydration issues
+        const randomIndex = Math.floor(Math.random() * HO_CHI_MINH_QUOTES.length)
+        setQuoteIndex(randomIndex)
         setIsLoaded(true)
     }, [])
 

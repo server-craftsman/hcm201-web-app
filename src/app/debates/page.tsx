@@ -32,6 +32,8 @@ export default function DebatesPage() {
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
     const [showFilters, setShowFilters] = useState(false)
 
+    const isDesktop = useMediaQuery('(min-width: 1024px)')
+
     const {
         debates,
         isLoading,
@@ -191,8 +193,8 @@ export default function DebatesPage() {
                     <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{
-                            height: showFilters || window.innerWidth >= 1024 ? 'auto' : 0,
-                            opacity: showFilters || window.innerWidth >= 1024 ? 1 : 0
+                            height: showFilters || isDesktop ? 'auto' : 0,
+                            opacity: showFilters || isDesktop ? 1 : 0
                         }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
@@ -296,210 +298,210 @@ export default function DebatesPage() {
                 </AnimatePresence>
             </div>
 
-                {/* Error message */}
-                <AnimatePresence>
-                    {error && (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: -20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                            transition={{ duration: 0.3 }}
-                        >
-                            <Card variant="luxury" className="border-red-200 bg-red-50/80">
-                                <div className="p-6 flex items-center justify-between">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="w-8 h-8 bg-red-100 rounded-xl flex items-center justify-center">
-                                            <XMarkIcon className="h-5 w-5 text-red-600" />
-                                        </div>
-                                        <p className="text-red-800 font-medium">{error}</p>
-                                    </div>
-                                    <Button variant="ghost" size="sm" onClick={clearError}>
-                                        <XMarkIcon className="h-5 w-5" />
-                                    </Button>
-                                </div>
-                            </Card>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                {/* Loading state */}
-                {isLoading && (
+            {/* Error message */}
+            <AnimatePresence>
+                {error && (
                     <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+                        initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -20 }}
                         transition={{ duration: 0.3 }}
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
                     >
-                        {Array.from({ length: 6 }).map((_, index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.4, delay: index * 0.1 }}
-                                className="card-luxury p-8"
-                            >
-                                <div className="space-y-4">
-                                    <div className="skeleton-luxury h-6 w-3/4 rounded-xl" />
-                                    <div className="skeleton-luxury h-4 w-full rounded-lg" />
-                                    <div className="skeleton-luxury h-4 w-2/3 rounded-lg" />
-                                    <div className="flex space-x-3 mt-6">
-                                        <div className="skeleton-luxury h-8 w-16 rounded-full" />
-                                        <div className="skeleton-luxury h-8 w-20 rounded-full" />
+                        <Card variant="luxury" className="border-red-200 bg-red-50/80">
+                            <div className="p-6 flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-8 h-8 bg-red-100 rounded-xl flex items-center justify-center">
+                                        <XMarkIcon className="h-5 w-5 text-red-600" />
                                     </div>
+                                    <p className="text-red-800 font-medium">{error}</p>
                                 </div>
-                            </motion.div>
-                        ))}
-                    </motion.div>
-                )}
-
-                {/* Debates grid */}
-                {!isLoading && debates.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.5 }}
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                    >
-                        {debates.map((debate, index) => (
-                            <motion.div
-                                key={debate.id}
-                                initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                transition={{
-                                    duration: 0.5,
-                                    delay: index * 0.1,
-                                    ease: "easeOut"
-                                }}
-                                whileHover={{
-                                    y: -8,
-                                    transition: { duration: 0.3 }
-                                }}
-                            >
-                                <DebateCard
-                                    debate={debate}
-                                    showActions={false}
-                                    showAuthor={true}
-                                    showStats={true}
-                                />
-                            </motion.div>
-                        ))}
-                    </motion.div>
-                )}
-
-                {/* Empty state */}
-                {!isLoading && debates.length === 0 && !error && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.5 }}
-                    >
-                        <Card variant="luxury" className="text-center py-16">
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: 0.2 }}
-                                className="space-y-8"
-                            >
-                                <motion.div
-                                    animate={{ rotate: [0, 10, -10, 0] }}
-                                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                                    className="text-8xl"
-                                >
-                                    🤔
-                                </motion.div>
-
-                                <div className="space-y-4">
-                                    <h3 className="text-2xl font-bold text-neutral-800 font-serif">
-                                        Không tìm thấy chủ đề tranh luận
-                                    </h3>
-                                    <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-                                        {searchTerm || selectedCategory || selectedDifficulty
-                                            ? 'Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm để xem nhiều kết quả hơn.'
-                                            : 'Chưa có chủ đề tranh luận nào. Hãy tạo chủ đề đầu tiên!'
-                                        }
-                                    </p>
-                                </div>
-
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: 0.4 }}
-                                    className="flex flex-col sm:flex-row justify-center gap-4"
-                                >
-                                    {(searchTerm || selectedCategory || selectedDifficulty) && (
-                                        <Button
-                                            variant="glass"
-                                            size="lg"
-                                            onClick={handleResetFilters}
-                                            leftIcon={<XMarkIcon className="h-5 w-5" />}
-                                        >
-                                            Xóa bộ lọc
-                                        </Button>
-                                    )}
-                                    <Link href="/debates/create">
-                                        <Button
-                                            variant="luxury"
-                                            size="lg"
-                                            leftIcon={<PlusIcon className="h-5 w-5" />}
-                                        >
-                                            Tạo chủ đề mới
-                                        </Button>
-                                    </Link>
-                                </motion.div>
-                            </motion.div>
-                        </Card>
-                    </motion.div>
-                )}
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="flex justify-center"
-                    >
-                        <Card variant="glass" className="p-4">
-                            <div className="flex items-center gap-4">
-                                <Button
-                                    variant="glass"
-                                    disabled={currentPage === 1}
-                                    onClick={() => loadDebates(currentPage - 1)}
-                                    className="disabled:opacity-50"
-                                >
-                                    Trước
-                                </Button>
-
-                                <div className="flex items-center space-x-2">
-                                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                        const page = i + 1
-                                        return (
-                                            <button
-                                                key={page}
-                                                onClick={() => loadDebates(page)}
-                                                className={`w-10 h-10 rounded-xl text-sm font-semibold transition-all duration-200 ${currentPage === page
-                                                    ? 'hcm-gradient-luxury text-white shadow-luxury'
-                                                    : 'bg-white/60 text-neutral-600 hover:bg-white/80'
-                                                    }`}
-                                            >
-                                                {page}
-                                            </button>
-                                        )
-                                    })}
-                                </div>
-
-                                <Button
-                                    variant="glass"
-                                    disabled={currentPage === totalPages}
-                                    onClick={() => loadDebates(currentPage + 1)}
-                                    className="disabled:opacity-50"
-                                >
-                                    Sau
+                                <Button variant="ghost" size="sm" onClick={clearError}>
+                                    <XMarkIcon className="h-5 w-5" />
                                 </Button>
                             </div>
                         </Card>
                     </motion.div>
                 )}
+            </AnimatePresence>
+
+            {/* Loading state */}
+            {isLoading && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                >
+                    {Array.from({ length: 6 }).map((_, index) => (
+                        <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: index * 0.1 }}
+                            className="card-luxury p-8"
+                        >
+                            <div className="space-y-4">
+                                <div className="skeleton-luxury h-6 w-3/4 rounded-xl" />
+                                <div className="skeleton-luxury h-4 w-full rounded-lg" />
+                                <div className="skeleton-luxury h-4 w-2/3 rounded-lg" />
+                                <div className="flex space-x-3 mt-6">
+                                    <div className="skeleton-luxury h-8 w-16 rounded-full" />
+                                    <div className="skeleton-luxury h-8 w-20 rounded-full" />
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </motion.div>
+            )}
+
+            {/* Debates grid */}
+            {!isLoading && debates.length > 0 && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                >
+                    {debates.map((debate, index) => (
+                        <motion.div
+                            key={debate.id}
+                            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            transition={{
+                                duration: 0.5,
+                                delay: index * 0.1,
+                                ease: "easeOut"
+                            }}
+                            whileHover={{
+                                y: -8,
+                                transition: { duration: 0.3 }
+                            }}
+                        >
+                            <DebateCard
+                                debate={debate}
+                                showActions={false}
+                                showAuthor={true}
+                                showStats={true}
+                            />
+                        </motion.div>
+                    ))}
+                </motion.div>
+            )}
+
+            {/* Empty state */}
+            {!isLoading && debates.length === 0 && !error && (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <Card variant="luxury" className="text-center py-16">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                            className="space-y-8"
+                        >
+                            <motion.div
+                                animate={{ rotate: [0, 10, -10, 0] }}
+                                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                                className="text-8xl"
+                            >
+                                🤔
+                            </motion.div>
+
+                            <div className="space-y-4">
+                                <h3 className="text-2xl font-bold text-neutral-800 font-serif">
+                                    Không tìm thấy chủ đề tranh luận
+                                </h3>
+                                <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
+                                    {searchTerm || selectedCategory || selectedDifficulty
+                                        ? 'Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm để xem nhiều kết quả hơn.'
+                                        : 'Chưa có chủ đề tranh luận nào. Hãy tạo chủ đề đầu tiên!'
+                                    }
+                                </p>
+                            </div>
+
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: 0.4 }}
+                                className="flex flex-col sm:flex-row justify-center gap-4"
+                            >
+                                {(searchTerm || selectedCategory || selectedDifficulty) && (
+                                    <Button
+                                        variant="glass"
+                                        size="lg"
+                                        onClick={handleResetFilters}
+                                        leftIcon={<XMarkIcon className="h-5 w-5" />}
+                                    >
+                                        Xóa bộ lọc
+                                    </Button>
+                                )}
+                                <Link href="/debates/create">
+                                    <Button
+                                        variant="luxury"
+                                        size="lg"
+                                        leftIcon={<PlusIcon className="h-5 w-5" />}
+                                    >
+                                        Tạo chủ đề mới
+                                    </Button>
+                                </Link>
+                            </motion.div>
+                        </motion.div>
+                    </Card>
+                </motion.div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="flex justify-center"
+                >
+                    <Card variant="glass" className="p-4">
+                        <div className="flex items-center gap-4">
+                            <Button
+                                variant="glass"
+                                disabled={currentPage === 1}
+                                onClick={() => loadDebates(currentPage - 1)}
+                                className="disabled:opacity-50"
+                            >
+                                Trước
+                            </Button>
+
+                            <div className="flex items-center space-x-2">
+                                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                    const page = i + 1
+                                    return (
+                                        <button
+                                            key={page}
+                                            onClick={() => loadDebates(page)}
+                                            className={`w-10 h-10 rounded-xl text-sm font-semibold transition-all duration-200 ${currentPage === page
+                                                ? 'hcm-gradient-luxury text-white shadow-luxury'
+                                                : 'bg-white/60 text-neutral-600 hover:bg-white/80'
+                                                }`}
+                                        >
+                                            {page}
+                                        </button>
+                                    )
+                                })}
+                            </div>
+
+                            <Button
+                                variant="glass"
+                                disabled={currentPage === totalPages}
+                                onClick={() => loadDebates(currentPage + 1)}
+                                className="disabled:opacity-50"
+                            >
+                                Sau
+                            </Button>
+                        </div>
+                    </Card>
+                </motion.div>
+            )}
         </div>
     )
 }

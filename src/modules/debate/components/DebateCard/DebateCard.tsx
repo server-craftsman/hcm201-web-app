@@ -315,7 +315,7 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                             <div className="flex items-center gap-1.5 text-neutral-500">
                                 <ClockIcon className="h-4 w-4" />
                                 <span className="font-medium">
-                                    {formatRelativeTime(debate.lastActivityAt as any)}
+                                    {formatRelativeTime(debate.lastActivityAt)}
                                 </span>
                             </div>
                         </div>

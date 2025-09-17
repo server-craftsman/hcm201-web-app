@@ -89,7 +89,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </head>
-      <body className="antialiased vietnamese-spacing">
+      <body className="antialiased vietnamese-spacing" suppressHydrationWarning={true}>
         <AppProviders>
           <MainLayout>
             {children}

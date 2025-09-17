@@ -48,10 +48,27 @@ export function formatDate(
  * @param date - Date to format
  * @returns Relative time string
  */
-export function formatRelativeTime(date: Date | string): string {
+export function formatRelativeTime(date: Date | string | null | undefined): string {
+    // Handle null, undefined, or empty values
+    if (!date) {
+        return 'Không xác định'
+    }
+
     const dateObj = typeof date === 'string' ? new Date(date) : date
+
+    // Check if the date is valid
+    if (!dateObj || isNaN(dateObj.getTime())) {
+        return 'Không xác định'
+    }
+
     const now = new Date()
     const diffInMs = now.getTime() - dateObj.getTime()
+
+    // Handle negative differences (future dates)
+    if (diffInMs < 0) {
+        return 'Vừa xong'
+    }
+
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
     const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
     const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
