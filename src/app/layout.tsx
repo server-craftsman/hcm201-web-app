@@ -10,8 +10,14 @@ const inter = Inter({
   variable: '--font-inter'
 })
 
+const envBase = process.env.NEXT_PUBLIC_BASE_URL
+let metadataBase: URL | undefined
+if (envBase && /^https?:\/\//i.test(envBase)) {
+  try { metadataBase = new URL(envBase) } catch { }
+}
+
 export const metadata: Metadata = {
-  metadataBase: process.env.NEXT_PUBLIC_BASE_URL ? new URL(process.env.NEXT_PUBLIC_BASE_URL) : undefined,
+  metadataBase,
   title: {
     default: 'Tranh luận Tư tưởng Hồ Chí Minh',
     template: '%s | Tranh luận Tư tưởng Hồ Chí Minh'
