@@ -11,6 +11,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: process.env.NEXT_PUBLIC_BASE_URL ? new URL(process.env.NEXT_PUBLIC_BASE_URL) : undefined,
   title: {
     default: 'Tranh luận Tư tưởng Hồ Chí Minh',
     template: '%s | Tranh luận Tư tưởng Hồ Chí Minh'
