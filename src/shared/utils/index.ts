@@ -3,6 +3,8 @@ import { twMerge } from 'tailwind-merge'
 
 // Re-export shadcn utilities
 export * from './shadcn'
+export * from './googleAuth'
+export * from './authSync'
 
 /**
  * Utility function to merge Tailwind CSS classes

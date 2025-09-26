@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
+import { EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, UserIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
 import { Button, Input, Card, CardHeader, CardContent } from '@/shared/components/ui'
 import { useAuth } from '../../hooks'
 import { LoginCredentials } from '@/shared/types'
@@ -23,24 +23,25 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     showRememberMe = true,
     className,
 }) => {
-    const { login, isLoading } = useAuth()
+    const { login, loginWithGoogle, isLoading } = useAuth()
     const [showPassword, setShowPassword] = useState(false)
 
     const [formData, setFormData] = useState<LoginCredentials>({
-        email: '',
+        username: '',
         password: '',
         remember: false,
     })
 
     const [errors, setErrors] = useState<Partial<LoginCredentials>>({})
+    const [submitError, setSubmitError] = useState<string | null>(null)
 
     const validateForm = (): boolean => {
         const newErrors: Partial<LoginCredentials> = {}
 
-        if (!formData.email) {
-            newErrors.email = 'Email là bắt buộc'
-        } else if (!isValidEmail(formData.email)) {
-            newErrors.email = 'Email không hợp lệ'
+        if (!formData.username) {
+            newErrors.username = 'Tên đăng nhập là bắt buộc'
+        } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+            newErrors.username = 'Tên đăng nhập không hợp lệ'
         }
 
         if (!formData.password) {
@@ -71,10 +72,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         if (!validateForm()) return
 
         try {
+            setSubmitError(null)
             await login(formData)
             onSuccess?.()
         } catch (error) {
-            console.error('Login error:', error)
+            const message = (error as any)?.response?.data?.message || (error as Error)?.message || 'Đăng nhập thất bại'
+            setSubmitError(message)
         }
     }
 
@@ -85,10 +88,24 @@ export const LoginForm: React.FC<LoginFormProps> = ({
                     <h2 className="text-2xl font-bold text-neutral-900">Đăng nhập</h2>
                 </CardHeader>
                 <CardContent>
-                    <a href="/api/auth/google" className="group flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-200 bg-white py-3 shadow-sm hover:shadow transition-all">
-                        <Image src="/images/google.svg" alt="Google" width={20} height={20} />
-                        <span className="font-medium text-neutral-700 group-hover:text-neutral-900">Tiếp tục với Google</span>
-                    </a>
+                    <motion.button
+                        type="button"
+                        onClick={() => loginWithGoogle()}
+                        disabled={isLoading}
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="group flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-200 bg-white py-3 shadow-sm hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:y-0"
+                    >
+                        <motion.div
+                            animate={isLoading ? { rotate: 360 } : {}}
+                            transition={isLoading ? { duration: 1, repeat: Infinity, ease: 'linear' } : {}}
+                        >
+                            <Image src="/images/google.svg" alt="Google" width={20} height={20} />
+                        </motion.div>
+                        <span className="font-medium text-neutral-700 group-hover:text-neutral-900">
+                            {isLoading ? 'Đang kết nối...' : 'Tiếp tục với Google'}
+                        </span>
+                    </motion.button>
 
                     <div className="my-5 flex items-center gap-4">
                         <div className="h-px flex-1 bg-neutral-200" />
@@ -97,15 +114,20 @@ export const LoginForm: React.FC<LoginFormProps> = ({
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        {submitError && (
+                            <div className="rounded-md bg-red-50 border border-red-200 text-red-700 px-3 py-2 text-sm">
+                                {submitError}
+                            </div>
+                        )}
                         <Input
                             variant="luxury"
-                            type="email"
-                            label="Email"
-                            placeholder="you@example.com"
-                            value={formData.email}
-                            onChange={handleChange('email')}
-                            error={errors.email}
-                            leftIcon={<EnvelopeIcon className="h-5 w-5" />}
+                            type="text"
+                            label="Tên đăng nhập"
+                            placeholder="ten_dang_nhap"
+                            value={formData.username}
+                            onChange={handleChange('username')}
+                            error={errors.username}
+                            leftIcon={<UserIcon className="h-5 w-5" />}
                             required
                         />
 
@@ -140,8 +162,43 @@ export const LoginForm: React.FC<LoginFormProps> = ({
                             </div>
                         )}
 
-                        <Button type="submit" variant="luxury" size="lg" className="w-full" isLoading={isLoading}>
-                            Đăng nhập
+                        <Button
+                            type="submit"
+                            variant="luxury"
+                            size="lg"
+                            className="w-full group relative overflow-hidden"
+                            isLoading={isLoading}
+                            disabled={isLoading}
+                        >
+                            <AnimatePresence mode="wait">
+                                {isLoading ? (
+                                    <motion.div
+                                        key="loading"
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.8 }}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <motion.div
+                                            animate={{ rotate: 360 }}
+                                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                                            className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                                        />
+                                        <span>Đang đăng nhập...</span>
+                                    </motion.div>
+                                ) : (
+                                    <motion.div
+                                        key="default"
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: 10 }}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <span>Đăng nhập</span>
+                                        <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </Button>
                     </form>
                 </CardContent>

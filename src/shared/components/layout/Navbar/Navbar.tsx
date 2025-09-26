@@ -113,7 +113,7 @@ export const Navbar: React.FC = () => {
                                     <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-yellow-400 rounded-xl flex items-center justify-center shadow-md transition-all duration-300 hover:scale-110 hover:rotate-3">
                                         <UserCircleIcon className="h-5 w-5 text-white" />
                                     </div>
-                                    <span className="text-sm font-medium text-gray-700 transition-colors duration-300">Chào {user?.displayName}</span>
+                                    <span className="text-sm font-medium text-gray-700 transition-colors duration-300">Chào {user?.firstName} {user?.lastName}</span>
                                 </div>
                                 <button
                                     onClick={handleLogout}

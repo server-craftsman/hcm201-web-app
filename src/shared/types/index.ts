@@ -3,17 +3,19 @@ export interface User {
     id: string
     email: string
     username: string
-    displayName: string
+    firstName: string
+    lastName: string
     avatar?: string
     role?: string
     isEmailVerified?: boolean
+    isVerified?: boolean
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
 }
 
 export interface LoginCredentials {
-    email: string
+    username: string
     password: string
     remember?: boolean
 }
@@ -25,6 +27,18 @@ export interface RegisterData {
     confirmPassword: string
     displayName: string
     agreeToTerms: boolean
+}
+
+// Auth API types
+export interface AuthTokens {
+    accessToken: string
+    refreshToken?: string
+    expiresIn?: number
+    tokenType?: string
+}
+
+export interface AuthResult extends AuthTokens {
+    user?: User
 }
 
 export interface StudyCardOption {

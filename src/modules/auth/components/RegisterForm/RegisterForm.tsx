@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Input, Card } from '@/shared/components/ui'
 import { useAuth } from '../../hooks'
 import { RegisterData } from '@/shared/types'
 import { isValidEmail } from '@/shared/utils'
+import { ArrowRightIcon, UserPlusIcon } from '@heroicons/react/24/outline'
 import Image from 'next/image'
 
 interface RegisterFormProps {
@@ -19,7 +20,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     onSwitchToLogin,
     className,
 }) => {
-    const { register, isLoading } = useAuth()
+    const { register, loginWithGoogle, isLoading } = useAuth()
 
     const [formData, setFormData] = useState<RegisterData>({
         email: '',
@@ -31,6 +32,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     })
 
     const [errors, setErrors] = useState<Partial<RegisterData>>({})
+    const [submitError, setSubmitError] = useState<string | null>(null)
 
     const validateForm = (): boolean => {
         const newErrors: Partial<RegisterData> = {}
@@ -101,10 +103,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         if (!validateForm()) return
 
         try {
+            setSubmitError(null)
             await register(formData)
             onSuccess?.()
         } catch (error) {
-            console.error('Register error:', error)
+            const message = (error as any)?.response?.data?.message || (error as Error)?.message || 'Đăng ký thất bại'
+            setSubmitError(message)
         }
     }
 
@@ -112,6 +116,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
             <Card padding="lg" className={className}>
                 <form onSubmit={handleSubmit} className="space-y-5">
+                    {submitError && (
+                        <div className="rounded-md bg-red-50 border border-red-200 text-red-700 px-3 py-2 text-sm">
+                            {submitError}
+                        </div>
+                    )}
                     <div className="text-center">
                         <h2 className="text-2xl font-bold text-neutral-900">Tạo tài khoản</h2>
                     </div>
@@ -131,8 +140,44 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                         {errors.agreeToTerms && (<p className="form-error">{errors.agreeToTerms}</p>)}
                     </div>
 
-                    <Button type="submit" variant="luxury" size="lg" isLoading={isLoading}>
-                        {isLoading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản'}
+                    <Button
+                        type="submit"
+                        variant="luxury"
+                        size="lg"
+                        className="w-full group relative overflow-hidden"
+                        isLoading={isLoading}
+                        disabled={isLoading}
+                    >
+                        <AnimatePresence mode="wait">
+                            {isLoading ? (
+                                <motion.div
+                                    key="loading"
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    className="flex items-center gap-2"
+                                >
+                                    <motion.div
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                                        className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                                    />
+                                    <span>Đang tạo tài khoản...</span>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="default"
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 10 }}
+                                    className="flex items-center gap-2"
+                                >
+                                    <UserPlusIcon className="w-5 h-5" />
+                                    <span>Tạo tài khoản</span>
+                                    <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </Button>
 
                     <div className="my-4 flex items-center gap-4">
@@ -141,10 +186,24 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                         <div className="h-px flex-1 bg-neutral-200" />
                     </div>
 
-                    <a href="/api/auth/google" className="group flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-200 bg-white py-3 shadow-sm hover:shadow transition-all">
-                        <Image src="/images/google.svg" alt="Google" width={20} height={20} />
-                        <span className="font-medium text-neutral-700 group-hover:text-neutral-900">Đăng ký với Google</span>
-                    </a>
+                    <motion.button
+                        type="button"
+                        onClick={() => loginWithGoogle()}
+                        disabled={isLoading}
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="group flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-200 bg-white py-3 shadow-sm hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:y-0"
+                    >
+                        <motion.div
+                            animate={isLoading ? { rotate: 360 } : {}}
+                            transition={isLoading ? { duration: 1, repeat: Infinity, ease: 'linear' } : {}}
+                        >
+                            <Image src="/images/google.svg" alt="Google" width={20} height={20} />
+                        </motion.div>
+                        <span className="font-medium text-neutral-700 group-hover:text-neutral-900">
+                            {isLoading ? 'Đang kết nối...' : 'Đăng ký với Google'}
+                        </span>
+                    </motion.button>
                 </form>
             </Card>
         </motion.div>

@@ -30,12 +30,19 @@ const authConfig = {
     ui: {
         showRememberMe: true,
         enablePasswordToggle: true,
-        enableSocialLogin: false, // For future implementation
+        enableSocialLogin: true, // Enabled for Google OAuth
         formValidation: {
             validateOnBlur: true,
             validateOnChange: false,
             showErrorsImmediately: false,
         },
+    },
+
+    // Google OAuth settings
+    google: {
+        clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_OAUTH_CLIENT_ID || '',
+        scopes: 'openid email profile',
+        redirectUri: process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback/google` : 'http://localhost:3000/auth/callback/google',
     },
 
     // User roles and permissions

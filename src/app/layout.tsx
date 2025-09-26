@@ -1,7 +1,10 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { Inter } from 'next/font/google'
-import { AppProviders, MainLayout } from '@/shared'
+import { AppProviders, MainLayout, FriendlyLayout } from '@/shared'
+import { GoogleScript } from '@/shared/components/scripts/GoogleScript'
+import { GoogleAuthDebug } from '@/shared/components/debug/GoogleAuthDebug'
+import { GoogleOneTap } from '@/shared/components/auth/GoogleOneTap'
 import '@/styles/index.css'
 import icon from '@/shared/assets/images/icon.jpg'
 
@@ -98,10 +101,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </head>
       <body className="antialiased vietnamese-spacing" suppressHydrationWarning={true}>
+        <GoogleScript />
         <AppProviders>
-          <MainLayout>
+          <FriendlyLayout>
             {children}
-          </MainLayout>
+          </FriendlyLayout>
         </AppProviders>
       </body>
     </html>

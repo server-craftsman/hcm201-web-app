@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { AuthProvider } from '@/modules/auth'
+import { NotificationCenter } from './NotificationCenter'
 
 export interface AppProvidersProps {
     children: React.ReactNode
@@ -9,9 +10,11 @@ export interface AppProvidersProps {
 
 export function AppProviders({ children }: AppProvidersProps) {
     return (
-        <AuthProvider>
-            {children}
-        </AuthProvider>
+        <NotificationCenter>
+            <AuthProvider>
+                {children}
+            </AuthProvider>
+        </NotificationCenter>
     )
 }
 
