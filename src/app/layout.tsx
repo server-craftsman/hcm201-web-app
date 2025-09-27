@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { Inter } from 'next/font/google'
-import { AppProviders, MainLayout, FriendlyLayout } from '@/shared'
+import { AppProviders, YouTubeLayout } from '@/shared'
 import { GoogleScript } from '@/shared/components/scripts/GoogleScript'
 import { GoogleAuthDebug } from '@/shared/components/debug/GoogleAuthDebug'
 import { GoogleOneTap } from '@/shared/components/auth/GoogleOneTap'
@@ -103,9 +103,9 @@ export default function RootLayout({
       <body className="antialiased vietnamese-spacing" suppressHydrationWarning={true}>
         <GoogleScript />
         <AppProviders>
-          <FriendlyLayout>
+          <YouTubeLayout>
             {children}
-          </FriendlyLayout>
+          </YouTubeLayout>
         </AppProviders>
       </body>
     </html>

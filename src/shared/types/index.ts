@@ -99,12 +99,28 @@ export interface DebateTopic {
     difficulty?: string
     status?: string
     authorId?: string
+    author?: {
+        id: string
+        name: string
+        avatar?: string
+    }
     viewCount?: number
     argumentCount?: number
     participantCount?: number
     lastActivityAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
     isFeatured?: boolean
     isPinned?: boolean
+    // Additional API fields
+    totalApprovedArguments?: number
+    allowVoting?: boolean
+    allowArguments?: boolean
+    requireModeration?: boolean
+    isTicketRequest?: boolean
+    moderators?: string[]
+    modForSideA?: string
+    modForSideB?: string
 }
 
 export interface SearchFilters {

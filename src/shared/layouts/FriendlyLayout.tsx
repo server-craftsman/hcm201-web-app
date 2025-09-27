@@ -12,7 +12,7 @@ interface FriendlyLayoutProps {
 export const FriendlyLayout: React.FC<FriendlyLayoutProps> = ({ children }) => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-            <FriendlyNavbar />
+            <FriendlyNavbar showNavigation={true} />
 
             {/* Main Content */}
             <main className="pt-16">
@@ -20,7 +20,7 @@ export const FriendlyLayout: React.FC<FriendlyLayoutProps> = ({ children }) => {
             </main>
 
             {/* Debug Components (only in development) */}
-            <AuthDebug />
+            {/* <AuthDebug /> */}
             {/* <EnvDebug /> */}
         </div>
     )

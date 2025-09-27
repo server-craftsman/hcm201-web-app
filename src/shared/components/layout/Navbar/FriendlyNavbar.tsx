@@ -16,14 +16,25 @@ import {
     SunIcon,
     MoonIcon,
     HeartIcon,
-    SparklesIcon
+    SparklesIcon,
+    CogIcon,
+    ShieldCheckIcon,
+    PlusCircleIcon,
+    ClipboardDocumentListIcon,
+    ChartBarIcon,
+    EyeIcon,
+    FlagIcon,
+    UserGroupIcon,
+    DocumentTextIcon,
+    ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import Image from 'next/image'
 import { useAuthContext } from '@/modules/auth'
 import { cn } from '@/shared/utils/shadcn'
 import logo from '@/shared/assets/images/logo.png'
 
-const navigation = [
+// Default navigation cho guest users và public pages
+const defaultNavigation = [
     {
         name: 'Trang chủ',
         href: '/',
@@ -47,21 +58,56 @@ const navigation = [
         color: 'text-green-500',
         bgColor: 'bg-green-50 hover:bg-green-100',
         description: 'Học và luyện tập'
-    },
+    }
 ]
 
-const userMenuItems = [
-    { name: 'Hồ sơ cá nhân', href: '/profile', icon: UserCircleIcon },
-    { name: 'Thông báo', href: '/notifications', icon: BellIcon },
-    { name: 'Cài đặt', href: '/settings', icon: SparklesIcon },
-]
+const getUserMenuItemsByRole = (userRole: string | undefined) => {
+    const baseItems = [
+        { name: 'Hồ sơ cá nhân', href: '/profile', icon: UserCircleIcon, roles: ['USER', 'MODERATOR', 'ADMIN'] },
+        { name: 'Thông báo', href: '/notifications', icon: BellIcon, roles: ['USER', 'MODERATOR', 'ADMIN'] },
+    ]
 
-export const FriendlyNavbar: React.FC = () => {
+    const roleSpecificItems = [
+        // USER - Link đến dashboard riêng
+        { name: 'Dashboard cá nhân', href: '/my-dashboard', icon: UserCircleIcon, roles: ['USER'] },
+        { name: 'Luận điểm của tôi', href: '/my-arguments', icon: DocumentTextIcon, roles: ['USER'] },
+        { name: 'Bình chọn của tôi', href: '/my-votes', icon: HeartIcon, roles: ['USER'] },
+
+        // MODERATOR - Link đến dashboard kiểm duyệt
+        { name: 'Dashboard kiểm duyệt', href: '/moderation/dashboard', icon: ShieldCheckIcon, roles: ['MODERATOR'] },
+        { name: 'Hàng chờ kiểm duyệt', href: '/moderation/queue', icon: ClipboardDocumentListIcon, roles: ['MODERATOR'] },
+        { name: 'Báo cáo nhanh', href: '/moderation/reports', icon: ExclamationTriangleIcon, roles: ['MODERATOR'] },
+
+        // ADMIN - Link đến dashboard admin
+        { name: 'Bảng điều khiển Admin', href: '/admin/dashboard', icon: CogIcon, roles: ['ADMIN'] },
+        { name: 'Quản lý chủ đề', href: '/admin/threads', icon: ShieldCheckIcon, roles: ['ADMIN'] },
+        { name: 'Cài đặt hệ thống', href: '/admin/settings', icon: SparklesIcon, roles: ['ADMIN'] },
+    ]
+
+    const allItems = [...baseItems, ...roleSpecificItems]
+
+    return allItems.filter(item =>
+        !userRole || item.roles.includes(userRole.toUpperCase())
+    )
+}
+
+interface FriendlyNavbarProps {
+    showNavigation?: boolean
+    className?: string
+}
+
+export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
+    showNavigation = false,
+    className = ""
+}) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
     const [isScrolled, setIsScrolled] = useState(false)
     const [isDarkMode, setIsDarkMode] = useState(false)
     const { user, isAuthenticated, logout } = useAuthContext()
+
+    // Get user menu items dựa trên role
+    const userMenuItems = getUserMenuItemsByRole(user?.role)
 
     // Handle scroll effect
     useEffect(() => {
@@ -72,17 +118,17 @@ export const FriendlyNavbar: React.FC = () => {
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
 
-    // Close mobile menu when clicking outside
+    // Close menus when clicking outside
     useEffect(() => {
         const handleClickOutside = () => {
-            setIsMobileMenuOpen(false)
             setIsUserMenuOpen(false)
+            setIsMobileMenuOpen(false)
         }
-        if (isMobileMenuOpen || isUserMenuOpen) {
+        if (isUserMenuOpen || isMobileMenuOpen) {
             document.addEventListener('click', handleClickOutside)
             return () => document.removeEventListener('click', handleClickOutside)
         }
-    }, [isMobileMenuOpen, isUserMenuOpen])
+    }, [isUserMenuOpen, isMobileMenuOpen])
 
     const handleLogout = async () => {
         try {
@@ -118,7 +164,8 @@ export const FriendlyNavbar: React.FC = () => {
                 'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
                 isScrolled
                     ? 'bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-200/50'
-                    : 'bg-white/80 backdrop-blur-md'
+                    : 'bg-white/80 backdrop-blur-md',
+                className
             )}
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -153,36 +200,43 @@ export const FriendlyNavbar: React.FC = () => {
                     </motion.div>
 
                     {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center space-x-2">
-                        {navigation.map((item) => (
-                            <motion.div key={item.name} whileHover={{ scale: 1.05 }}>
-                                <Link
-                                    href={item.href}
-                                    className={cn(
-                                        'flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200',
-                                        item.bgColor,
-                                        item.color
-                                    )}
-                                    title={item.description}
-                                >
-                                    <item.icon className="h-4 w-4" />
-                                    <span>{item.name}</span>
-                                </Link>
-                            </motion.div>
-                        ))}
-                    </div>
+                    {showNavigation && (
+                        <div className="hidden md:flex items-center space-x-2">
+                            {defaultNavigation.map((item) => (
+                                <motion.div key={item.name} whileHover={{ scale: 1.05 }}>
+                                    <Link
+                                        href={item.href}
+                                        className={cn(
+                                            'flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200',
+                                            item.bgColor,
+                                            item.color
+                                        )}
+                                        title={item.description}
+                                    >
+                                        <item.icon className="h-4 w-4" />
+                                        <span>{item.name}</span>
+                                    </Link>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Search Bar */}
-                    <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
-                        <div className="relative w-full">
-                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Tìm kiếm bài học, thảo luận..."
-                                className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                            />
+                    {showNavigation && (
+                        <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
+                            <div className="relative w-full">
+                                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Tìm kiếm bài học, thảo luận..."
+                                    className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                                />
+                            </div>
                         </div>
-                    </div>
+                    )}
+
+                    {/* Spacer cho trường hợp không có navigation */}
+                    {!showNavigation && <div className="flex-1"></div>}
 
                     {/* User Section */}
                     <div className="flex items-center space-x-4">
@@ -229,8 +283,10 @@ export const FriendlyNavbar: React.FC = () => {
                                                 <span className="text-red-500 font-medium">👑 Quản trị viên</span>
                                             ) : user.role === 'MODERATOR' ? (
                                                 <span className="text-blue-500 font-medium">🛡️ Kiểm duyệt viên</span>
+                                            ) : user.role === 'USER' ? (
+                                                <span className="text-green-500 font-medium">👨‍🎓 Người dùng</span>
                                             ) : (
-                                                <span className="text-green-500 font-medium">👨‍🏫 Học viên</span>
+                                                <span className="text-gray-500 font-medium">👤 Khách</span>
                                             )}
                                         </p>
                                     </div>
@@ -318,104 +374,108 @@ export const FriendlyNavbar: React.FC = () => {
                         )}
 
                         {/* Mobile Menu Button */}
-                        <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                setIsMobileMenuOpen(!isMobileMenuOpen)
-                            }}
-                            className="md:hidden p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
-                        >
-                            {isMobileMenuOpen ? (
-                                <XMarkIcon className="h-6 w-6 text-gray-600" />
-                            ) : (
-                                <Bars3Icon className="h-6 w-6 text-gray-600" />
-                            )}
-                        </motion.button>
+                        {showNavigation && (
+                            <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    setIsMobileMenuOpen(!isMobileMenuOpen)
+                                }}
+                                className="md:hidden p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+                            >
+                                {isMobileMenuOpen ? (
+                                    <XMarkIcon className="h-6 w-6 text-gray-600" />
+                                ) : (
+                                    <Bars3Icon className="h-6 w-6 text-gray-600" />
+                                )}
+                            </motion.button>
+                        )}
                     </div>
                 </div>
 
                 {/* Mobile Menu */}
-                <AnimatePresence>
-                    {isMobileMenuOpen && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="md:hidden border-t border-gray-200 bg-white/95 backdrop-blur-xl"
-                        >
-                            <div className="px-4 py-4 space-y-2">
-                                {/* Search on Mobile */}
-                                <div className="relative mb-4">
-                                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                    <input
-                                        type="text"
-                                        placeholder="Tìm kiếm..."
-                                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                    />
-                                </div>
-
-                                {/* Navigation Links */}
-                                {navigation.map((item) => (
-                                    <Link
-                                        key={item.name}
-                                        href={item.href}
-                                        className={cn(
-                                            'flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200',
-                                            item.bgColor,
-                                            item.color
-                                        )}
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        <item.icon className="h-5 w-5" />
-                                        <div>
-                                            <div>{item.name}</div>
-                                            <div className="text-xs opacity-70">{item.description}</div>
-                                        </div>
-                                    </Link>
-                                ))}
-
-                                {/* User Section for Mobile */}
-                                {isAuthenticated && user && (
-                                    <div className="pt-4 border-t border-gray-200">
-                                        <div className="flex items-center space-x-3 px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
-                                            <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                                                {getUserDisplayName().charAt(0).toUpperCase()}
-                                            </div>
-                                            <div>
-                                                <p className="font-medium text-gray-800">{getUserDisplayName()}</p>
-                                                <p className="text-xs text-gray-500">@{user.username}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-2 space-y-1">
-                                            {userMenuItems.map((item) => (
-                                                <Link
-                                                    key={item.name}
-                                                    href={item.href}
-                                                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-150"
-                                                    onClick={() => setIsMobileMenuOpen(false)}
-                                                >
-                                                    <item.icon className="h-4 w-4 text-gray-400" />
-                                                    <span>{item.name}</span>
-                                                </Link>
-                                            ))}
-
-                                            <button
-                                                onClick={handleLogout}
-                                                className="flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-150 w-full text-left"
-                                            >
-                                                <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                                                <span>Đăng xuất</span>
-                                            </button>
-                                        </div>
+                {showNavigation && (
+                    <AnimatePresence>
+                        {isMobileMenuOpen && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="md:hidden border-t border-gray-200 bg-white/95 backdrop-blur-xl"
+                            >
+                                <div className="px-4 py-4 space-y-2">
+                                    {/* Search on Mobile */}
+                                    <div className="relative mb-4">
+                                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                        <input
+                                            type="text"
+                                            placeholder="Tìm kiếm..."
+                                            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                        />
                                     </div>
-                                )}
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+
+                                    {/* Navigation Links */}
+                                    {defaultNavigation.map((item) => (
+                                        <Link
+                                            key={item.name}
+                                            href={item.href}
+                                            className={cn(
+                                                'flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200',
+                                                item.bgColor,
+                                                item.color
+                                            )}
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            <item.icon className="h-5 w-5" />
+                                            <div>
+                                                <div>{item.name}</div>
+                                                <div className="text-xs opacity-70">{item.description}</div>
+                                            </div>
+                                        </Link>
+                                    ))}
+
+                                    {/* User Section for Mobile */}
+                                    {isAuthenticated && user && (
+                                        <div className="pt-4 border-t border-gray-200">
+                                            <div className="flex items-center space-x-3 px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
+                                                <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                                    {getUserDisplayName().charAt(0).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-gray-800">{getUserDisplayName()}</p>
+                                                    <p className="text-xs text-gray-500">@{user.username}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-2 space-y-1">
+                                                {userMenuItems.map((item) => (
+                                                    <Link
+                                                        key={item.name}
+                                                        href={item.href}
+                                                        className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-150"
+                                                        onClick={() => setIsMobileMenuOpen(false)}
+                                                    >
+                                                        <item.icon className="h-4 w-4 text-gray-400" />
+                                                        <span>{item.name}</span>
+                                                    </Link>
+                                                ))}
+
+                                                <button
+                                                    onClick={handleLogout}
+                                                    className="flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-150 w-full text-left"
+                                                >
+                                                    <ArrowRightOnRectangleIcon className="h-4 w-4" />
+                                                    <span>Đăng xuất</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                )}
             </div>
         </motion.nav>
     )

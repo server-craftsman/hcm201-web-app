@@ -204,6 +204,7 @@ export function useAuth(): UseAuthReturn {
             }))
 
             authNotifications.showLogoutSuccess()
+            router.push('/login')
         } catch (error) {
             // Even if something fails, clear local state
             localStorage.removeItem('currentUser')

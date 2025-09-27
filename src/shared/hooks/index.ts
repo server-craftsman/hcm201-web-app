@@ -3,6 +3,7 @@
 // export { useDebounce } from './useDebounce'
 // export { useClickOutside } from './useClickOutside'
 // export { useToggle } from './useToggle'
+export { useSidebar } from './useSidebar'
 // export { useCopyToClipboard } from './useCopyToClipboard'
 export { useMediaQuery } from './useMediaQuery'
 // export { useKeyPress } from './useKeyPress'

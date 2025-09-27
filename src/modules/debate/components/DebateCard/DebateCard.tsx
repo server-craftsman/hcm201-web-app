@@ -146,8 +146,8 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                 <div className="absolute top-0 left-0 w-full h-1 hcm-gradient-luxury opacity-60" />
                 <div className="absolute -top-20 -right-20 w-32 h-32 bg-primary-200/20 rounded-full blur-2xl group-hover:bg-primary-300/30 transition-colors duration-500" />
 
-                <CardHeader className={cn("space-y-4 relative z-10", isCompact && "p-4")}>
-                    <div className="flex items-start justify-between gap-4">
+                <CardHeader className={cn("space-y-3 relative z-10 pb-3", isCompact && "p-3")}>
+                    <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                             <Link
                                 href={`/debates/${debate.id}`}
@@ -155,11 +155,11 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                             >
                                 <motion.h3
                                     className={cn(
-                                        'font-bold text-neutral-800 line-clamp-2 font-serif leading-tight',
-                                        isCompact ? 'text-base' : 'text-xl',
+                                        'font-bold text-neutral-800 line-clamp-2 leading-tight',
+                                        isCompact ? 'text-sm' : 'text-lg',
                                         'group-hover:hcm-text-gradient-luxury transition-all duration-300'
                                     )}
-                                    whileHover={{ scale: 1.02 }}
+                                    whileHover={{ scale: 1.01 }}
                                     transition={{ duration: 0.2 }}
                                 >
                                     {debate.title}
@@ -168,7 +168,7 @@ export const DebateCard: React.FC<DebateCardProps> = ({
 
                             {!isCompact && (
                                 <motion.p
-                                    className="text-neutral-600 text-sm line-clamp-2 mt-3 leading-relaxed"
+                                    className="text-neutral-600 text-sm line-clamp-2 mt-2 leading-relaxed"
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.4, delay: 0.2 }}
@@ -191,9 +191,9 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                                             variant="glass"
                                             size="icon"
                                             onClick={onEdit}
-                                            className="h-8 w-8 hover:shadow-lg"
+                                            className="h-6 w-6 hover:shadow-lg"
                                         >
-                                            <PencilIcon className="h-4 w-4" />
+                                            <PencilIcon className="h-3 w-3" />
                                         </Button>
                                     </motion.div>
                                 )}
@@ -203,9 +203,9 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                                             variant="glass"
                                             size="icon"
                                             onClick={onPin}
-                                            className="h-8 w-8 hover:shadow-lg"
+                                            className="h-6 w-6 hover:shadow-lg"
                                         >
-                                            <MapPinIcon className="h-4 w-4" />
+                                            <MapPinIcon className="h-3 w-3" />
                                         </Button>
                                     </motion.div>
                                 )}
@@ -215,9 +215,9 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                                             variant="glass"
                                             size="icon"
                                             onClick={onFeature}
-                                            className="h-8 w-8 hover:shadow-lg"
+                                            className="h-6 w-6 hover:shadow-lg"
                                         >
-                                            <StarIcon className="h-4 w-4" />
+                                            <StarIcon className="h-3 w-3" />
                                         </Button>
                                     </motion.div>
                                 )}
@@ -227,9 +227,9 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                                             variant="glass"
                                             size="icon"
                                             onClick={onDelete}
-                                            className="h-8 w-8 text-destructive hover:text-destructive hover:shadow-lg"
+                                            className="h-6 w-6 text-destructive hover:text-destructive hover:shadow-lg"
                                         >
-                                            <TrashIcon className="h-4 w-4" />
+                                            <TrashIcon className="h-3 w-3" />
                                         </Button>
                                     </motion.div>
                                 )}
@@ -237,59 +237,80 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                         )}
                     </div>
 
-                    {/* Tags and metadata */}
+                    {/* Tags and metadata - Compact Version */}
                     <motion.div
-                        className="flex flex-wrap items-center gap-2"
+                        className="flex flex-wrap items-center gap-1.5"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.3 }}
                     >
                         <motion.span
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 hcm-gradient-luxury text-white rounded-full text-xs font-semibold shadow-md"
-                            whileHover={{ scale: 1.05, boxShadow: "0 8px 25px rgba(220, 38, 38, 0.3)" }}
+                            className="inline-flex items-center gap-1 px-2 py-1 hcm-gradient-luxury text-white rounded-md text-xs font-medium shadow-sm"
+                            whileHover={{ scale: 1.05 }}
                         >
                             <SparklesIcon className="h-3 w-3" />
-                            {categoryName}
+                            Tư tưởng HCM
                         </motion.span>
 
-                        <motion.span
+                        <motion.div
                             className={cn(
-                                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shadow-md",
-                                getDifficultyVariant(debate.difficulty || '')
+                                "inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium",
+                                debate.status === 'active' ?
+                                    'bg-green-100 text-green-700' :
+                                    debate.status === 'closed' ?
+                                        'bg-red-100 text-red-700' :
+                                        'bg-yellow-100 text-yellow-700'
                             )}
                             whileHover={{ scale: 1.05 }}
                         >
-                            {difficultyName}
-                        </motion.span>
+                            <div className={cn(
+                                "w-2 h-2 rounded-full",
+                                debate.status === 'active' ? 'bg-green-500' :
+                                    debate.status === 'closed' ? 'bg-red-500' :
+                                        'bg-yellow-500'
+                            )} />
+                            {debate.status === 'active' ? 'Hoạt động' :
+                                debate.status === 'closed' ? 'Đã đóng' : 'Chờ duyệt'}
+                        </motion.div>
 
-                        {debate.tags?.slice(0, isCompact ? 2 : 3).map((tag, index) => (
+                        {/* Compact Features */}
+                        {(debate as any).allowVoting && (
+                            <motion.span
+                                className="inline-flex items-center px-1.5 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium"
+                                whileHover={{ scale: 1.05 }}
+                                title="Cho phép bình chọn"
+                            >
+                                Bỏ phiếu
+                            </motion.span>
+                        )}
+
+                        {(debate as any).requireModeration && (
+                            <motion.span
+                                className="inline-flex items-center px-1.5 py-1 bg-orange-100 text-orange-700 rounded text-xs font-medium"
+                                whileHover={{ scale: 1.05 }}
+                                title="Yêu cầu kiểm duyệt"
+                            >
+                                Kiểm duyệt
+                            </motion.span>
+                        )}
+
+                        {/* Tags - Only show first 2 */}
+                        {debate.tags?.slice(0, 2).map((tag, index) => (
                             <motion.span
                                 key={index}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/60 backdrop-blur-sm text-neutral-700 rounded-full text-xs font-medium border border-neutral-200 shadow-sm"
+                                className="inline-flex items-center px-1.5 py-1 bg-gray-100 text-gray-600 rounded text-xs"
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ duration: 0.3, delay: 0.4 + index * 0.1 }}
-                                whileHover={{ scale: 1.05, backgroundColor: "rgba(255, 255, 255, 0.8)" }}
+                                whileHover={{ scale: 1.05 }}
                             >
-                                <TagIcon className="h-3 w-3" />
                                 {tag}
                             </motion.span>
                         ))}
-
-                        {debate.tags?.length && debate.tags.length > (isCompact ? 2 : 3) && (
-                            <motion.span
-                                className="text-xs text-neutral-500 font-medium px-2 py-1 bg-neutral-100/60 rounded-full"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 0.6 }}
-                            >
-                                +{debate.tags.length - (isCompact ? 2 : 3)} thẻ khác
-                            </motion.span>
-                        )}
                     </motion.div>
                 </CardHeader>
 
-                <CardContent className={cn("pt-0 relative z-10", isCompact && "p-4 pt-3")}>
+                <CardContent className={cn("pt-0 relative z-10 p-4", isCompact && "p-3")}>
                     {/* Author and stats */}
                     <motion.div
                         className="flex items-center justify-between text-sm"
@@ -297,62 +318,83 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.5 }}
                     >
-                        <div className="flex items-center gap-4">
-                            {showAuthor && debate.authorId && (
-                                <motion.div
-                                    className="flex items-center gap-2.5"
-                                    whileHover={{ scale: 1.02 }}
-                                >
-                                    <div className="w-7 h-7 hcm-gradient-luxury rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md ring-2 ring-white/20">
-                                        {debate.authorId.charAt(0).toUpperCase()}
-                                    </div>
-                                    <span className="font-semibold text-neutral-700 hover:text-primary-600 transition-colors">
-                                        {debate.authorId}
-                                    </span>
-                                </motion.div>
-                            )}
-
-                            <div className="flex items-center gap-1.5 text-neutral-500">
-                                <ClockIcon className="h-4 w-4" />
-                                <span className="font-medium">
-                                    {formatRelativeTime(debate.lastActivityAt)}
-                                </span>
-                            </div>
-                        </div>
-
-                        {showStats && (
+                        {/* Left side: Author info */}
+                        {showAuthor && debate.author && (
                             <motion.div
-                                className="flex items-center gap-4 text-neutral-600"
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.4, delay: 0.6 }}
+                                className="flex items-center gap-2"
+                                whileHover={{ scale: 1.02 }}
                             >
-                                <motion.div
-                                    className="flex items-center gap-1.5 hover:text-primary-600 transition-colors"
-                                    whileHover={{ scale: 1.05 }}
-                                >
-                                    <ChatBubbleLeftRightIcon className="h-4 w-4" />
-                                    <span className="font-semibold">{debate.argumentCount || 0}</span>
-                                </motion.div>
-
-                                <motion.div
-                                    className="flex items-center gap-1.5 hover:text-secondary-600 transition-colors"
-                                    whileHover={{ scale: 1.05 }}
-                                >
-                                    <EyeIcon className="h-4 w-4" />
-                                    <span className="font-semibold">{debate.viewCount || 0}</span>
-                                </motion.div>
-
-                                <motion.div
-                                    className="flex items-center gap-1.5 hover:text-primary-600 transition-colors"
-                                    whileHover={{ scale: 1.05 }}
-                                >
-                                    <UserIcon className="h-4 w-4" />
-                                    <span className="font-semibold">{debate.argumentCount || 0}</span>
-                                </motion.div>
+                                <div className="w-6 h-6 hcm-gradient-luxury rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                    {debate.author.avatar === '👤' ? '👤' : (debate.author.avatar || debate.author.name?.charAt(0)?.toUpperCase() || '👤')}
+                                </div>
+                                <span className="font-medium text-neutral-700 text-sm">
+                                    {debate.author.name}
+                                </span>
                             </motion.div>
                         )}
+
+                        {/* Right side: Time */}
+                        <div className="flex items-center gap-1 text-neutral-500">
+                            <ClockIcon className="h-3 w-3" />
+                            <span className="text-xs">
+                                {formatRelativeTime(debate.createdAt)}
+                            </span>
+                        </div>
                     </motion.div>
+
+                    {/* Stats Section */}
+                    {showStats && (
+                        <motion.div
+                            className="flex items-center justify-between mt-3 pt-3 border-t border-neutral-200/50"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.6 }}
+                        >
+                            {/* Stats Row */}
+                            <div className="flex items-center gap-4 text-neutral-600 text-xs">
+                                <motion.div
+                                    className="flex items-center gap-1"
+                                    whileHover={{ scale: 1.05 }}
+                                    title="Luận điểm"
+                                >
+                                    <ChatBubbleLeftRightIcon className="h-3 w-3" />
+                                    <span>{debate.argumentCount || 0}</span>
+                                </motion.div>
+
+                                <motion.div
+                                    className="flex items-center gap-1"
+                                    whileHover={{ scale: 1.05 }}
+                                    title="Đã duyệt"
+                                >
+                                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>{(debate as any).totalApprovedArguments || 0}</span>
+                                </motion.div>
+
+                                <motion.div
+                                    className="flex items-center gap-1"
+                                    whileHover={{ scale: 1.05 }}
+                                    title="Bình chọn"
+                                >
+                                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5T6.5 15a2.5 2.5 0 002.5-2.5V6.5z" />
+                                    </svg>
+                                    <span>{debate.viewCount || 0}</span>
+                                </motion.div>
+                            </div>
+
+                            {/* Moderators info */}
+                            {(debate as any).moderators && (debate as any).moderators.length > 0 && (
+                                <div className="flex items-center gap-1 text-xs text-neutral-500">
+                                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                    <span>{(debate as any).moderators.length} KDV</span>
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
                 </CardContent>
             </Card>
         </motion.div>
