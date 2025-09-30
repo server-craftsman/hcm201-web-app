@@ -22,6 +22,11 @@ export interface ThreadRequest {
 export interface CreateThreadRequestData {
     title: string
     description?: string
+    category?: string
+    summary?: string
+    priority?: 'LOW' | 'MEDIUM' | 'HIGH'
+    expectedParticipants?: number | string
+    images?: string[]
 }
 
 export interface ApproveThreadData {
@@ -108,6 +113,31 @@ export const threadApi = {
             }
 
             return mockRequest
+        }
+    },
+
+    // User xem danh sách yêu cầu của chính mình
+    async getMyThreadRequests(page: number = 1, limit: number = 20): Promise<ThreadRequestsResponse> {
+        try {
+            const queryParams = new URLSearchParams({ page: page.toString(), limit: limit.toString() })
+            const response = await apiClient.get<ThreadRequestsResponse>(
+                `/debate/threads/requests/mine?${queryParams.toString()}`
+            )
+            return response.data
+        } catch (error) {
+            console.warn('Backend not available, using mock data for getMyThreadRequests')
+            return {
+                statusCode: 200,
+                message: 'Success',
+                data: {
+                    items: mockThreadRequests,
+                    totalItems: mockThreadRequests.length,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(mockThreadRequests.length / limit)
+                },
+                timestamp: new Date().toISOString()
+            }
         }
     },
 

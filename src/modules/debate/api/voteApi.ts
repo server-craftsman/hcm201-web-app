@@ -210,5 +210,38 @@ export const voteApi = {
             console.warn('Backend not available, using mock data for removeVote')
             return true
         }
+    },
+
+    // Lấy danh sách bình chọn của user hiện tại
+    async getMyVotes(page: number = 1, limit: number = 20): Promise<VotesResponse> {
+        try {
+            const response = await apiClient.get<VotesResponse>(`/debate/votes/mine?page=${page}&limit=${limit}`)
+            return response.data
+        } catch (error) {
+            console.warn('Backend not available, using mock data for getMyVotes')
+
+            // Reuse mockVotes
+            return {
+                statusCode: 200,
+                message: 'Success',
+                data: {
+                    items: mockVotes,
+                    totalItems: mockVotes.length,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(mockVotes.length / limit),
+                    stats: {
+                        threadId: '',
+                        totalVotes: mockVotes.length,
+                        support: mockVotes.filter(v => v.voteType === 'SUPPORT').length,
+                        oppose: mockVotes.filter(v => v.voteType === 'OPPOSE').length,
+                        supportPercentage: 0,
+                        opposePercentage: 0,
+                        userVote: null
+                    }
+                },
+                timestamp: new Date().toISOString()
+            }
+        }
     }
 }

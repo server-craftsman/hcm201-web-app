@@ -222,6 +222,28 @@ export const argumentApi = {
         }
     },
 
+    // Lấy các luận điểm do user hiện tại tạo
+    async getMyArguments(page: number = 1, limit: number = 20): Promise<ArgumentsResponse> {
+        try {
+            const response = await apiClient.get<ArgumentsResponse>(`/debate/arguments/mine?page=${page}&limit=${limit}`)
+            return response.data
+        } catch (error) {
+            console.warn('Backend not available, using mock data for getMyArguments')
+            return {
+                statusCode: 200,
+                message: 'Success',
+                data: {
+                    items: mockArguments,
+                    totalItems: mockArguments.length,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(mockArguments.length / limit)
+                },
+                timestamp: new Date().toISOString()
+            }
+        }
+    },
+
     // Thực hiện hành động kiểm duyệt
     async moderateArgument(data: ModerationAction): Promise<Argument> {
         try {

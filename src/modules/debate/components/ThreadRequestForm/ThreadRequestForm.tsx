@@ -33,6 +33,7 @@ export const ThreadRequestForm: React.FC<ThreadRequestFormProps> = ({
         description: ''
     })
     const [errors, setErrors] = useState<Record<string, string>>({})
+    const [successData, setSuccessData] = useState<any | null>(null)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -68,6 +69,7 @@ export const ThreadRequestForm: React.FC<ThreadRequestFormProps> = ({
             })
             setIsOpen(false)
             setErrors({})
+            setSuccessData({ title: formData.title })
         } catch (error) {
             console.error('Error submitting thread request:', error)
         } finally {
@@ -87,6 +89,22 @@ export const ThreadRequestForm: React.FC<ThreadRequestFormProps> = ({
 
     return (
         <div className={cn("w-full", className)}>
+            {/* Success Notice */}
+            {successData && (
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-4 p-4 rounded-xl border-2 border-green-200 bg-green-50"
+                >
+                    <p className="text-green-800 font-medium">🎉 Đã gửi đề xuất chủ đề thành công!</p>
+                    <p className="text-green-700 text-sm mt-1">“{successData.title}” đã được ghi nhận và chờ admin phê duyệt.</p>
+                    <div className="mt-3 flex items-center gap-2">
+                        <a href="/debates/requests" className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm">Xem yêu cầu của tôi</a>
+                        <a href="/debates" className="px-4 py-2 rounded-lg bg-white border border-green-300 text-green-700 hover:bg-green-100 text-sm">Về danh sách tranh luận</a>
+                    </div>
+                </motion.div>
+            )}
+
             {/* Trigger Button */}
             {!isOpen && (
                 <motion.button

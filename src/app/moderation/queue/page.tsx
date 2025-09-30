@@ -37,10 +37,14 @@ const ModerationQueuePage = () => {
     })
 
     // Use API stats if available, fallback to mock data
+    const normalizeStatus = (s: unknown) => (typeof s === 'string' ? s.toLowerCase() : '')
+    const pendingCount = apiQueueItems.filter(item => normalizeStatus(item.status) === 'pending').length
+    const flaggedCount = apiQueueItems.filter(item => normalizeStatus(item.status) === 'flagged').length
+
     const queueStats = {
         total: apiMeta.total || 25,
-        pending: apiQueueItems.filter(item => item.status === 'pending').length || 18,
-        flagged: apiQueueItems.filter(item => item.status === 'rejected').length || 4,
+        pending: pendingCount || 18,
+        flagged: flaggedCount || 4,
         myAssigned: apiMeta.total || 12,
         avgWaitTime: 45 // phút
     }
