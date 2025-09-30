@@ -49,6 +49,14 @@ export const authApi = {
 
     googleOAuth: async (data: GoogleAuthRequest): Promise<AuthResponse> => {
         try {
+            // Validate tokens before sending to backend
+            if (!data.idToken || data.idToken.trim() === '') {
+                throw new Error('ID token is required and cannot be empty')
+            }
+            if (!data.accessToken || data.accessToken.trim() === '') {
+                throw new Error('Access token is required and cannot be empty')
+            }
+
             const r = await apiClient.post<any>('/auth/google', data)
             const d = r.data?.data || r.data
             return {
@@ -60,8 +68,11 @@ export const authApi = {
             // If backend is not available, create a mock user from Google token
             console.warn('Backend not available, creating mock user from Google token')
 
-            if (!data.idToken && !data.accessToken) {
-                throw new Error('No valid Google tokens provided')
+            if (!data.idToken || data.idToken.trim() === '') {
+                throw new Error('ID token is required and cannot be empty')
+            }
+            if (!data.accessToken || data.accessToken.trim() === '') {
+                throw new Error('Access token is required and cannot be empty')
             }
 
             // Decode ID token to get user info (basic JWT decode without verification)

@@ -155,15 +155,23 @@ export async function getGoogleTokens(clientId: string, scope: string = 'openid 
             // Use the simpler popup flow for more reliability
             const tokenClient = window.google.accounts.oauth2.initTokenClient({
                 client_id: clientId,
-                scope,
+                scope: scope + ' openid', // Ensure openid scope is included for ID token
                 callback: (response: any) => {
                     console.log('📝 Google OAuth response received:', response)
 
                     if (response && response.access_token) {
                         console.log('✅ Access token received successfully')
+
+                        // Validate that we have both tokens
+                        if (!response.id_token) {
+                            console.error('❌ No ID token received from Google OAuth')
+                            reject(new Error('ID token is required but not provided by Google'))
+                            return
+                        }
+
                         resolve({
                             accessToken: response.access_token,
-                            idToken: response.id_token || ''
+                            idToken: response.id_token
                         })
                     } else if (response && response.error) {
                         console.error('❌ Google OAuth error:', response.error)
