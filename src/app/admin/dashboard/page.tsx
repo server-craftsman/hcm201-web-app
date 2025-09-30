@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
     ChartBarIcon,
@@ -13,20 +13,46 @@ import {
     EyeIcon
 } from '@heroicons/react/24/outline'
 
+import { threadApi } from '@/modules/debate/api/threadApi'
+import { debateApi } from '@/modules/debate/api/debateApi'
+import { useModerationQueue } from '@/modules/debate/hooks/useDebateApi'
+
 const AdminDashboard = () => {
-    // Mock data dựa trên DEBATE_SYSTEM_FLOW.md
-    const stats = {
-        totalThreads: 45,
-        pendingApproval: 8,
-        activeThreads: 12,
-        totalUsers: 324,
-        totalModerators: 6,
-        totalArguments: 1240,
-        pendingArguments: 25,
-        rejectedArguments: 89,
-        avgModerationTime: 45, // phút
-        todayVotes: 156
-    }
+    const [stats, setStats] = useState({
+        totalThreads: 0,
+        pendingApproval: 0,
+        activeThreads: 0,
+        totalUsers: 0,
+        totalModerators: 0,
+        totalArguments: 0,
+        pendingArguments: 0,
+        rejectedArguments: 0,
+        avgModerationTime: 45,
+        todayVotes: 0
+    })
+
+    const { items, meta } = useModerationQueue({ status: 'pending', page: 1, limit: 10 })
+
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const pendingReq = await threadApi.getThreadRequests(1, 1, 'PENDING')
+                const activeRes = await debateApi.getDebateThreads({ status: 'ACTIVE', page: 1, limit: 1, search: '', sort: 'createdAt:-1' })
+                const allRes = await debateApi.getDebateThreads({ page: 1, limit: 1, search: '', sort: 'createdAt:-1' })
+
+                setStats((prev) => ({
+                    ...prev,
+                    pendingApproval: pendingReq.data.totalItems,
+                    activeThreads: activeRes.data.totalItems,
+                    totalThreads: allRes.data.totalItems,
+                    pendingArguments: items.length
+                }))
+            } catch (e) {
+                console.warn('Failed to load admin stats', e)
+            }
+        }
+        load()
+    }, [items.length])
 
     const recentThreadRequests = [
         {

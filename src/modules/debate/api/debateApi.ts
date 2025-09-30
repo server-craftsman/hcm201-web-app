@@ -79,14 +79,14 @@ export const debateApi = {
             const queryParams = new URLSearchParams()
 
             if (params.status) queryParams.append('status', params.status)
-            if (params.search) queryParams.append('search', params.search)
+            if (params.search !== undefined) queryParams.append('search', params.search)
             if (params.createdBy) queryParams.append('createdBy', params.createdBy)
             if (params.moderatorId) queryParams.append('moderatorId', params.moderatorId)
             if (params.page) queryParams.append('page', params.page.toString())
             if (params.limit) queryParams.append('limit', params.limit.toString())
             if (params.sort) queryParams.append('sort', params.sort)
 
-            const url = `/v1/debate/threads${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+            const url = `/debate/threads${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
             const response = await apiClient.get<ApiResponse<DebateThread>>(url)
 
             return response.data
@@ -171,7 +171,7 @@ export const debateApi = {
             if (params.limit) queryParams.append('limit', params.limit.toString())
             if (params.sort) queryParams.append('sort', params.sort)
 
-            const url = `/v1/debate/moderation/queue${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+            const url = `/debate/moderation/queue${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
             const response = await apiClient.get<ApiResponse<DebateModerationItem>>(url)
 
             return response.data

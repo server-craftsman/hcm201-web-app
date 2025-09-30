@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
     PlusCircleIcon,
@@ -9,6 +9,8 @@ import {
     CheckCircleIcon,
     ClockIcon
 } from '@heroicons/react/24/outline'
+import { cn } from '@/shared/utils/shadcn'
+import { threadApi } from '@/modules/debate'
 
 const RequestThreadPage = () => {
     const [formData, setFormData] = useState({
@@ -20,17 +22,20 @@ const RequestThreadPage = () => {
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitSuccess, setSubmitSuccess] = useState(false)
+    const [myRequests, setMyRequests] = useState<any[]>([])
+    const [loadingRequests, setLoadingRequests] = useState<boolean>(true)
+    const [loadError, setLoadError] = useState<string | null>(null)
 
-    const categories = [
-        'Tư tưởng Hồ Chí Minh về độc lập dân tộc',
-        'Tư tưởng Hồ Chí Minh về chủ nghĩa xã hội',
-        'Tư tưởng Hồ Chí Minh về Đảng Cộng sản',
-        'Tư tưởng Hồ Chí Minh về đại đoàn kết dân tộc',
-        'Tư tưởng Hồ Chí Minh về con người',
-        'Tư tưởng Hồ Chí Minh về đạo đức',
-        'Tư tưởng Hồ Chí Minh về văn hóa',
-        'Giá trị thời đại của tư tưởng Hồ Chí Minh'
-    ]
+    // const categories = [
+    //     'Tư tưởng Hồ Chí Minh về độc lập dân tộc',
+    //     'Tư tưởng Hồ Chí Minh về chủ nghĩa xã hội',
+    //     'Tư tưởng Hồ Chí Minh về Đảng Cộng sản',
+    //     'Tư tưởng Hồ Chí Minh về đại đoàn kết dân tộc',
+    //     'Tư tưởng Hồ Chí Minh về con người',
+    //     'Tư tưởng Hồ Chí Minh về đạo đức',
+    //     'Tư tưởng Hồ Chí Minh về văn hóa',
+    //     'Giá trị thời đại của tư tưởng Hồ Chí Minh'
+    // ]
 
     const importancelevels = [
         { value: 'high', label: 'Cao - Cần thảo luận gấp', color: 'text-red-600' },
@@ -38,38 +43,41 @@ const RequestThreadPage = () => {
         { value: 'low', label: 'Thấp - Có thể chờ', color: 'text-green-600' }
     ]
 
-    // Mock data cho recent requests
-    const recentRequests = [
-        {
-            id: 1,
-            title: "Vai trò lãnh đạo của Đảng trong tư tưởng Hồ Chí Minh",
-            status: "PENDING",
-            createdAt: "2 ngày trước",
-            estimatedApproval: "1-2 ngày"
-        },
-        {
-            id: 2,
-            title: "Giáo dục đạo đức theo tư tưởng Hồ Chí Minh",
-            status: "APPROVED",
-            createdAt: "1 tuần trước",
-            approvedAt: "5 ngày trước"
-        },
-        {
-            id: 3,
-            title: "Tư tưởng Hồ Chí Minh về văn hóa dân tộc",
-            status: "REJECTED",
-            createdAt: "2 tuần trước",
-            rejectReason: "Chủ đề đã được thảo luận gần đây"
+    // Load user's requests from API
+    useEffect(() => {
+        const load = async () => {
+            try {
+                setLoadingRequests(true)
+                setLoadError(null)
+                const res = await threadApi.getMyThreadRequests(1, 20)
+                setMyRequests(res.data.items)
+            } catch (e) {
+                setLoadError('Không thể tải danh sách yêu cầu')
+            } finally {
+                setLoadingRequests(false)
+            }
         }
-    ]
+        load()
+    }, [])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
 
-        // Simulate API call
-        setTimeout(() => {
-            setIsSubmitting(false)
+        try {
+            // Map importance -> priority enum
+            const priority = formData.importance
+                ? (formData.importance.toUpperCase() as 'LOW' | 'MEDIUM' | 'HIGH')
+                : undefined
+
+            await threadApi.createThreadRequest({
+                title: formData.title,
+                description: formData.description || undefined,
+                category: formData.category || undefined,
+                expectedParticipants: formData.expectedParticipants || undefined,
+                priority
+            })
+
             setSubmitSuccess(true)
             // Reset form
             setFormData({
@@ -79,7 +87,15 @@ const RequestThreadPage = () => {
                 importance: '',
                 expectedParticipants: ''
             })
-        }, 2000)
+
+            // Refresh my requests
+            const res = await threadApi.getMyThreadRequests(1, 20)
+            setMyRequests(res.data.items)
+        } catch (err) {
+            console.error('Create thread request failed', err)
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
     const getStatusStyle = (status: string) => {
@@ -96,33 +112,39 @@ const RequestThreadPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pt-20 pb-8">
+        <div className="relative min-h-screen pt-20 pb-12 overflow-hidden">
+            {/* Luxury gradient background */}
+            <div className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-50 via-white to-blue-50" />
+            <div className="pointer-events-none absolute -top-24 -right-24 h-80 w-80 rounded-full bg-gradient-to-tr from-indigo-300/30 via-fuchsia-300/20 to-purple-300/10 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-gradient-to-tr from-cyan-300/20 via-sky-300/20 to-indigo-300/20 blur-3xl" />
+
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mb-8"
+                    transition={{ duration: 0.5 }}
+                    className="mb-10"
                 >
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                        📝 Yêu cầu chủ đề tranh luận mới
+                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 via-fuchsia-600 to-rose-600">
+                        Yêu cầu chủ đề tranh luận mới
                     </h1>
-                    <p className="text-gray-600">
-                        Đề xuất chủ đề tranh luận mới về Tư tưởng Hồ Chí Minh để cộng đồng thảo luận
+                    <p className="mt-3 text-gray-600 text-lg">
+                        Gửi ý tưởng chất lượng để mở ra một không gian tranh luận công bằng, minh bạch và giàu học thuật.
                     </p>
                 </motion.div>
 
                 {/* Success Message */}
                 {submitSuccess && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="mb-8 bg-green-50 border border-green-200 rounded-lg p-4"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-8 rounded-xl p-4 bg-gradient-to-r from-green-50 to-emerald-50 ring-1 ring-emerald-200/60 shadow-md"
                     >
                         <div className="flex items-center">
-                            <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2" />
-                            <p className="text-green-800 font-medium">
-                                Yêu cầu của bạn đã được gửi thành công! Admin sẽ xem xét và phản hồi trong 1-2 ngày.
+                            <CheckCircleIcon className="h-5 w-5 text-emerald-600 mr-2" />
+                            <p className="text-emerald-800 font-medium">
+                                Đã gửi yêu cầu thành công! Admin sẽ xem xét và phản hồi trong 1-2 ngày làm việc.
                             </p>
                         </div>
                     </motion.div>
@@ -131,12 +153,12 @@ const RequestThreadPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Form yêu cầu */}
                     <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.05 }}
+                        className="lg:col-span-2 rounded-2xl bg-white/80 backdrop-blur ring-1 ring-gray-200 shadow-xl"
                     >
-                        <div className="p-6 border-b border-gray-200">
+                        <div className="p-6 border-b border-gray-100">
                             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                                 <PlusCircleIcon className="h-5 w-5 mr-2 text-blue-600" />
                                 Thông tin chủ đề đề xuất
@@ -154,32 +176,12 @@ const RequestThreadPage = () => {
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                         placeholder="Ví dụ: Tư tưởng Hồ Chí Minh trong giáo dục hiện đại"
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white/70"
                                         required
                                     />
                                     <p className="text-sm text-gray-500 mt-1">
                                         Tiêu đề ngắn gọn, rõ ràng và thu hút (tối đa 200 ký tự)
                                     </p>
-                                </div>
-
-                                {/* Danh mục */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Danh mục *
-                                    </label>
-                                    <select
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        required
-                                    >
-                                        <option value="">Chọn danh mục phù hợp</option>
-                                        {categories.map((category, index) => (
-                                            <option key={index} value={category}>
-                                                {category}
-                                            </option>
-                                        ))}
-                                    </select>
                                 </div>
 
                                 {/* Mô tả */}
@@ -192,7 +194,7 @@ const RequestThreadPage = () => {
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         placeholder="Mô tả rõ hơn về chủ đề, tại sao cần thảo luận, những khía cạnh chính cần xem xét..."
                                         rows={4}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white/70"
                                     />
                                     <p className="text-sm text-gray-500 mt-1">
                                         Mô tả giúp admin hiểu rõ hơn về chủ đề và tầm quan trọng của nó
@@ -235,7 +237,7 @@ const RequestThreadPage = () => {
                                         placeholder="Ví dụ: 20"
                                         min="1"
                                         max="100"
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white/70"
                                     />
                                     <p className="text-sm text-gray-500 mt-1">
                                         Ước tính số người có thể quan tâm và tham gia thảo luận
@@ -248,7 +250,7 @@ const RequestThreadPage = () => {
                                     disabled={isSubmitting}
                                     whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
                                     whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
-                                    className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="w-full py-3 px-6 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all bg-gradient-to-r from-indigo-600 via-fuchsia-600 to-rose-600 text-white shadow-lg hover:shadow-xl"
                                 >
                                     {isSubmitting ? (
                                         <div className="flex items-center justify-center">
@@ -270,7 +272,7 @@ const RequestThreadPage = () => {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.3 }}
-                            className="bg-blue-50 border border-blue-200 rounded-xl p-6"
+                            className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/60 rounded-2xl p-6 ring-1 ring-white/50 shadow-sm"
                         >
                             <h4 className="flex items-center font-semibold text-blue-900 mb-3">
                                 <InformationCircleIcon className="h-5 w-5 mr-2" />
@@ -289,7 +291,7 @@ const RequestThreadPage = () => {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.4 }}
-                            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                            className="bg-white/80 backdrop-blur rounded-2xl shadow-lg border border-gray-200 p-6 ring-1 ring-white/60"
                         >
                             <h4 className="font-semibold text-gray-900 mb-4">
                                 🔄 Quy trình phê duyệt
@@ -339,7 +341,7 @@ const RequestThreadPage = () => {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.5 }}
-                            className="bg-white rounded-xl shadow-sm border border-gray-200"
+                            className="bg-white/80 backdrop-blur rounded-2xl shadow-lg border border-gray-200"
                         >
                             <div className="p-6 border-b border-gray-200">
                                 <h4 className="font-semibold text-gray-900">
@@ -348,34 +350,43 @@ const RequestThreadPage = () => {
                             </div>
                             <div className="p-6">
                                 <div className="space-y-4">
-                                    {recentRequests.map((request) => (
-                                        <div key={request.id} className="border border-gray-200 rounded-lg p-4">
+                                    {loadingRequests && (
+                                        <div className="text-sm text-gray-500">Đang tải yêu cầu...</div>
+                                    )}
+                                    {loadError && (
+                                        <div className="text-sm text-red-600">{loadError}</div>
+                                    )}
+                                    {!loadingRequests && !loadError && myRequests.map((request) => (
+                                        <div key={request._id} className="border border-gray-200 rounded-lg p-4">
                                             <h5 className="font-medium text-gray-900 mb-2 text-sm">
                                                 {request.title}
                                             </h5>
                                             <div className="flex items-center justify-between mb-2">
                                                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(request.status)}`}>
-                                                    {request.status === 'PENDING' ? 'Chờ duyệt' :
-                                                        request.status === 'APPROVED' ? 'Đã duyệt' : 'Bị từ chối'}
+                                                    {request.status === 'PENDING'
+                                                        ? 'Chờ duyệt'
+                                                        : request.status === 'APPROVED'
+                                                            ? 'Đã duyệt'
+                                                            : request.status === 'REJECTED'
+                                                                ? 'Bị từ chối'
+                                                                : request.status === 'DRAFT'
+                                                                    ? 'Bản nháp'
+                                                                    : request.status === 'ACTIVE'
+                                                                        ? 'Đang hoạt động'
+                                                                        : request.status === 'PAUSED'
+                                                                            ? 'Tạm dừng'
+                                                                            : request.status === 'CLOSED'
+                                                                                ? 'Đã đóng'
+                                                                                : request.status === 'ARCHIVED'
+                                                                                    ? 'Lưu trữ'
+                                                                                    : request.status}
                                                 </span>
                                                 <span className="text-xs text-gray-500">
-                                                    {request.createdAt}
+                                                    {new Date(request.createdAt).toLocaleString('vi-VN')}
                                                 </span>
                                             </div>
-                                            {request.status === 'PENDING' && (
-                                                <p className="text-xs text-gray-600">
-                                                    ⏳ Dự kiến phê duyệt: {request.estimatedApproval}
-                                                </p>
-                                            )}
-                                            {request.status === 'APPROVED' && (
-                                                <p className="text-xs text-green-600">
-                                                    ✅ Đã duyệt {request.approvedAt}
-                                                </p>
-                                            )}
-                                            {request.status === 'REJECTED' && request.rejectReason && (
-                                                <p className="text-xs text-red-600">
-                                                    ❌ {request.rejectReason}
-                                                </p>
+                                            {request.adminNotes && (
+                                                <p className="text-xs text-gray-600">📝 {request.adminNotes}</p>
                                             )}
                                         </div>
                                     ))}

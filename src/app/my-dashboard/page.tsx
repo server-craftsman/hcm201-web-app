@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
     PlusCircleIcon,
@@ -14,100 +14,98 @@ import {
     TrophyIcon,
     FireIcon
 } from '@heroicons/react/24/outline'
+import { debateApi } from '@/modules/debate/api/debateApi'
+import { argumentApi, type Argument } from '@/modules/debate/api/argumentApi'
+import { voteApi, type Vote } from '@/modules/debate/api/voteApi'
 
 const UserDashboard = () => {
     const [selectedTab, setSelectedTab] = useState('overview')
 
-    // Mock data dựa trên DEBATE_SYSTEM_FLOW.md
-    const userStats = {
-        totalArguments: 24,
-        approvedArguments: 18,
-        pendingArguments: 3,
-        rejectedArguments: 3,
-        totalVotes: 45,
-        threadsParticipated: 12,
-        pointsEarned: 340,
-        rank: 'Học viên Tích cực'
-    }
+    // API-driven states with mock fallback inside APIs
+    const [userStats, setUserStats] = useState({
+        totalArguments: 0,
+        approvedArguments: 0,
+        pendingArguments: 0,
+        rejectedArguments: 0,
+        totalVotes: 0,
+        threadsParticipated: 0,
+        pointsEarned: 0,
+        rank: 'Thành viên'
+    })
 
-    const myArguments = [
-        {
-            id: 1,
-            title: "Giáo dục toàn diện theo tư tưởng Hồ Chí Minh",
-            content: "Giáo dục không chỉ truyền đạt kiến thức mà còn rèn luyện đạo đức...",
-            threadTitle: "Tư tưởng giáo dục Hồ Chí Minh",
-            argumentType: "SUPPORT",
-            status: "APPROVED",
-            createdAt: "2 ngày trước",
-            votes: { support: 8, oppose: 2 },
-            comments: 5
-        },
-        {
-            id: 2,
-            title: "Vai trò văn hóa dân tộc",
-            content: "Văn hóa dân tộc là nền tảng tinh thần của mỗi quốc gia...",
-            threadTitle: "Giá trị văn hóa dân tộc",
-            argumentType: "NEUTRAL",
-            status: "PENDING",
-            createdAt: "1 ngày trước",
-            votes: { support: 0, oppose: 0 },
-            comments: 0
-        },
-        {
-            id: 3,
-            title: "Đạo đức trong thời đại mới",
-            content: "Cần có cách tiếp cận mới cho đạo đức trong thời đại hiện đại...",
-            threadTitle: "Đạo đức cách mạng",
-            argumentType: "OPPOSE",
-            status: "REJECTED",
-            createdAt: "3 ngày trước",
-            votes: { support: 1, oppose: 4 },
-            comments: 2,
-            rejectReason: "Thiếu căn cứ lý luận rõ ràng"
-        }
-    ]
+    const [myArguments, setMyArguments] = useState<any[]>([])
+    const [myVotes, setMyVotes] = useState<any[]>([])
+    const [activeThreads, setActiveThreads] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
 
-    const myVotes = [
-        {
-            id: 1,
-            threadTitle: "Tư tưởng Hồ Chí Minh về độc lập dân tộc",
-            voteType: "SUPPORT",
-            votedAt: "1 giờ trước"
-        },
-        {
-            id: 2,
-            threadTitle: "Giá trị văn hóa truyền thống",
-            voteType: "OPPOSE",
-            votedAt: "2 giờ trước"
-        },
-        {
-            id: 3,
-            threadTitle: "Đạo đức cách mạng trong giáo dục",
-            voteType: "SUPPORT",
-            votedAt: "1 ngày trước"
-        }
-    ]
+    useEffect(() => {
+        const load = async () => {
+            try {
+                setLoading(true)
+                // Load active threads
+                const threadsRes = await debateApi.getDebateThreads({ status: 'ACTIVE', limit: 6, page: 1 })
+                const threads = threadsRes.data.items.map(t => ({
+                    id: t._id,
+                    title: t.title,
+                    status: t.status,
+                    totalArguments: t.totalArguments,
+                    totalVotes: t.totalVotes,
+                    myParticipation: '—',
+                    lastActivity: new Date(t.updatedAt).toLocaleString('vi-VN')
+                }))
+                setActiveThreads(threads)
 
-    const activeThreads = [
-        {
-            id: 1,
-            title: "Tư tưởng Hồ Chí Minh trong thời đại 4.0",
-            status: "ACTIVE",
-            totalArguments: 28,
-            totalVotes: 156,
-            myParticipation: "Đã tham gia",
-            lastActivity: "30 phút trước"
-        },
-        {
-            id: 2,
-            title: "Giáo dục đạo đức trong trường học",
-            status: "ACTIVE",
-            totalArguments: 15,
-            totalVotes: 89,
-            myParticipation: "Chưa tham gia",
-            lastActivity: "2 giờ trước"
+                // Load my arguments (authorId='me' convention)
+                // Prefer dedicated endpoint /arguments/mine per swagger
+                const argsRes = await argumentApi.getMyArguments(1, 10)
+                const args = argsRes.data.items
+                setMyArguments(args.map((a: any) => ({
+                    id: a._id,
+                    title: a.title,
+                    content: a.content,
+                    threadTitle: typeof a.threadId === 'object' && a.threadId !== null ? a.threadId.title : a.threadId,
+                    argumentType: a.argumentType,
+                    status: a.status,
+                    createdAt: new Date(a.createdAt).toLocaleDateString('vi-VN'),
+                    votes: { support: a.upvotes ?? a.likesCount ?? 0, oppose: a.downvotes ?? a.dislikesCount ?? 0 },
+                    comments: 0,
+                    rejectReason: a.moderationNotes
+                })))
+
+                // Load my votes via /votes/mine
+                const myVotesRes = await voteApi.getMyVotes(1, 10)
+                const myVotesItems = myVotesRes.data.items
+                setMyVotes(myVotesItems.map((v: any) => ({
+                    id: v._id,
+                    threadTitle: v.threadId?.title || v.threadId || 'Chủ đề',
+                    voteType: v.voteType,
+                    votedAt: new Date(v.createdAt).toLocaleString('vi-VN')
+                })))
+
+                // Compute stats
+                const totalArgs = args.length
+                const approved = args.filter(a => a.status === 'APPROVED').length
+                const pending = args.filter(a => a.status === 'PENDING').length
+                const rejected = args.filter(a => a.status === 'REJECTED').length
+                setUserStats(prev => ({
+                    ...prev,
+                    totalArguments: totalArgs,
+                    approvedArguments: approved,
+                    pendingArguments: pending,
+                    rejectedArguments: rejected,
+                    totalVotes: threads.reduce((s: number, t: any) => s + (t.totalVotes || 0), 0),
+                    threadsParticipated: threads.length,
+                    pointsEarned: approved * 20 + pending * 5,
+                    rank: approved > 10 ? 'Học viên Tích cực' : 'Thành viên'
+                }))
+            } catch (e) {
+                console.warn('Failed to load dashboard data', e)
+            } finally {
+                setLoading(false)
+            }
         }
-    ]
+        load()
+    }, [])
 
     const getStatusStyle = (status: string) => {
         switch (status) {
@@ -253,8 +251,8 @@ const UserDashboard = () => {
                             <button
                                 onClick={() => setSelectedTab('overview')}
                                 className={`py-2 px-1 border-b-2 font-medium text-sm ${selectedTab === 'overview'
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-blue-500 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                     }`}
                             >
                                 Tổng quan
@@ -262,8 +260,8 @@ const UserDashboard = () => {
                             <button
                                 onClick={() => setSelectedTab('arguments')}
                                 className={`py-2 px-1 border-b-2 font-medium text-sm ${selectedTab === 'arguments'
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-blue-500 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                     }`}
                             >
                                 Luận điểm của tôi
@@ -271,8 +269,8 @@ const UserDashboard = () => {
                             <button
                                 onClick={() => setSelectedTab('votes')}
                                 className={`py-2 px-1 border-b-2 font-medium text-sm ${selectedTab === 'votes'
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-blue-500 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                     }`}
                             >
                                 Bình chọn của tôi
@@ -299,7 +297,10 @@ const UserDashboard = () => {
                             </div>
                             <div className="p-6">
                                 <div className="space-y-4">
-                                    {activeThreads.map((thread) => (
+                                    {loading && (
+                                        <div className="text-sm text-gray-500">Đang tải...</div>
+                                    )}
+                                    {!loading && activeThreads.map((thread) => (
                                         <div key={thread.id} className="p-4 bg-gray-50 rounded-lg">
                                             <h4 className="font-medium text-gray-900 mb-2">
                                                 {thread.title}
@@ -309,12 +310,7 @@ const UserDashboard = () => {
                                                 <span>👥 {thread.totalVotes} bình chọn</span>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className={`text-sm font-medium ${thread.myParticipation === 'Đã tham gia'
-                                                        ? 'text-green-600'
-                                                        : 'text-orange-600'
-                                                    }`}>
-                                                    {thread.myParticipation}
-                                                </span>
+                                                <span className="text-sm font-medium text-gray-600">{thread.myParticipation}</span>
                                                 <span className="text-xs text-gray-500">
                                                     {thread.lastActivity}
                                                 </span>
@@ -397,19 +393,22 @@ const UserDashboard = () => {
                         <div className="p-6 border-b border-gray-200">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-lg font-semibold text-gray-900">Luận điểm của tôi</h3>
-                                <motion.button
+                                {/* <motion.button
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                                 >
                                     <PlusCircleIcon className="h-4 w-4 inline mr-1" />
                                     Tạo luận điểm mới
-                                </motion.button>
+                                </motion.button> */}
                             </div>
                         </div>
                         <div className="p-6">
                             <div className="space-y-6">
-                                {myArguments.map((argument) => (
+                                {loading && (
+                                    <div className="text-sm text-gray-500">Đang tải...</div>
+                                )}
+                                {!loading && myArguments.map((argument) => (
                                     <div key={argument.id} className="border border-gray-200 rounded-lg p-6">
                                         <div className="flex items-start justify-between mb-4">
                                             <div className="flex-1">
@@ -463,7 +462,10 @@ const UserDashboard = () => {
                         </div>
                         <div className="p-6">
                             <div className="space-y-4">
-                                {myVotes.map((vote) => (
+                                {loading && (
+                                    <div className="text-sm text-gray-500">Đang tải...</div>
+                                )}
+                                {!loading && myVotes.map((vote) => (
                                     <div key={vote.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                         <div className="flex-1">
                                             <h4 className="font-medium text-gray-900 mb-1">

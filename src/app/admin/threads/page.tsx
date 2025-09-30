@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
     ShieldCheckIcon,
@@ -17,104 +17,92 @@ import {
     TrashIcon,
     ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
+import { threadApi } from '@/modules/debate/api/threadApi'
+import { debateApi } from '@/modules/debate/api/debateApi'
 
 const AdminThreadsPage = () => {
     const [selectedTab, setSelectedTab] = useState('pending')
     const [selectedThread, setSelectedThread] = useState<any>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedModerators, setSelectedModerators] = useState({ sideA: '', sideB: '' })
+    const [loading, setLoading] = useState(false)
+    const [threads, setThreads] = useState<any[]>([])
+    const [threadStats, setThreadStats] = useState({ pending: 0, active: 0, paused: 0, closed: 0, archived: 0 })
 
-    // Mock data dựa trên DEBATE_SYSTEM_FLOW.md
-    const threadStats = {
-        pending: 8,
-        active: 12,
-        paused: 3,
-        closed: 15,
-        archived: 24
+    // TODO: Replace with real user directory API if available
+    const availableModerators = [
+        { id: 'modA', name: 'Trần Kiểm Duyệt', specialty: 'Giáo dục', workload: 5 },
+        { id: 'modB', name: 'Lê Giám Sát', specialty: 'Văn hóa', workload: 3 },
+        { id: 'modC', name: 'Nguyễn Kiểm Tra', specialty: 'Đạo đức', workload: 7 },
+        { id: 'modD', name: 'Phạm Duyệt Bài', specialty: 'Chính trị', workload: 4 },
+    ]
+
+    const loadData = async (tab: string) => {
+        try {
+            setLoading(true)
+            if (tab === 'pending') {
+                const res = await threadApi.getThreadRequests(1, 20, 'PENDING')
+                const items = res.data.items.map((r) => ({
+                    id: r._id,
+                    title: r.title,
+                    description: r.description,
+                    author: { name: `${r.requester?.firstName || ''} ${r.requester?.lastName || ''}`.trim() || r.requester?.username || 'User', avatar: (r.requester?.firstName || 'U').slice(0, 1).toUpperCase(), reputation: 0 },
+                    category: '—',
+                    status: 'DRAFT',
+                    priority: 'MEDIUM',
+                    createdAt: r.createdAt,
+                    relatedTopics: [],
+                    assignedModerators: null
+                }))
+                setThreads(items)
+                setThreadStats((prev) => ({ ...prev, pending: res.data.totalItems }))
+            } else {
+                // Map tab names to API status values
+                const statusMap: { [key: string]: string } = {
+                    'active': 'ACTIVE',
+                    'paused': 'PAUSED',
+                    'closed': 'CLOSED',
+                    'archived': 'ARCHIVED'
+                }
+                const apiStatus = statusMap[tab] || 'ACTIVE'
+
+                const res = await debateApi.getDebateThreads({
+                    status: apiStatus as any,
+                    page: 1,
+                    limit: 20,
+                    search: '',
+                    sort: 'createdAt:-1'
+                })
+                const items = res.data.items.map((t) => ({
+                    id: t._id,
+                    title: t.title,
+                    description: t.description,
+                    author: { name: `${t.createdBy?.firstName || ''} ${t.createdBy?.lastName || ''}`.trim() || t.createdBy?.username || 'User', avatar: (t.createdBy?.firstName || 'U').slice(0, 1).toUpperCase(), reputation: 0 },
+                    category: '—',
+                    status: t.status,
+                    priority: 'LOW',
+                    createdAt: t.createdAt,
+                    relatedTopics: [],
+                    assignedModerators: (t.modForSideA || t.modForSideB) ? { sideA: { id: t.modForSideA, name: 'Mod A' }, sideB: { id: t.modForSideB, name: 'Mod B' } } : null,
+                    stats: {
+                        arguments: t.totalArguments,
+                        votes: t.totalVotes,
+                        participants: t.totalVotes,
+                        pendingModeration: t.requireModeration ? (t.totalArguments - t.totalApprovedArguments) : 0
+                    }
+                }))
+                setThreads(items)
+                setThreadStats((prev) => ({ ...prev, [tab]: res.data.totalItems } as any))
+            }
+        } finally {
+            setLoading(false)
+        }
     }
 
-    const availableModerators = [
-        { id: 'mod1', name: 'Trần Kiểm Duyệt', specialty: 'Giáo dục', workload: 5 },
-        { id: 'mod2', name: 'Lê Giám Sát', specialty: 'Văn hóa', workload: 3 },
-        { id: 'mod3', name: 'Nguyễn Kiểm Tra', specialty: 'Đạo đức', workload: 7 },
-        { id: 'mod4', name: 'Phạm Duyệt Bài', specialty: 'Chính trị', workload: 4 },
-    ]
-
-    const threads = [
-        {
-            id: 1,
-            title: "Tư tưởng Hồ Chí Minh trong giáo dục hiện đại",
-            description: "Thảo luận về việc áp dụng tư tưởng giáo dục của Hồ Chí Minh trong bối cảnh giáo dục hiện đại",
-            author: {
-                name: "Nguyễn Văn An",
-                avatar: "NA",
-                reputation: 85
-            },
-            category: "Giáo dục",
-            status: "DRAFT",
-            priority: "HIGH",
-            createdAt: "2024-01-15T10:30:00",
-            requestedAt: "2024-01-15T10:30:00",
-            estimatedParticipants: 25,
-            relatedTopics: ["Giáo dục toàn diện", "Phương pháp sư phạm", "Đạo đức giáo viên"],
-            assignedModerators: null
-        },
-        {
-            id: 2,
-            title: "Giá trị văn hóa dân tộc trong tư tưởng Hồ Chí Minh",
-            description: "Khám phá và thảo luận về những giá trị văn hóa dân tộc được Hồ Chí Minh đề cao",
-            author: {
-                name: "Trần Thị Bích",
-                avatar: "TB",
-                reputation: 72
-            },
-            category: "Văn hóa",
-            status: "ACTIVE",
-            priority: "MEDIUM",
-            createdAt: "2024-01-14T09:15:00",
-            activatedAt: "2024-01-14T14:20:00",
-            estimatedParticipants: 30,
-            relatedTopics: ["Di sản văn hóa", "Bản sắc dân tộc", "Toàn cầu hóa"],
-            assignedModerators: {
-                sideA: { id: 'mod1', name: 'Trần Kiểm Duyệt' },
-                sideB: { id: 'mod2', name: 'Lê Giám Sát' }
-            },
-            stats: {
-                arguments: 24,
-                votes: 156,
-                participants: 45,
-                pendingModeration: 3
-            }
-        },
-        {
-            id: 3,
-            title: "Đạo đức cách mạng theo tư tưởng Hồ Chí Minh",
-            description: "Phân tích và thảo luận về tinh thần đạo đức cách mạng trong tư tưởng Hồ Chí Minh",
-            author: {
-                name: "Lê Minh Đức",
-                avatar: "LD",
-                reputation: 91
-            },
-            category: "Đạo đức",
-            status: "PAUSED",
-            priority: "LOW",
-            createdAt: "2024-01-12T08:45:00",
-            pausedAt: "2024-01-14T16:30:00",
-            pauseReason: "Cần xem xét thêm về hướng thảo luận",
-            estimatedParticipants: 20,
-            relatedTopics: ["Lý tưởng cách mạng", "Đạo đức xã hội", "Giá trị nhân văn"],
-            assignedModerators: {
-                sideA: { id: 'mod3', name: 'Nguyễn Kiểm Tra' },
-                sideB: { id: 'mod4', name: 'Phạm Duyệt Bài' }
-            },
-            stats: {
-                arguments: 15,
-                votes: 89,
-                participants: 28,
-                pendingModeration: 0
-            }
-        }
-    ]
+    useEffect(() => {
+        loadData(selectedTab)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedTab])
 
     const filteredThreads = threads.filter(thread => {
         switch (selectedTab) {
@@ -135,6 +123,7 @@ const AdminThreadsPage = () => {
 
     const getStatusStyle = (status: string) => {
         switch (status) {
+            case 'PENDING':
             case 'DRAFT':
                 return 'bg-yellow-100 text-yellow-800'
             case 'ACTIVE':
@@ -163,21 +152,37 @@ const AdminThreadsPage = () => {
         }
     }
 
-    const handleApproveThread = async (threadId: number) => {
+    const handleApproveThread = async (threadId: string | number) => {
         if (!selectedModerators.sideA || !selectedModerators.sideB) {
             alert('Vui lòng chọn 2 kiểm duyệt viên cho thread này')
             return
         }
-        console.log(`Approve thread ${threadId} with moderators:`, selectedModerators)
-        // TODO: Implement API call
+        try {
+            await threadApi.approveThreadRequest(String(threadId), {
+                modForSideA: selectedModerators.sideA,
+                modForSideB: selectedModerators.sideB
+            })
+            await loadData('pending')
+        } catch (e) {
+            console.error(e)
+        }
         setIsModalOpen(false)
         setSelectedThread(null)
         setSelectedModerators({ sideA: '', sideB: '' })
     }
 
-    const handleThreadAction = async (threadId: number, action: string) => {
-        console.log(`${action} thread ${threadId}`)
-        // TODO: Implement API call
+    const handleThreadAction = async (threadId: string | number, action: string) => {
+        try {
+            if (selectedTab === 'pending' && action === 'REJECT') {
+                await threadApi.rejectThreadRequest(String(threadId), 'Không phù hợp định hướng')
+                await loadData('pending')
+            } else {
+                // For ACTIVE/PAUSED/CLOSED transitions: backend endpoint not defined here; UI-only
+                console.log(`${action} thread ${threadId}`)
+            }
+        } catch (e) {
+            console.error(e)
+        }
     }
 
     const openApprovalModal = (thread: any) => {
@@ -305,8 +310,8 @@ const AdminThreadsPage = () => {
                                     key={tab.id}
                                     onClick={() => setSelectedTab(tab.id)}
                                     className={`py-2 px-1 border-b-2 font-medium text-sm ${selectedTab === tab.id
-                                            ? 'border-blue-500 text-blue-600'
-                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        ? 'border-blue-500 text-blue-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                         }`}
                                 >
                                     {tab.label} ({tab.count})
@@ -323,7 +328,10 @@ const AdminThreadsPage = () => {
                     transition={{ delay: 0.6 }}
                     className="space-y-6"
                 >
-                    {filteredThreads.map((thread) => (
+                    {loading && (
+                        <div className="bg-white rounded-xl border p-6 text-gray-600">Đang tải...</div>
+                    )}
+                    {!loading && filteredThreads.map((thread) => (
                         <div key={thread.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                             {/* Header */}
                             <div className="flex items-start justify-between mb-4">
@@ -371,7 +379,7 @@ const AdminThreadsPage = () => {
                                 </div>
 
                                 <div className="flex flex-wrap gap-2">
-                                    {thread.relatedTopics.map((topic, index) => (
+                                    {thread.relatedTopics.map((topic: string, index: number) => (
                                         <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
                                             {topic}
                                         </span>

@@ -1,335 +1,590 @@
 'use client'
 
-import React, { useState } from 'react'
-import { useParams } from 'next/navigation'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Button, Card } from '@/shared/components/ui'
+import { useParams } from 'next/navigation'
 import {
     ArrowLeftIcon,
-    HeartIcon,
-    ChatBubbleLeftRightIcon,
-    ShareIcon,
-    BookmarkIcon,
     EyeIcon,
-    UserIcon,
-    CalendarIcon,
-    TagIcon,
-    FlagIcon,
-    PlusIcon
+    ChatBubbleLeftRightIcon,
+    ClockIcon,
+    UsersIcon,
+    FireIcon,
+    CheckBadgeIcon,
+    ExclamationTriangleIcon,
+    FunnelIcon,
+    AdjustmentsHorizontalIcon,
+    PlusIcon,
+    MagnifyingGlassIcon
 } from '@heroicons/react/24/outline'
-import {
-    HeartIcon as HeartSolidIcon,
-    BookmarkIcon as BookmarkSolidIcon
-} from '@heroicons/react/24/solid'
+import Link from 'next/link'
+import { cn } from '@/shared/utils/shadcn'
+import { useAuth } from '@/modules/auth/hooks/useAuth'
+import { useDebateThreads } from '@/modules/debate/hooks/useDebateApi'
+import { useDebateVoting } from '@/modules/debate/hooks/useDebateVoting'
+import { VotingSystem } from '@/modules/debate/components/VotingSystem'
+import { ArgumentCard } from '@/modules/debate/components/ArgumentCard'
+import { ArgumentForm } from '@/modules/debate/components/ArgumentForm'
+import { argumentApi, Argument } from '@/modules/debate/api/argumentApi'
+import { DebateDebug } from '@/shared/components/debug/DebateDebug'
 
-export default function DebateDetailPage() {
+const DebateDetailPage: React.FC = () => {
     const params = useParams()
-    const [isLiked, setIsLiked] = useState(false)
-    const [isBookmarked, setIsBookmarked] = useState(false)
+    const threadId = params.id as string
+    const { user } = useAuth()
+
+    const { threads, loading: threadsLoading } = useDebateThreads()
+    const { stats, userVote, vote, isVoting } = useDebateVoting({
+        threadId: threadId || '',
+        autoRefresh: true
+    })
+
+    const [arguments_, setArguments] = useState<Argument[]>([])
+    const [isLoadingArguments, setIsLoadingArguments] = useState(true)
     const [showArgumentForm, setShowArgumentForm] = useState(false)
+    const [argumentFilter, setArgumentFilter] = useState<'ALL' | 'SUPPORT' | 'OPPOSE' | 'NEUTRAL'>('ALL')
+    const [statusFilter, setStatusFilter] = useState<'ALL' | 'APPROVED' | 'PENDING'>('APPROVED')
+    const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'most_liked'>('newest')
+    const [searchQuery, setSearchQuery] = useState('')
 
-    // Mock data for debate detail
-    const debate = {
-        id: params.id,
-        title: 'Vai trò của tư tưởng Hồ Chí Minh trong xây dựng đất nước hiện đại',
-        description: 'Thảo luận về những ứng dụng cụ thể của tư tưởng Hồ Chí Minh trong việc xây dựng và phát triển đất nước Việt Nam trong thời kỳ hiện đại.',
-        author: {
-            name: 'Nguyễn Văn An',
-            avatar: '👨‍🎓',
-            role: 'Giảng viên'
-        },
-        createdAt: '2024-01-15',
-        category: 'Chính trị',
-        difficulty: 'Trung bình',
-        stats: {
-            views: 1234,
-            likes: 89,
-            arguments: 23,
-            bookmarks: 45
-        },
-        content: `
-Tư tưởng Hồ Chí Minh không chỉ là di sản tinh thần quý báu mà còn là kim chỉ nam soi sáng con đường xây dựng và phát triển đất nước Việt Nam trong thời kỳ hiện đại.
+    // Find current thread
+    const currentThread = threads.find(t => t._id === threadId)
 
-**1. Tư tưởng về độc lập dân tộc gắn liền với chủ nghĩa xã hội:**
-- Hồ Chí Minh khẳng định rằng độc lập dân tộc phải gắn liền với giải phóng xã hội
-- Việt Nam cần xây dựng một nền độc lập thật sự, không phụ thuộc vào nước ngoài
-- Chủ nghĩa xã hội là con đường tất yếu để đưa dân tộc đến thịnh vượng
+    // Debug logs
+    useEffect(() => {
+        console.log('DebateDetailPage mounted with threadId:', threadId)
+        console.log('Available threads:', threads)
+        console.log('Current thread found:', currentThread)
+        console.log('Threads loading:', threadsLoading)
+    }, [threadId, threads, currentThread, threadsLoading])
 
-**2. Tư tưởng về dân chủ và pháp quyền:**
-- "Dân là gốc của nước", quyền lực thuộc về nhân dân
-- Xây dựng nhà nước pháp quyền xã hội chủ nghĩa của dân, do dân, vì dân
-- Phát huy quyền làm chủ của nhân dân trong mọi lĩnh vực
+    // Load arguments
+    useEffect(() => {
+        const loadArguments = async () => {
+            if (!threadId) {
+                console.warn('No threadId provided')
+                return
+            }
 
-**3. Ứng dụng trong thực tiễn hiện nay:**
-- Đổi mới kinh tế theo định hướng xã hội chủ nghĩa
-- Xây dựng nền kinh tế thị trường định hướng xã hội chủ nghĩa
-- Phát triển văn hóa, giáo dục, khoa học công nghệ
+            setIsLoadingArguments(true)
+            try {
+                console.log('Loading arguments for thread:', threadId)
+                const response = await argumentApi.getArguments({
+                    threadId,
+                    status: statusFilter === 'ALL' ? undefined : statusFilter,
+                    argumentType: argumentFilter === 'ALL' ? undefined : argumentFilter,
+                    search: searchQuery || undefined
+                })
 
-Làm thế nào chúng ta có thể ứng dụng hiệu quả những tư tưởng này vào việc xây dựng đất nước trong bối cảnh toàn cầu hóa hiện nay?
-        `
+                console.log('Arguments response:', response)
+
+                if (!response || !response.data || !response.data.items) {
+                    console.error('Invalid response structure:', response)
+                    setArguments([])
+                    return
+                }
+
+                let sortedArguments = response.data.items
+
+                // Sort arguments
+                switch (sortBy) {
+                    case 'newest':
+                        sortedArguments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                        break
+                    case 'oldest':
+                        sortedArguments.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+                        break
+                    case 'most_liked':
+                        sortedArguments.sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0))
+                        break
+                }
+
+                setArguments(sortedArguments)
+            } catch (error) {
+                console.error('Error loading arguments:', error)
+                setArguments([]) // Set empty array on error
+            } finally {
+                setIsLoadingArguments(false)
+            }
+        }
+
+        loadArguments()
+    }, [threadId, argumentFilter, statusFilter, sortBy, searchQuery])
+
+    const handleArgumentSubmit = async (data: any) => {
+        try {
+            const newArgument = await argumentApi.createArgument(data)
+            setArguments(prev => [newArgument, ...prev])
+            setShowArgumentForm(false)
+        } catch (error) {
+            console.error('Error creating argument:', error)
+        }
     }
 
-    const mockArguments = [
-        {
-            id: 1,
-            author: { name: 'Trần Thị Bình', avatar: '👩‍💼' },
-            content: 'Tôi cho rằng tư tưởng Hồ Chí Minh về độc lập tự chủ rất phù hợp với bối cảnh hiện nay. Việt Nam cần duy trì độc lập trong chính sách đối ngoại...',
-            createdAt: '2024-01-16',
-            likes: 12,
-            replies: 3,
-            position: 'support'
-        },
-        {
-            id: 2,
-            author: { name: 'Lê Minh Đức', avatar: '👨‍🔬' },
-            content: 'Tuy nhiên, trong bối cảnh toàn cầu hóa, chúng ta cần cân bằng giữa độc lập tự chủ và hội nhập quốc tế. Một số quan điểm cần được điều chỉnh...',
-            createdAt: '2024-01-17',
-            likes: 8,
-            replies: 5,
-            position: 'against'
+    const handleArgumentLike = async (argumentId: string) => {
+        try {
+            const response = await argumentApi.likeArgument(argumentId)
+            setArguments(prev => prev.map(arg =>
+                arg._id === argumentId
+                    ? { ...arg, likesCount: response.likesCount, dislikesCount: response.dislikesCount }
+                    : arg
+            ))
+        } catch (error) {
+            console.error('Error liking argument:', error)
         }
-    ]
+    }
+
+    const handleArgumentDislike = async (argumentId: string) => {
+        try {
+            const response = await argumentApi.dislikeArgument(argumentId)
+            setArguments(prev => prev.map(arg =>
+                arg._id === argumentId
+                    ? { ...arg, likesCount: response.likesCount, dislikesCount: response.dislikesCount }
+                    : arg
+            ))
+        } catch (error) {
+            console.error('Error disliking argument:', error)
+        }
+    }
+
+    const formatRelativeTime = (dateString: string) => {
+        const date = new Date(dateString)
+        const now = new Date()
+        const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+
+        if (diffInMinutes < 1) return 'Vừa xong'
+        if (diffInMinutes < 60) return `${diffInMinutes} phút trước`
+        if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} giờ trước`
+        return `${Math.floor(diffInMinutes / 1440)} ngày trước`
+    }
+
+    const filteredArguments = arguments_.filter(arg => {
+        const matchesFilter = argumentFilter === 'ALL' || arg.argumentType === argumentFilter
+        const matchesStatus = statusFilter === 'ALL' || arg.status === statusFilter
+        const matchesSearch = !searchQuery ||
+            arg.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            arg.content.toLowerCase().includes(searchQuery.toLowerCase())
+
+        return matchesFilter && matchesStatus && matchesSearch
+    })
+
+    if (threadsLoading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-white/80 backdrop-blur-md rounded-2xl p-8 shadow-xl"
+                >
+                    <div className="flex items-center space-x-4">
+                        <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                        <div>
+                            <h3 className="font-semibold text-gray-900">Đang tải...</h3>
+                            <p className="text-sm text-gray-600">Đang tải thông tin tranh luận</p>
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+        )
+    }
+
+    if (!threadsLoading && !currentThread) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-white/80 backdrop-blur-md rounded-2xl p-8 shadow-xl text-center"
+                >
+                    <h3 className="font-semibold text-gray-900 mb-2">Không tìm thấy tranh luận</h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                        Tranh luận này có thể đã bị xóa hoặc không tồn tại. (Thread ID: {threadId})
+                    </p>
+                    <Link
+                        href="/debates"
+                        className="inline-flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                        <ArrowLeftIcon className="h-4 w-4" />
+                        <span>Quay lại danh sách</span>
+                    </Link>
+                </motion.div>
+            </div>
+        )
+    }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/50 dark:from-slate-900 dark:via-blue-900/20 dark:to-purple-900/30">
-            <div className="max-w-4xl mx-auto px-4 py-8">
-                {/* Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="mb-8"
-                >
-                    <Card className="p-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-white/20 shadow-2xl">
-                        {/* Meta info */}
-                        <div className="flex items-center space-x-6 text-sm text-slate-600 dark:text-slate-400 mb-6">
-                            <div className="flex items-center space-x-2">
-                                <TagIcon className="h-4 w-4" />
-                                <span>{debate.category}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <CalendarIcon className="h-4 w-4" />
-                                <span>{debate.createdAt}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <EyeIcon className="h-4 w-4" />
-                                <span>{debate.stats.views} lượt xem</span>
-                            </div>
-                        </div>
-
-                        {/* Title */}
-                        <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
-                            {debate.title}
-                        </h1>
-
-                        {/* Author */}
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center space-x-4">
-                                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-2xl">
-                                    {debate.author.avatar}
-                                </div>
-                                <div>
-                                    <p className="font-semibold text-slate-900 dark:text-white">
-                                        {debate.author.name}
-                                    </p>
-                                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                                        {debate.author.role}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="flex items-center space-x-3">
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => setIsLiked(!isLiked)}
-                                    className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-colors ${isLiked
-                                        ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-                                        : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400 hover:bg-red-100 hover:text-red-600'
-                                        }`}
-                                >
-                                    {isLiked ? (
-                                        <HeartSolidIcon className="h-5 w-5" />
-                                    ) : (
-                                        <HeartIcon className="h-5 w-5" />
-                                    )}
-                                    <span>{debate.stats.likes + (isLiked ? 1 : 0)}</span>
-                                </motion.button>
-
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => setIsBookmarked(!isBookmarked)}
-                                    className={`p-2 rounded-full transition-colors ${isBookmarked
-                                        ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                                        : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400 hover:bg-blue-100 hover:text-blue-600'
-                                        }`}
-                                >
-                                    {isBookmarked ? (
-                                        <BookmarkSolidIcon className="h-5 w-5" />
-                                    ) : (
-                                        <BookmarkIcon className="h-5 w-5" />
-                                    )}
-                                </motion.button>
-
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className="p-2 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400 hover:bg-green-100 hover:text-green-600 transition-colors"
-                                >
-                                    <ShareIcon className="h-5 w-5" />
-                                </motion.button>
-
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className="p-2 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400 hover:bg-yellow-100 hover:text-yellow-600 transition-colors"
-                                >
-                                    <FlagIcon className="h-5 w-5" />
-                                </motion.button>
-                            </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="prose prose-lg max-w-none dark:prose-invert">
-                            <div className="whitespace-pre-line text-slate-700 dark:text-slate-300 leading-relaxed">
-                                {debate.content}
-                            </div>
-                        </div>
-                    </Card>
-                </motion.div>
-
-                {/* Arguments Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    className="mb-8"
-                >
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                            Luận điểm ({debate.stats.arguments})
-                        </h2>
-                        <Button
-                            onClick={() => setShowArgumentForm(true)}
-                            className="bg-gradient-to-r from-red-500 to-amber-500 hover:from-red-600 hover:to-amber-600 text-white"
-                        >
-                            <PlusIcon className="h-5 w-5 mr-2" />
-                            Thêm luận điểm
-                        </Button>
-                    </div>
-
-                    <div className="space-y-6">
-                        {mockArguments.map((argument, index) => (
-                            <motion.div
-                                key={argument.id}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.5, delay: 0.1 * index }}
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+            {/* Header */}
+            <div className="border-b border-gray-200 sticky top-0 z-10 backdrop-blur-sm bg-white/95">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                            <Link
+                                href="/debates"
+                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                             >
-                                <Card className={`p-6 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-l-4 ${argument.position === 'support'
-                                    ? 'border-l-green-500'
-                                    : 'border-l-red-500'
-                                    }`}>
-                                    <div className="flex items-start space-x-4">
-                                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-lg">
-                                            {argument.author.avatar}
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="flex items-center space-x-3 mb-2">
-                                                <p className="font-semibold text-slate-900 dark:text-white">
-                                                    {argument.author.name}
-                                                </p>
-                                                <span className="text-sm text-slate-500 dark:text-slate-400">
-                                                    {argument.createdAt}
-                                                </span>
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${argument.position === 'support'
-                                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                                    }`}>
-                                                    {argument.position === 'support' ? 'Ủng hộ' : 'Phản bác'}
-                                                </span>
-                                            </div>
-                                            <p className="text-slate-700 dark:text-slate-300 mb-4">
-                                                {argument.content}
-                                            </p>
-                                            <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
-                                                <button className="flex items-center space-x-1 hover:text-red-600 transition-colors">
-                                                    <HeartIcon className="h-4 w-4" />
-                                                    <span>{argument.likes}</span>
-                                                </button>
-                                                <button className="flex items-center space-x-1 hover:text-blue-600 transition-colors">
-                                                    <ChatBubbleLeftRightIcon className="h-4 w-4" />
-                                                    <span>{argument.replies} trả lời</span>
-                                                </button>
-                                            </div>
-                                        </div>
+                                <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
+                            </Link>
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-900 line-clamp-1">
+                                    {currentThread?.title || 'Đang tải...'}
+                                </h1>
+                                <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
+                                    <div className="flex items-center space-x-1">
+                                        <EyeIcon className="h-4 w-4" />
+                                        <span>0 lượt xem</span>
                                     </div>
-                                </Card>
-                            </motion.div>
-                        ))}
-                    </div>
-                </motion.div>
+                                    <div className="flex items-center space-x-1">
+                                        <ChatBubbleLeftRightIcon className="h-4 w-4" />
+                                        <span>{arguments_.length} luận điểm</span>
+                                    </div>
+                                    <div className="flex items-center space-x-1">
+                                        <ClockIcon className="h-4 w-4" />
+                                        <span>{currentThread?.createdAt ? formatRelativeTime(currentThread.createdAt) : 'Không rõ'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                {/* Argument Form Modal */}
-                <AnimatePresence>
-                    {showArgumentForm && (
+                        <div className="flex items-center space-x-2">
+                            <span className={cn(
+                                "px-3 py-1 text-xs font-medium rounded-full",
+                                currentThread?.status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
+                                    currentThread?.status === 'CLOSED' ? 'bg-red-100 text-red-700' :
+                                        'bg-yellow-100 text-yellow-700'
+                            )}>
+                                {currentThread?.status === 'ACTIVE' ? 'Đang hoạt động' :
+                                    currentThread?.status === 'CLOSED' ? 'Đã đóng' : 'Chờ duyệt'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Main Content */}
+                    <div className="lg:col-span-2 space-y-8">
+                        {/* Thread Description */}
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                            onClick={() => setShowArgumentForm(false)}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-white rounded-xl shadow-lg p-6 border border-gray-200"
                         >
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Mô tả tranh luận</h2>
+                            <p className="text-gray-700 leading-relaxed">
+                                {currentThread?.description || 'Không có mô tả chi tiết.'}
+                            </p>
+                        </motion.div>
+
+                        {/* Voting System */}
+                        {threadId && stats && (
                             <motion.div
-                                initial={{ scale: 0.9, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                exit={{ scale: 0.9, opacity: 0 }}
-                                className="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-2xl"
-                                onClick={(e) => e.stopPropagation()}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 }}
+                                className="bg-white rounded-xl shadow-lg p-6 border border-gray-200"
                             >
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
-                                    Thêm luận điểm mới
-                                </h3>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                            Quan điểm
-                                        </label>
-                                        <select className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700">
-                                            <option value="support">Ủng hộ</option>
-                                            <option value="against">Phản bác</option>
-                                            <option value="neutral">Trung lập</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                            Nội dung luận điểm
-                                        </label>
-                                        <textarea
-                                            rows={4}
-                                            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700"
-                                            placeholder="Chia sẻ quan điểm của bạn..."
+                                <h2 className="text-lg font-semibold text-gray-900 mb-6">Bình chọn của cộng đồng</h2>
+                                <VotingSystem
+                                    threadId={threadId}
+                                    stats={stats!}
+                                    userVote={userVote?.voteType || null}
+                                    onVote={vote}
+                                    isLoading={isVoting}
+                                    disabled={!user}
+                                    showDetailedStats={true}
+                                />
+                                {!user && (
+                                    <p className="text-center text-sm text-gray-500 mt-4">
+                                        <Link href="/login" className="text-blue-600 hover:underline">
+                                            Đăng nhập
+                                        </Link> để tham gia bình chọn
+                                    </p>
+                                )}
+                            </motion.div>
+                        )}
+
+                        {/* Arguments Section */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="bg-white rounded-xl shadow-lg border border-gray-200"
+                        >
+                            {/* Arguments Header */}
+                            <div className="p-6 border-b border-gray-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-lg font-semibold text-gray-900">
+                                        Luận điểm ({filteredArguments.length})
+                                    </h2>
+                                    {user && (
+                                        <motion.button
+                                            onClick={() => setShowArgumentForm(!showArgumentForm)}
+                                            className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                        >
+                                            <PlusIcon className="h-4 w-4" />
+                                            <span>Thêm luận điểm</span>
+                                        </motion.button>
+                                    )}
+                                </div>
+
+                                {/* Search and Filters */}
+                                <div className="flex flex-col sm:flex-row gap-4">
+                                    {/* Search */}
+                                    <div className="relative flex-1">
+                                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                        <input
+                                            type="text"
+                                            placeholder="Tìm kiếm luận điểm..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         />
                                     </div>
-                                    <div className="flex justify-end space-x-3">
-                                        <Button
-                                            variant="ghost"
-                                            onClick={() => setShowArgumentForm(false)}
+
+                                    {/* Filters */}
+                                    <div className="flex space-x-2">
+                                        <select
+                                            value={argumentFilter}
+                                            onChange={(e) => setArgumentFilter(e.target.value as any)}
+                                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         >
-                                            Hủy
-                                        </Button>
-                                        <Button className="bg-gradient-to-r from-red-500 to-amber-500 text-white">
-                                            Đăng luận điểm
-                                        </Button>
+                                            <option value="ALL">Tất cả loại</option>
+                                            <option value="SUPPORT">Ủng hộ</option>
+                                            <option value="OPPOSE">Phản đối</option>
+                                            <option value="NEUTRAL">Trung lập</option>
+                                        </select>
+
+                                        <select
+                                            value={statusFilter}
+                                            onChange={(e) => setStatusFilter(e.target.value as any)}
+                                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        >
+                                            <option value="APPROVED">Đã duyệt</option>
+                                            <option value="ALL">Tất cả trạng thái</option>
+                                            <option value="PENDING">Chờ duyệt</option>
+                                        </select>
+
+                                        <select
+                                            value={sortBy}
+                                            onChange={(e) => setSortBy(e.target.value as any)}
+                                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        >
+                                            <option value="newest">Mới nhất</option>
+                                            <option value="oldest">Cũ nhất</option>
+                                            <option value="most_liked">Được thích nhất</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Argument Form */}
+                            <AnimatePresence>
+                                {showArgumentForm && user && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="p-6 border-b border-gray-200"
+                                    >
+                                        <ArgumentForm
+                                            threadId={threadId}
+                                            onSubmit={handleArgumentSubmit}
+                                            onCancel={() => setShowArgumentForm(false)}
+                                            openOnMount
+                                            defaultArgumentType={userVote?.voteType || 'NEUTRAL'}
+                                            onTeamChange={(type) => {
+                                                // Sync user's vote to selected team when they choose different team
+                                                if (!user) return
+                                                if (type === 'NEUTRAL') return
+                                                vote({ threadId, voteType: type })
+                                            }}
+                                        />
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            {/* Arguments List */}
+                            <div className="p-6">
+                                {isLoadingArguments ? (
+                                    <div className="flex items-center justify-center py-12">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="w-6 h-6 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                                            <span className="text-gray-600">Đang tải luận điểm...</span>
+                                        </div>
+                                    </div>
+                                ) : filteredArguments.length === 0 ? (
+                                    <div className="text-center py-12">
+                                        <ChatBubbleLeftRightIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                        <h3 className="text-lg font-medium text-gray-900 mb-2">Chưa có luận điểm</h3>
+                                        <p className="text-gray-600 mb-4">
+                                            {user ? 'Hãy là người đầu tiên đóng góp luận điểm cho cuộc tranh luận này.' : 'Đăng nhập để thêm luận điểm đầu tiên.'}
+                                        </p>
+                                        {user && (
+                                            <motion.button
+                                                onClick={() => setShowArgumentForm(true)}
+                                                className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
+                                            >
+                                                Thêm luận điểm đầu tiên
+                                            </motion.button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        <AnimatePresence>
+                                            {filteredArguments.map((argument, index) => (
+                                                <motion.div
+                                                    key={argument._id}
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: -20 }}
+                                                    transition={{ delay: index * 0.1 }}
+                                                >
+                                                    <ArgumentCard
+                                                        argument={argument}
+                                                        onLike={handleArgumentLike}
+                                                        onDislike={handleArgumentDislike}
+                                                        currentUserRole={user?.role as 'USER' | 'MODERATOR' | 'ADMIN' || 'USER'}
+                                                        showModerationActions={user?.role === 'MODERATOR' || user?.role === 'ADMIN'}
+                                                    />
+                                                </motion.div>
+                                            ))}
+                                        </AnimatePresence>
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+                    </div>
+
+                    {/* Sidebar */}
+                    <div className="space-y-6">
+                        {/* Thread Info */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="bg-white rounded-xl shadow-lg p-6 border border-gray-200"
+                        >
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Thông tin tranh luận</h3>
+                            <div className="space-y-4">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-8 h-8 hcm-gradient-luxury rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                        {currentThread?.createdBy?.lastName?.[0] || currentThread?.createdBy?.firstName?.[0] || '👤'}
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-900">
+                                            {currentThread?.createdBy?.firstName} {currentThread?.createdBy?.lastName}
+                                        </p>
+                                        <p className="text-xs text-gray-500">Người tạo</p>
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-gray-200 pt-4 space-y-3">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-500">Ngày tạo:</span>
+                                        <span className="text-gray-900">
+                                            {currentThread?.createdAt ? new Date(currentThread.createdAt).toLocaleDateString('vi-VN') : 'Không rõ'}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-500">Cập nhật:</span>
+                                        <span className="text-gray-900">
+                                            {currentThread?.updatedAt ? formatRelativeTime(currentThread.updatedAt) : 'Không rõ'}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-500">Lượt xem:</span>
+                                        <span className="text-gray-900">0</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-500">Luận điểm:</span>
+                                        <span className="text-gray-900">{arguments_.length}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Quick Stats */}
+                        {stats && (
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.1 }}
+                                className="bg-white rounded-xl shadow-lg p-6 border border-gray-200"
+                            >
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Thống kê nhanh</h3>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-2">
+                                            <UsersIcon className="h-5 w-5 text-blue-500" />
+                                            <span className="text-sm text-gray-600">Tổng bình chọn</span>
+                                        </div>
+                                        <span className="text-lg font-bold text-gray-900">{stats?.totalVotes || 0}</span>
+                                    </div>
+
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-2">
+                                            <span className="text-green-500">👍</span>
+                                            <span className="text-sm text-gray-600">Ủng hộ</span>
+                                        </div>
+                                        <span className="text-lg font-bold text-green-600">{stats?.support || 0}</span>
+                                    </div>
+
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-2">
+                                            <span className="text-red-500">👎</span>
+                                            <span className="text-sm text-gray-600">Phản đối</span>
+                                        </div>
+                                        <span className="text-lg font-bold text-red-600">{stats?.oppose || 0}</span>
                                     </div>
                                 </div>
                             </motion.div>
+                        )}
+
+                        {/* Related Threads */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="bg-white rounded-xl shadow-lg p-6 border border-gray-200"
+                        >
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Tranh luận liên quan</h3>
+                            <div className="space-y-3">
+                                {threads.filter(t => t._id !== threadId).slice(0, 3).map((thread) => (
+                                    <Link
+                                        key={thread._id}
+                                        href={`/debates/${thread._id}`}
+                                        className="block p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                                    >
+                                        <h4 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
+                                            {thread.title}
+                                        </h4>
+                                        <p className="text-xs text-gray-500">
+                                            {thread.totalArguments || 0} luận điểm • {formatRelativeTime(thread.createdAt)}
+                                        </p>
+                                    </Link>
+                                ))}
+                            </div>
                         </motion.div>
-                    )}
-                </AnimatePresence>
+                    </div>
+                </div>
             </div>
+
+            {/* Debug Component */}
+            <DebateDebug
+                threadId={threadId}
+                threads={threads}
+                currentThread={currentThread}
+                isLoading={threadsLoading || isLoadingArguments}
+                arguments_={arguments_}
+                error={null}
+            />
         </div>
     )
 }
+
+export default DebateDetailPage

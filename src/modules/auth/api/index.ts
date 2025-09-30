@@ -28,7 +28,7 @@ export interface AuthResponse {
 
 export const authApi = {
     loginWithEmail: async (data: EmailLoginRequest): Promise<AuthResponse> => {
-        const r = await apiClient.post<any>('/v1/auth/email/login', data)
+        const r = await apiClient.post<any>('/auth/email/login', data)
         const d = r.data?.data || r.data
         return {
             accessToken: d?.access_token || d?.accessToken,
@@ -38,7 +38,7 @@ export const authApi = {
     },
 
     registerWithEmail: async (data: RegisterRequest): Promise<AuthResponse> => {
-        const r = await apiClient.post<any>('/v1/auth/email/register', data)
+        const r = await apiClient.post<any>('/auth/email/register', data)
         const d = r.data?.data || r.data
         return {
             accessToken: d?.access_token || d?.accessToken,
@@ -49,7 +49,7 @@ export const authApi = {
 
     googleOAuth: async (data: GoogleAuthRequest): Promise<AuthResponse> => {
         try {
-            const r = await apiClient.post<any>('/v1/auth/google', data)
+            const r = await apiClient.post<any>('/auth/google', data)
             const d = r.data?.data || r.data
             return {
                 accessToken: d?.access_token || d?.accessToken,
@@ -107,7 +107,7 @@ export const authApi = {
     },
 
     verifyEmail: (hash: string) =>
-        apiClient.post<{ success: boolean }>(`/v1/auth/email/verify-email/${encodeURIComponent(hash)}`).then(r => r.data),
+        apiClient.post<{ success: boolean }>(`/auth/email/verify-email/${encodeURIComponent(hash)}`).then(r => r.data),
 }
 
 // Export verification API

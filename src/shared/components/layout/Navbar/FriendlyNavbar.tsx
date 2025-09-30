@@ -70,6 +70,7 @@ const getUserMenuItemsByRole = (userRole: string | undefined) => {
     const roleSpecificItems = [
         // USER - Link đến dashboard riêng
         { name: 'Dashboard cá nhân', href: '/my-dashboard', icon: UserCircleIcon, roles: ['USER'] },
+        { name: 'Chủ đề của tôi', href: '/my-threads', icon: PlusCircleIcon, roles: ['USER'] },
         { name: 'Luận điểm của tôi', href: '/my-arguments', icon: DocumentTextIcon, roles: ['USER'] },
         { name: 'Bình chọn của tôi', href: '/my-votes', icon: HeartIcon, roles: ['USER'] },
 
