@@ -154,7 +154,7 @@ export const threadApi = {
             }
 
             const response = await apiClient.get<ThreadRequestsResponse>(
-                `/debate/threads/requests?${queryParams.toString()}`
+                `/debate/threads?${queryParams.toString()}`
             )
             return response.data
         } catch (error) {

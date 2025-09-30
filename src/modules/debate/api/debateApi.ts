@@ -79,7 +79,7 @@ export const debateApi = {
             const queryParams = new URLSearchParams()
 
             if (params.status) queryParams.append('status', params.status)
-            if (params.search) queryParams.append('search', params.search)
+            if (params.search !== undefined) queryParams.append('search', params.search)
             if (params.createdBy) queryParams.append('createdBy', params.createdBy)
             if (params.moderatorId) queryParams.append('moderatorId', params.moderatorId)
             if (params.page) queryParams.append('page', params.page.toString())
