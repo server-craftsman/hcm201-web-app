@@ -86,7 +86,7 @@ export const debateApi = {
             if (params.limit) queryParams.append('limit', params.limit.toString())
             if (params.sort) queryParams.append('sort', params.sort)
 
-            const url = `/v1/debate/threads${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+            const url = `/debate/threads${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
             const response = await apiClient.get<ApiResponse<DebateThread>>(url)
 
             return response.data
@@ -171,7 +171,7 @@ export const debateApi = {
             if (params.limit) queryParams.append('limit', params.limit.toString())
             if (params.sort) queryParams.append('sort', params.sort)
 
-            const url = `/v1/debate/moderation/queue${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+            const url = `/debate/moderation/queue${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
             const response = await apiClient.get<ApiResponse<DebateModerationItem>>(url)
 
             return response.data

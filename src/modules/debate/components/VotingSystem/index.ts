@@ -1,0 +1,1 @@
+export { VotingSystem } from './VotingSystem'

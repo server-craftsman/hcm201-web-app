@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { Button, Card, Input, Select } from '@/shared/components/ui'
 import { useMediaQuery } from '@/shared/hooks'
-import { DebateCard } from '@/modules/debate/components'
+import { DebateCard } from '@/modules/debate/components/DebateCard/DebateCard'
 import { useDebates, useDebateThreads } from '@/modules/debate/hooks'
 import { DEBATE_CATEGORIES, DIFFICULTY_LEVELS, DEBATE_CATEGORY_NAMES, DIFFICULTY_LEVEL_NAMES } from '@/shared/constants'
 import {
