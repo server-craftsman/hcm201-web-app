@@ -29,15 +29,16 @@ export default function DebatesPage() {
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('')
     const [selectedDifficulty, setSelectedDifficulty] = useState('')
-    const [sortBy, setSortBy] = useState('createdAt')
+    const [sortBy, setSortBy] = useState('date')
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
     const [showFilters, setShowFilters] = useState(false)
     const [hoveredStat, setHoveredStat] = useState<number | null>(null)
-    const [createdBy, setCreatedBy] = useState('')
-    const [moderatorId, setModeratorId] = useState('')
-
-    const [page, setPage] = useState(1)
-    const [limit, setLimit] = useState(20)
+    const [currentPage, setCurrentPage] = useState(1)
+    // API filters
+    const [statusFilter, setStatusFilter] = useState<string>('ACTIVE')
+    const [createdBy, setCreatedBy] = useState<string>('')
+    const [moderatorId, setModeratorId] = useState<string>('')
+    const [limit, setLimit] = useState<number>(20)
 
     const isDesktop = useMediaQuery('(min-width: 1024px)')
 
@@ -49,11 +50,11 @@ export default function DebatesPage() {
         meta: apiMeta,
         refetch: refetchThreads
     } = useDebateThreads({
-        search: searchTerm,
-        status: 'ACTIVE',
+        search: searchTerm || undefined,
+        status: statusFilter || undefined,
         createdBy: createdBy || undefined,
         moderatorId: moderatorId || undefined,
-        page,
+        page: currentPage,
         limit,
         sort: `${sortBy}:${sortOrder === 'desc' ? '-1' : '1'}`
     })
@@ -64,7 +65,7 @@ export default function DebatesPage() {
         isLoading: fallbackLoading,
         error: fallbackError,
         totalCount: fallbackTotalCount,
-        currentPage,
+        currentPage: fallbackCurrentPage,
         totalPages: fallbackTotalPages,
         loadDebates,
         setFilters,
@@ -116,6 +117,7 @@ export default function DebatesPage() {
 
     const handleSearch = (value: string) => {
         setSearchTerm(value)
+        setCurrentPage(1)
         setFilters({ search: value })
     }
 
@@ -146,6 +148,11 @@ export default function DebatesPage() {
         setSelectedDifficulty('')
         setSortBy('date')
         setSortOrder('desc')
+        setCurrentPage(1)
+        setStatusFilter('ACTIVE')
+        setCreatedBy('')
+        setModeratorId('')
+        setLimit(20)
         resetFilters()
     }
 
@@ -274,8 +281,78 @@ export default function DebatesPage() {
                     transition={{ duration: 0.8, delay: 0.6 }}
                     className="relative bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl rounded-3xl p-8 border border-white/20 dark:border-slate-700/50 shadow-xl overflow-hidden"
                 >
-                    {/* ... (unchanged filter section) ... */}
-                    {/* The rest of the filter section remains unchanged */}
+                    {/* Decorative background */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/10 to-amber-500/10 rounded-full blur-3xl" />
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-500/10 to-purple-500/10 rounded-full blur-2xl" />
+
+                    {/* Filters grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+                        {/* Search */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Tìm kiếm</label>
+                            <div className="relative">
+                                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Tìm kiếm chủ đề..."
+                                    value={searchTerm}
+                                    onChange={(e) => handleSearch(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white placeholder-neutral-500 focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
+                                />
+                            </div>
+                        </div>
+
+
+                        {/* Limit */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Số mục/trang</label>
+                            <select
+                                value={limit}
+                                onChange={(e) => { setLimit(parseInt(e.target.value || '20')); setCurrentPage(1) }}
+                                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
+                            >
+                                {[10, 20, 30, 50, 100].map(v => (
+                                    <option key={v} value={v}>{v}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Sort field */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Sắp xếp</label>
+                            <div className="flex gap-2">
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => handleSortChange(e.target.value)}
+                                    className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
+                                >
+                                    <option value="date">Ngày tạo</option>
+                                    <option value="popularity">Phổ biến</option>
+                                    <option value="arguments">Số lượng tranh luận</option>
+                                    <option value="views">Lượt xem</option>
+                                </select>
+                                <button
+                                    onClick={handleSortOrderChange}
+                                    className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors"
+                                >
+                                    <ChevronUpDownIcon className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Filter summary and actions */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-6 mt-6 border-t border-neutral-200 dark:border-neutral-700 relative z-10">
+                        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                            Trang <span className="font-semibold text-neutral-900 dark:text-white">{currentPage}</span> • Hiển thị <span className="font-semibold text-neutral-900 dark:text-white">{finalDebates.length}</span> mục / trang
+                        </p>
+                        {(searchTerm || statusFilter || createdBy || moderatorId || limit !== 20 || sortBy !== 'date' || sortOrder !== 'desc') && (
+                            <Button variant="ghost" size="sm" onClick={handleResetFilters}>
+                                <XMarkIcon className="h-4 w-4 mr-2" />
+                                Xóa bộ lọc
+                            </Button>
+                        )}
+                    </div>
                 </motion.div>
 
                 {/* Error message */}
