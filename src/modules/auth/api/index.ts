@@ -15,7 +15,6 @@ export interface RegisterRequest {
 
 export interface GoogleAuthRequest {
     accessToken: string
-    idToken: string
 }
 
 export interface AuthResponse {
@@ -49,16 +48,12 @@ export const authApi = {
 
     googleOAuth: async (data: GoogleAuthRequest): Promise<AuthResponse> => {
         try {
-            // Validate tokens before sending to backend
-            if (!data.idToken || data.idToken.trim() === '') {
-                throw new Error('ID token is required and cannot be empty')
-            }
+            // Validate access token before sending to backend
             if (!data.accessToken || data.accessToken.trim() === '') {
                 throw new Error('Access token is required and cannot be empty')
             }
 
             console.log('🔐 Sending Google OAuth request to backend:', {
-                idToken: data.idToken.substring(0, 20) + '...',
                 accessToken: data.accessToken.substring(0, 20) + '...'
             })
 
@@ -78,44 +73,23 @@ export const authApi = {
             // If backend is not available, create a mock user from Google token
             console.warn('Backend not available, creating mock user from Google token')
 
-            if (!data.idToken || data.idToken.trim() === '') {
-                throw new Error('ID token is required and cannot be empty')
-            }
             if (!data.accessToken || data.accessToken.trim() === '') {
                 throw new Error('Access token is required and cannot be empty')
             }
 
-            // Decode ID token to get user info (basic JWT decode without verification)
-            let userInfo: any = {}
-            if (data.idToken) {
-                try {
-                    const base64Url = data.idToken.split('.')[1]
-                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-                    const jsonPayload = decodeURIComponent(
-                        atob(base64)
-                            .split('')
-                            .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-                            .join('')
-                    )
-                    userInfo = JSON.parse(jsonPayload)
-                } catch (e) {
-                    console.error('Failed to decode ID token:', e)
-                }
-            }
-
-            // Create mock user with Google info
+            // Create mock user for Google authentication
             const mockUser = {
-                id: userInfo.sub || `google_${Date.now()}`,
-                email: userInfo.email || 'unknown@gmail.com',
-                username: userInfo.email?.split('@')[0] || 'googleuser',
-                displayName: userInfo.name || 'Google User',
-                firstName: userInfo.given_name || 'Google',
-                lastName: userInfo.family_name || 'User',
-                avatar: userInfo.picture || null,
+                id: `google_${Date.now()}`,
+                email: 'google.user@gmail.com',
+                username: 'googleuser',
+                displayName: 'Google User',
+                firstName: 'Google',
+                lastName: 'User',
+                avatar: null,
                 role: 'student',
                 isVerified: true, // Google accounts are pre-verified
                 provider: 'google',
-                providerId: userInfo.sub,
+                providerId: `google_${Date.now()}`,
                 createdAt: new Date().toISOString(),
             }
 

@@ -267,11 +267,11 @@ export function useAuth(): UseAuthReturn {
 
             console.log('🔐 Starting Google login process...')
 
-            const { accessToken, idToken } = await getGoogleTokens(googleClientId, authConfig.google.scopes)
+            const { accessToken } = await getGoogleTokens(googleClientId, authConfig.google.scopes)
 
-            console.log('✅ Google tokens received, sending to backend...')
+            console.log('✅ Google access token received, sending to backend...')
 
-            const result: AuthResult = await authApi.googleOAuth({ accessToken, idToken })
+            const result: AuthResult = await authApi.googleOAuth({ accessToken })
 
             console.log('✅ Backend authentication successful, storing user data...')
 
@@ -303,8 +303,6 @@ export function useAuth(): UseAuthReturn {
             if (errorMessage.includes('blocked') || errorMessage.includes('ad blocker')) {
                 // Show special notification for ad blocker issues
                 authNotifications.showGoogleLoginError('Google Sign-In bị chặn bởi trình chặn quảng cáo. Vui lòng tắt trình chặn quảng cáo cho trang web này.')
-            } else if (errorMessage.includes('ID token is required')) {
-                authNotifications.showGoogleLoginError('Không thể lấy ID token từ Google. Vui lòng thử lại hoặc kiểm tra trình chặn quảng cáo.')
             } else if (errorMessage.includes('Access token is required')) {
                 authNotifications.showGoogleLoginError('Không thể lấy Access token từ Google. Vui lòng thử lại hoặc kiểm tra trình chặn quảng cáo.')
             } else {
