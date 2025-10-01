@@ -161,13 +161,34 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
     const renderUserAvatar = (size: number, fontSize: string = "text-sm font-semibold") => {
         if (user && user.avatar) {
             return (
-                <Image
-                    src={user.avatar}
-                    alt={getUserDisplayName()}
-                    width={size}
-                    height={size}
-                    className={`rounded-full object-cover`}
-                />
+                <div
+                    style={{
+                        width: size,
+                        height: size,
+                        minWidth: size,
+                        minHeight: size,
+                        borderRadius: '50%',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'linear-gradient(to right, #60a5fa, #a78bfa)' // fallback bg
+                    }}
+                >
+                    <Image
+                        src={user.avatar}
+                        alt={getUserDisplayName()}
+                        width={size}
+                        height={size}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            borderRadius: '50%',
+                            display: 'block'
+                        }}
+                    />
+                </div>
             )
         }
         return (

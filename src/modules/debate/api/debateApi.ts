@@ -32,10 +32,10 @@ export interface DebateThread {
 export interface DebateModerationItem {
     id: string
     threadId: string
-    argumentType: 'support' | 'oppose' | 'neutral'
+    argumentType: 'SUPPORT' | 'OPPOSE' | 'NEUTRAL'
     content: string
     authorId: string
-    status: 'pending' | 'approved' | 'rejected'
+    status: 'PENDING' | 'APPROVED' | 'REJECTED'
     createdAt: string
     moderatorNotes?: string
 }
@@ -186,19 +186,19 @@ export const debateApi = {
                         {
                             id: 'mod1',
                             threadId: '1',
-                            argumentType: 'support',
+                            argumentType: 'SUPPORT',
                             content: 'Tôi hoàn toàn đồng ý với quan điểm này. Tư tưởng Hồ Chí Minh về xây dựng đất nước thực sự có ý nghĩa quan trọng trong bối cảnh hiện tại...',
                             authorId: 'user789',
-                            status: 'pending',
+                            status: 'PENDING',
                             createdAt: '2024-01-16T08:20:00Z'
                         },
                         {
                             id: 'mod2',
                             threadId: '1',
-                            argumentType: 'oppose',
+                            argumentType: 'OPPOSE',
                             content: 'Tuy nhiên, tôi cho rằng cần có những điều chỉnh phù hợp với thời đại. Một số quan điểm cần được cập nhật theo bối cảnh toàn cầu hóa...',
                             authorId: 'user012',
-                            status: 'pending',
+                            status: 'PENDING',
                             createdAt: '2024-01-16T07:45:00Z'
                         }
                     ],

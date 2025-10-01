@@ -31,12 +31,13 @@ const AdminDashboard = () => {
         todayVotes: 0
     })
 
-    const { items, meta } = useModerationQueue({ status: 'pending', page: 1, limit: 10 })
+    const [recentThreadRequests, setRecentThreadRequests] = useState<any[]>([])
+    const { items, meta } = useModerationQueue({ status: 'PENDING', page: 1, limit: 10 })
 
     useEffect(() => {
         const load = async () => {
             try {
-                const pendingReq = await threadApi.getThreadRequests(1, 1, 'PENDING')
+                const pendingReq = await threadApi.getThreadRequests(1, 5, 'DRAFT')
                 const activeRes = await debateApi.getDebateThreads({ status: 'ACTIVE', page: 1, limit: 1, search: '', sort: 'createdAt:-1' })
                 const allRes = await debateApi.getDebateThreads({ page: 1, limit: 1, search: '', sort: 'createdAt:-1' })
 
@@ -47,6 +48,15 @@ const AdminDashboard = () => {
                     totalThreads: allRes.data.totalItems,
                     pendingArguments: items.length
                 }))
+
+                // Set recent thread requests from API
+                setRecentThreadRequests(pendingReq.data.items.map((thread: any) => ({
+                    id: thread._id,
+                    title: thread.title,
+                    author: `${thread.createdBy.firstName} ${thread.createdBy.lastName}`,
+                    createdAt: new Date(thread.createdAt).toLocaleDateString('vi-VN'),
+                    status: thread.status
+                })))
             } catch (e) {
                 console.warn('Failed to load admin stats', e)
             }
@@ -54,29 +64,6 @@ const AdminDashboard = () => {
         load()
     }, [items.length])
 
-    const recentThreadRequests = [
-        {
-            id: 1,
-            title: "Tư tưởng Hồ Chí Minh trong giáo dục hiện đại",
-            author: "Nguyễn Văn A",
-            createdAt: "2 giờ trước",
-            status: "PENDING"
-        },
-        {
-            id: 2,
-            title: "Giá trị văn hóa dân tộc trong tư tưởng Hồ Chí Minh",
-            author: "Trần Thị B",
-            createdAt: "4 giờ trước",
-            status: "PENDING"
-        },
-        {
-            id: 3,
-            title: "Đạo đức cách mạng theo quan điểm Hồ Chí Minh",
-            author: "Lê Văn C",
-            createdAt: "1 ngày trước",
-            status: "APPROVED"
-        }
-    ]
 
     const moderatorPerformance = [
         {
@@ -213,29 +200,35 @@ const AdminDashboard = () => {
                         </div>
                         <div className="p-6">
                             <div className="space-y-4">
-                                {recentThreadRequests.map((request) => (
-                                    <div key={request.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                                        <div className="flex-1">
-                                            <h4 className="font-medium text-gray-900 mb-1">
-                                                {request.title}
-                                            </h4>
-                                            <p className="text-sm text-gray-600">
-                                                Bởi {request.author} • {request.createdAt}
-                                            </p>
+                                {recentThreadRequests.length > 0 ? (
+                                    recentThreadRequests.map((request: any) => (
+                                        <div key={request.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                            <div className="flex-1">
+                                                <h4 className="font-medium text-gray-900 mb-1">
+                                                    {request.title}
+                                                </h4>
+                                                <p className="text-sm text-gray-600">
+                                                    Bởi {request.author} • {request.createdAt}
+                                                </p>
+                                            </div>
+                                            <div className="ml-4">
+                                                {request.status === 'DRAFT' ? (
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                        Chờ duyệt
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        Đã duyệt
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="ml-4">
-                                            {request.status === 'PENDING' ? (
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                    Chờ duyệt
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    Đã duyệt
-                                                </span>
-                                            )}
-                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <p className="text-gray-500">Không có yêu cầu chủ đề nào chờ duyệt</p>
                                     </div>
-                                ))}
+                                )}
                             </div>
                             <div className="mt-6">
                                 <motion.button

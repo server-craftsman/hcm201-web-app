@@ -44,7 +44,7 @@ export default function DebatesPage() {
         refetch: refetchThreads
     } = useDebateThreads({
         search: searchTerm,
-        status: '', // Empty means all statuses
+        status: 'ACTIVE', // Empty means all statuses
         page: 1,
         limit: 20,
         sort: `${sortBy}:${sortOrder === 'desc' ? '-1' : '1'}`
@@ -87,7 +87,7 @@ export default function DebatesPage() {
         author: {
             id: thread.createdBy._id,
             name: `${thread.createdBy.firstName} ${thread.createdBy.lastName}`,
-            avatar: thread.createdBy.firstName?.[0]?.toUpperCase() || thread.createdBy.lastName?.[0]?.toUpperCase() || thread.createdBy.username?.[0]?.toUpperCase() || '👤'
+            avatar: (thread.createdBy as any).avatar || thread.createdBy.firstName?.[0]?.toUpperCase() || thread.createdBy.lastName?.[0]?.toUpperCase() || thread.createdBy.username?.[0]?.toUpperCase() || '👤'
         },
         // Additional API data
         totalApprovedArguments: thread.totalApprovedArguments,
@@ -163,14 +163,14 @@ export default function DebatesPage() {
             color: 'from-red-500 to-red-600'
         },
         {
-            title: 'Lượt tham gia',
+            title: 'Tổng luận điểm',
             value: finalDebates.reduce((total, debate) => total + (debate.argumentCount || 0), 0).toString(),
             change: '+89 tuần này',
             icon: UsersIcon,
             color: 'from-green-500 to-green-600'
         },
         {
-            title: 'Lượt xem',
+            title: 'Tổng bình chọn',
             value: finalDebates.reduce((total, debate) => total + (debate.viewCount || 0), 0).toString(),
             change: '+234 tuần này',
             icon: EyeIcon,
