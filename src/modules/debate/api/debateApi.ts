@@ -267,5 +267,67 @@ export const debateApi = {
             console.error('Failed to get admin dashboard:', error)
             throw error
         }
+    },
+
+    // POST /api/v1/debate/moderate - Moderator performs moderation action on an argument
+    moderateArgument: async (argumentId: string, action: 'APPROVE' | 'REJECT' | 'FLAG' | 'HIGHLIGHT' | 'UNHIGHLIGHT', reason?: string, notes?: string) => {
+        try {
+            const response = await apiClient.post('/debate/moderate', {
+                argumentId,
+                action,
+                reason,
+                notes
+            })
+            return response.data
+        } catch (error) {
+            console.error('Failed to moderate argument:', error)
+            throw error
+        }
+    },
+
+    // GET /api/v1/debate/moderator/moderation-stats - Get moderator's moderation statistics
+    getModeratorStats: async () => {
+        try {
+            const response = await apiClient.get('/debate/moderator/moderation-stats')
+            return response.data
+        } catch (error) {
+            console.error('Failed to get moderator stats:', error)
+            throw error
+        }
+    },
+
+    // GET /api/v1/debate/moderator/assigned-threads - Get threads assigned to current moderator
+    getAssignedThreads: async (page: number = 1, limit: number = 20) => {
+        try {
+            const response = await apiClient.get('/debate/moderator/assigned-threads', {
+                params: { page, limit }
+            })
+            return response.data
+        } catch (error) {
+            console.error('Failed to get assigned threads:', error)
+            throw error
+        }
+    },
+
+    // GET /api/v1/debate/moderator/dashboard - Get moderator dashboard data
+    getModeratorDashboard: async () => {
+        try {
+            const response = await apiClient.get('/debate/moderator/dashboard')
+            return response.data
+        } catch (error) {
+            console.error('Failed to get moderator dashboard:', error)
+            throw error
+        }
+    },
+
+    // GET /api/v1/debate/arguments/{id} - Get argument details
+    getArgumentById: async (argumentId: string) => {
+        try {
+            const response = await apiClient.get(`/debate/arguments/${argumentId}`)
+            return response.data
+        } catch (error) {
+            console.error('Failed to get argument details:', error)
+            throw error
+        }
     }
 }
