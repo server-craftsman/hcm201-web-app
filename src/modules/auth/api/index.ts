@@ -57,14 +57,24 @@ export const authApi = {
                 throw new Error('Access token is required and cannot be empty')
             }
 
+            console.log('🔐 Sending Google OAuth request to backend:', {
+                idToken: data.idToken.substring(0, 20) + '...',
+                accessToken: data.accessToken.substring(0, 20) + '...'
+            })
+
             const r = await apiClient.post<any>('/auth/google', data)
             const d = r.data?.data || r.data
+
+            console.log('✅ Google OAuth backend response:', d)
+
             return {
                 accessToken: d?.access_token || d?.accessToken,
                 refreshToken: d?.refresh_token || d?.refreshToken,
                 user: d?.user,
             }
         } catch (error) {
+            console.error('❌ Google OAuth backend error:', error)
+
             // If backend is not available, create a mock user from Google token
             console.warn('Backend not available, creating mock user from Google token')
 

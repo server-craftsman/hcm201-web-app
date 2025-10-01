@@ -81,6 +81,17 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         }
     }
 
+    const handleGoogleLogin = async () => {
+        try {
+            setSubmitError(null)
+            await loginWithGoogle()
+            onSuccess?.()
+        } catch (error) {
+            const message = (error as any)?.response?.data?.message || (error as Error)?.message || 'Google đăng nhập thất bại'
+            setSubmitError(message)
+        }
+    }
+
     return (
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
             <Card variant="luxury" className={cn("w-full max-w-md", className)}>
@@ -90,7 +101,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
                 <CardContent>
                     <motion.button
                         type="button"
-                        onClick={() => loginWithGoogle()}
+                        onClick={handleGoogleLogin}
                         disabled={isLoading}
                         whileHover={{ scale: 1.02, y: -2 }}
                         whileTap={{ scale: 0.98 }}
