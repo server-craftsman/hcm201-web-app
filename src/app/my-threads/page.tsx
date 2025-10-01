@@ -31,7 +31,7 @@ const MyThreadRequestsPage = () => {
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="mb-6 flex items-center justify-between">
                     <h1 className="text-2xl font-bold text-gray-900">Yêu cầu chủ đề của tôi</h1>
-                    <Link href="/debates/create" className="text-sm text-blue-600 hover:underline">+ Tạo yêu cầu mới</Link>
+                    <Link href="/debates/request" className="text-sm text-blue-600 hover:underline">+ Tạo yêu cầu mới</Link>
                 </div>
 
                 {loading && (
@@ -54,7 +54,7 @@ const MyThreadRequestsPage = () => {
                                         <p className="text-xs text-gray-500 mt-2">Gửi lúc {new Date(item.createdAt).toLocaleString('vi-VN')}</p>
                                     </div>
                                     <span className={`px-3 py-1 text-xs font-medium rounded-full ${item.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : item.status === 'APPROVED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                        {item.status === 'PENDING' ? 'Chờ duyệt' : item.status === 'APPROVED' ? 'Đã duyệt' : 'Bị từ chối'}
+                                        {item.status === 'DRAFT' ? 'Chờ duyệt' : item.status === 'APPROVED' ? 'Đã duyệt' : 'Bị từ chối'}
                                     </span>
                                 </div>
                             </div>
