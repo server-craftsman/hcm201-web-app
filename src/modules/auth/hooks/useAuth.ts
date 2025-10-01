@@ -289,7 +289,14 @@ export function useAuth(): UseAuthReturn {
         } catch (error) {
             setState(prev => ({ ...prev, isLoading: false }))
             const errorMessage = (error as any)?.response?.data?.message || (error as Error)?.message || 'Google đăng nhập thất bại'
-            authNotifications.showGoogleLoginError(errorMessage)
+
+            // Check if it's an ad blocker issue
+            if (errorMessage.includes('blocked') || errorMessage.includes('ad blocker')) {
+                // Show special notification for ad blocker issues
+                authNotifications.showGoogleLoginError('Google Sign-In bị chặn bởi trình chặn quảng cáo. Vui lòng tắt trình chặn quảng cáo cho trang web này.')
+            } else {
+                authNotifications.showGoogleLoginError(errorMessage)
+            }
             throw error
         }
     }, [authNotifications, router])

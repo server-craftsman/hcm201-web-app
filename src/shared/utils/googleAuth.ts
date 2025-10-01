@@ -152,6 +152,13 @@ export async function getGoogleTokens(clientId: string, scope: string = 'openid 
         try {
             console.log('🔐 Starting Google authentication with client ID:', clientId.substring(0, 20) + '...')
 
+            // Check if Google API is available
+            if (!window.google?.accounts?.id || !window.google?.accounts?.oauth2) {
+                console.error('❌ Google API not available - likely blocked by ad blocker')
+                reject(new Error('Google Sign-In is blocked by your browser or ad blocker. Please disable ad blockers for this site or try a different browser.'))
+                return
+            }
+
             // First, get the ID token using Google Identity Services
             window.google.accounts.id.initialize({
                 client_id: clientId,
@@ -197,7 +204,12 @@ export async function getGoogleTokens(clientId: string, scope: string = 'openid 
                 },
                 error_callback: (error: any) => {
                     console.error('❌ Google Identity error callback:', error)
-                    reject(new Error(`Google Identity failed: ${error}`))
+                    // Check if it's a blocking error
+                    if (error && (error.includes('blocked') || error.includes('ERR_BLOCKED_BY_CLIENT'))) {
+                        reject(new Error('Google Sign-In is blocked by your browser or ad blocker. Please disable ad blockers for this site or try a different browser.'))
+                    } else {
+                        reject(new Error(`Google Identity failed: ${error}`))
+                    }
                 }
             })
 
@@ -207,12 +219,18 @@ export async function getGoogleTokens(clientId: string, scope: string = 'openid 
             // Add a timeout as safety measure
             setTimeout(() => {
                 console.error('⏰ Google authentication timeout')
-                reject(new Error('Google authentication timeout after 30 seconds'))
+                reject(new Error('Google authentication timeout after 30 seconds. This might be due to ad blockers or network issues.'))
             }, 30000)
 
         } catch (err) {
             console.error('💥 Google authentication error:', err)
-            reject(err as Error)
+            // Check if it's a blocking error
+            const errorMessage = (err as Error)?.message || ''
+            if (errorMessage.includes('blocked') || errorMessage.includes('ERR_BLOCKED_BY_CLIENT')) {
+                reject(new Error('Google Sign-In is blocked by your browser or ad blocker. Please disable ad blockers for this site or try a different browser.'))
+            } else {
+                reject(err as Error)
+            }
         }
     })
 }

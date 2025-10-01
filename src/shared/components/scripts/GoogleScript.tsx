@@ -53,9 +53,24 @@ export function GoogleScript() {
                 }}
                 onError={(e) => {
                     console.error('❌ Google script failed to load via Next.js Script:', e)
-                    console.log('🔄 Attempting direct script injection as fallback...')
+                    console.log('🔄 This might be due to ad blockers. Attempting direct script injection as fallback...')
 
-                    // Try direct script injection
+                    // Check if it's likely an ad blocker issue
+                    const isAdBlockerIssue = e?.toString().includes('ERR_BLOCKED_BY_CLIENT') ||
+                        e?.toString().includes('blocked') ||
+                        e?.toString().includes('net::ERR_BLOCKED_BY_CLIENT')
+
+                    if (isAdBlockerIssue) {
+                        console.warn('⚠️ Google Sign-In appears to be blocked by an ad blocker')
+                        if (typeof window !== 'undefined') {
+                            window.dispatchEvent(new CustomEvent('googleScriptError', {
+                                detail: 'Google Sign-In is blocked by ad blocker. Please disable ad blockers for this site.'
+                            }))
+                        }
+                        return
+                    }
+
+                    // Try direct script injection as fallback
                     const script = document.createElement('script')
                     script.src = 'https://accounts.google.com/gsi/client'
                     script.async = true
@@ -73,7 +88,9 @@ export function GoogleScript() {
                     script.onerror = (error) => {
                         console.error('❌ Direct script injection also failed:', error)
                         if (typeof window !== 'undefined') {
-                            window.dispatchEvent(new CustomEvent('googleScriptError', { detail: error }))
+                            window.dispatchEvent(new CustomEvent('googleScriptError', {
+                                detail: 'Google Sign-In is blocked by ad blocker. Please disable ad blockers for this site.'
+                            }))
                         }
                     }
 
@@ -83,7 +100,9 @@ export function GoogleScript() {
                     } catch (err) {
                         console.error('❌ Failed to add direct script element:', err)
                         if (typeof window !== 'undefined') {
-                            window.dispatchEvent(new CustomEvent('googleScriptError', { detail: err }))
+                            window.dispatchEvent(new CustomEvent('googleScriptError', {
+                                detail: 'Google Sign-In is blocked by ad blocker. Please disable ad blockers for this site.'
+                            }))
                         }
                     }
                 }}
