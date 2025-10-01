@@ -78,7 +78,6 @@ export function GoogleOneTap() {
             // Use the existing auth system to handle Google login
             const result = await authApi.googleOAuth({
                 accessToken: '', // One Tap only provides ID token
-                idToken: response.credential
             })
 
             console.log('✅ Google One Tap login successful')
