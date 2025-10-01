@@ -209,5 +209,63 @@ export const debateApi = {
                 timestamp: new Date().toISOString()
             }
         }
+    },
+
+    // Update thread status (pause, close, etc.)
+    updateThreadStatus: async (threadId: string, status: string, reason?: string) => {
+        try {
+            const response = await apiClient.patch(`/debate/threads/${threadId}/status`, {
+                status,
+                reason
+            })
+            return response.data
+        } catch (error) {
+            console.error('Failed to update thread status:', error)
+            throw error
+        }
+    },
+
+    // Approve thread request
+    approveThreadRequest: async (threadId: string, moderators: { modForSideA: string, modForSideB: string }) => {
+        try {
+            const response = await apiClient.patch(`/debate/threads/${threadId}/approve`, moderators)
+            return response.data
+        } catch (error) {
+            console.error('Failed to approve thread request:', error)
+            throw error
+        }
+    },
+
+    // Reject thread request
+    rejectThreadRequest: async (threadId: string, reason: string) => {
+        try {
+            const response = await apiClient.patch(`/debate/threads/${threadId}/reject`, { reason })
+            return response.data
+        } catch (error) {
+            console.error('Failed to reject thread request:', error)
+            throw error
+        }
+    },
+
+    // Get thread status statistics
+    getThreadStats: async () => {
+        try {
+            const response = await apiClient.get('/debate/admin/stats/threads')
+            return response.data
+        } catch (error) {
+            console.error('Failed to get thread stats:', error)
+            throw error
+        }
+    },
+
+    // Get comprehensive admin dashboard statistics
+    getAdminDashboard: async () => {
+        try {
+            const response = await apiClient.get('/debate/admin/dashboard')
+            return response.data
+        } catch (error) {
+            console.error('Failed to get admin dashboard:', error)
+            throw error
+        }
     }
 }

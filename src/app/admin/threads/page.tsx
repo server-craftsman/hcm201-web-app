@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import {
     ShieldCheckIcon,
     PlusCircleIcon,
@@ -15,12 +16,16 @@ import {
     EyeIcon,
     PencilIcon,
     TrashIcon,
-    ExclamationTriangleIcon
+    ExclamationTriangleIcon,
+    ArrowPathIcon
 } from '@heroicons/react/24/outline'
 import { threadApi } from '@/modules/debate/api/threadApi'
 import { debateApi } from '@/modules/debate/api/debateApi'
+import { apiClient } from '@/core/utils/api'
+import { toast, Toaster } from 'react-hot-toast'
 
 const AdminThreadsPage = () => {
+    const router = useRouter()
     const [selectedTab, setSelectedTab] = useState('DRAFT')
     const [selectedThread, setSelectedThread] = useState<any>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -28,18 +33,68 @@ const AdminThreadsPage = () => {
     const [loading, setLoading] = useState(false)
     const [threads, setThreads] = useState<any[]>([])
     const [threadStats, setThreadStats] = useState({ pending: 0, active: 0, paused: 0, closed: 0, archived: 0 })
+    const [availableModerators, setAvailableModerators] = useState<any[]>([])
+    const [loadingModerators, setLoadingModerators] = useState(false)
+    const [rejectModalOpen, setRejectModalOpen] = useState(false)
+    const [rejectReason, setRejectReason] = useState('')
+    const [threadToReject, setThreadToReject] = useState<string | null>(null)
 
-    // TODO: Replace with real user directory API if available
-    const availableModerators = [
-        { id: 'modA', name: 'Trần Kiểm Duyệt', specialty: 'Giáo dục', workload: 5 },
-        { id: 'modB', name: 'Lê Giám Sát', specialty: 'Văn hóa', workload: 3 },
-        { id: 'modC', name: 'Nguyễn Kiểm Tra', specialty: 'Đạo đức', workload: 7 },
-        { id: 'modD', name: 'Phạm Duyệt Bài', specialty: 'Chính trị', workload: 4 },
-    ]
+    const loadModerators = async () => {
+        try {
+            setLoadingModerators(true)
+            const response = await apiClient.get('/users', {
+                params: {
+                    role: 'MODERATOR',
+                    page: 1,
+                    limit: 50,
+                    status: 'ONLINE'
+                }
+            })
+
+            const apiModerators = response.data.data.items.map((mod: any) => ({
+                id: mod._id,
+                name: `${mod.firstName} ${mod.lastName}`,
+                username: mod.username,
+                email: mod.email,
+                avatar: mod.avatar,
+                specialty: 'Kiểm duyệt chuyên nghiệp',
+                workload: mod.workload || 0,
+                status: mod.status || 'ONLINE',
+                lastActive: mod.lastActive || new Date().toISOString(),
+                experience: mod.experience || 0,
+                rating: mod.rating || '0.0'
+            }))
+
+            setAvailableModerators(apiModerators)
+        } catch (error) {
+            console.error('Failed to load moderators:', error)
+            setAvailableModerators([])
+        } finally {
+            setLoadingModerators(false)
+        }
+    }
 
     const loadData = async (tab: string) => {
         try {
             setLoading(true)
+
+            // Load thread statistics first
+            try {
+                const statsRes = await debateApi.getThreadStats()
+                const stats = statsRes.data
+                setThreadStats({
+                    pending: stats.pending || 0,
+                    active: stats.active || 0,
+                    paused: stats.paused || 0,
+                    closed: stats.closed || 0,
+                    archived: stats.archived || 0
+                })
+                console.log('📊 Thread stats loaded:', stats)
+            } catch (statsError) {
+                console.warn('Failed to load thread stats:', statsError)
+                // Keep existing stats if API fails
+            }
+
             if (tab === 'pending') {
                 const res = await threadApi.getThreadRequests(1, 20, 'DRAFT')
                 const items = res.data.items.map((r) => ({
@@ -47,7 +102,6 @@ const AdminThreadsPage = () => {
                     title: r.title,
                     description: r.description,
                     author: { name: `${r.requester?.firstName || ''} ${r.requester?.lastName || ''}`.trim() || r.requester?.username || 'User', avatar: (r.requester?.firstName || 'U').slice(0, 1).toUpperCase(), reputation: 0 },
-                    category: '—',
                     status: 'DRAFT',
                     priority: 'MEDIUM',
                     createdAt: r.createdAt,
@@ -55,7 +109,6 @@ const AdminThreadsPage = () => {
                     assignedModerators: null
                 }))
                 setThreads(items)
-                setThreadStats((prev) => ({ ...prev, pending: res.data.totalItems }))
             } else {
                 // Map tab names to API status values
                 const statusMap: { [key: string]: string } = {
@@ -78,7 +131,6 @@ const AdminThreadsPage = () => {
                     title: t.title,
                     description: t.description,
                     author: { name: `${t.createdBy?.firstName || ''} ${t.createdBy?.lastName || ''}`.trim() || t.createdBy?.username || 'User', avatar: (t.createdBy?.firstName || 'U').slice(0, 1).toUpperCase(), reputation: 0 },
-                    category: '—',
                     status: t.status,
                     priority: 'LOW',
                     createdAt: t.createdAt,
@@ -92,7 +144,6 @@ const AdminThreadsPage = () => {
                     }
                 }))
                 setThreads(items)
-                setThreadStats((prev) => ({ ...prev, [tab]: res.data.totalItems } as any))
             }
         } finally {
             setLoading(false)
@@ -101,6 +152,7 @@ const AdminThreadsPage = () => {
 
     useEffect(() => {
         loadData(selectedTab)
+        loadModerators()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedTab])
 
@@ -154,17 +206,56 @@ const AdminThreadsPage = () => {
 
     const handleApproveThread = async (threadId: string | number) => {
         if (!selectedModerators.sideA || !selectedModerators.sideB) {
-            alert('Vui lòng chọn 2 kiểm duyệt viên cho thread này')
+            toast.error('Vui lòng chọn 2 kiểm duyệt viên cho thread này', {
+                duration: 4000,
+                style: {
+                    background: '#fef2f2',
+                    color: '#dc2626',
+                    border: '1px solid #fecaca',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                },
+                icon: '⚠️'
+            })
             return
         }
         try {
-            await threadApi.approveThreadRequest(String(threadId), {
+            await debateApi.approveThreadRequest(String(threadId), {
                 modForSideA: selectedModerators.sideA,
                 modForSideB: selectedModerators.sideB
             })
             await loadData('pending')
+            await refreshStats()
+            toast.success('Duyệt thread thành công!', {
+                duration: 3000,
+                style: {
+                    background: '#f0fdf4',
+                    color: '#16a34a',
+                    border: '1px solid #bbf7d0',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                },
+                icon: '✅'
+            })
         } catch (e) {
             console.error(e)
+            toast.error('Lỗi khi duyệt thread: ' + ((e as any)?.response?.data?.message || e), {
+                duration: 5000,
+                style: {
+                    background: '#fef2f2',
+                    color: '#dc2626',
+                    border: '1px solid #fecaca',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                },
+                icon: '❌'
+            })
         }
         setIsModalOpen(false)
         setSelectedThread(null)
@@ -173,21 +264,161 @@ const AdminThreadsPage = () => {
 
     const handleThreadAction = async (threadId: string | number, action: string) => {
         try {
-            if (selectedTab === 'pending' && action === 'REJECT') {
-                await threadApi.rejectThreadRequest(String(threadId), 'Không phù hợp định hướng')
-                await loadData('pending')
-            } else {
-                // For ACTIVE/PAUSED/CLOSED transitions: backend endpoint not defined here; UI-only
-                console.log(`${action} thread ${threadId}`)
+            let status = ''
+            let reason = ''
+            let successMessage = ''
+
+            switch (action) {
+                case 'REJECT':
+                    // Open reject modal instead of direct action
+                    setThreadToReject(String(threadId))
+                    setRejectModalOpen(true)
+                    return
+                case 'PAUSE':
+                    status = 'PAUSED'
+                    reason = 'Tạm dừng để kiểm tra và điều chỉnh nội dung'
+                    successMessage = '⏸️ Tạm dừng thread thành công!'
+                    break
+                case 'RESUME':
+                    status = 'ACTIVE'
+                    reason = 'Tiếp tục hoạt động sau khi kiểm tra'
+                    successMessage = '▶️ Tiếp tục thread thành công!'
+                    break
+                case 'CLOSE':
+                    status = 'CLOSED'
+                    reason = 'Đóng thread do vi phạm quy định hoặc kết thúc thời gian'
+                    successMessage = '🔒 Đóng thread thành công!'
+                    break
+                default:
+                    throw new Error(`Unknown action: ${action}`)
+            }
+
+            await debateApi.updateThreadStatus(String(threadId), status, reason)
+            await loadData(selectedTab)
+            await refreshStats()
+
+            // Show success toast based on action
+            const toastConfig = {
+                duration: 3000,
+                style: {
+                    background: '#f0fdf4',
+                    color: '#16a34a',
+                    border: '1px solid #bbf7d0',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                }
+            }
+
+            switch (action) {
+                case 'PAUSE':
+                    toast.success('Tạm dừng thread thành công!', { ...toastConfig, icon: '⏸️' })
+                    break
+                case 'RESUME':
+                    toast.success('Tiếp tục thread thành công!', { ...toastConfig, icon: '▶️' })
+                    break
+                case 'CLOSE':
+                    toast.success('Đóng thread thành công!', { ...toastConfig, icon: '🔒' })
+                    break
             }
         } catch (e) {
             console.error(e)
+            toast.error('Lỗi khi thực hiện hành động: ' + ((e as any)?.response?.data?.message || e), {
+                duration: 5000,
+                style: {
+                    background: '#fef2f2',
+                    color: '#dc2626',
+                    border: '1px solid #fecaca',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                },
+                icon: '❌'
+            })
+        }
+    }
+
+    const handleRejectThread = async () => {
+        if (!threadToReject || !rejectReason.trim()) {
+            toast.error('Vui lòng nhập lý do từ chối', {
+                duration: 4000,
+                style: {
+                    background: '#fef2f2',
+                    color: '#dc2626',
+                    border: '1px solid #fecaca',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                },
+                icon: '⚠️'
+            })
+            return
+        }
+        try {
+            await debateApi.updateThreadStatus(threadToReject, 'REJECTED', rejectReason.trim())
+            await loadData(selectedTab)
+            await refreshStats()
+            toast.success('Từ chối thread thành công!', {
+                duration: 3000,
+                style: {
+                    background: '#f0fdf4',
+                    color: '#16a34a',
+                    border: '1px solid #bbf7d0',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                },
+                icon: '✅'
+            })
+            setRejectModalOpen(false)
+            setRejectReason('')
+            setThreadToReject(null)
+        } catch (e) {
+            console.error(e)
+            toast.error('Lỗi khi từ chối thread: ' + ((e as any)?.response?.data?.message || e), {
+                duration: 5000,
+                style: {
+                    background: '#fef2f2',
+                    color: '#dc2626',
+                    border: '1px solid #fecaca',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                },
+                icon: '❌'
+            })
         }
     }
 
     const openApprovalModal = (thread: any) => {
         setSelectedThread(thread)
         setIsModalOpen(true)
+    }
+
+    const handleViewThreadDetails = (threadId: string) => {
+        router.push(`/debates/${threadId}`)
+    }
+
+    const refreshStats = async () => {
+        try {
+            const statsRes = await debateApi.getThreadStats()
+            const stats = statsRes.data
+            setThreadStats({
+                pending: stats.pending || 0,
+                active: stats.active || 0,
+                paused: stats.paused || 0,
+                closed: stats.closed || 0,
+                archived: stats.archived || 0
+            })
+            console.log('📊 Stats refreshed:', stats)
+        } catch (error) {
+            console.warn('Failed to refresh stats:', error)
+        }
     }
 
     const formatTimeAgo = (dateString: string) => {
@@ -202,6 +433,22 @@ const AdminThreadsPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 pt-20 pb-8">
+            <Toaster
+                position="top-right"
+                toastOptions={{
+                    duration: 4000,
+                    style: {
+                        background: '#ffffff',
+                        color: '#374151',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                    }
+                }}
+            />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <motion.div
@@ -209,12 +456,25 @@ const AdminThreadsPage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="mb-8"
                 >
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                        🛡️ Quản lý chủ đề tranh luận
-                    </h1>
-                    <p className="text-gray-600">
-                        Duyệt, quản lý và giám sát các chủ đề tranh luận trong hệ thống
-                    </p>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                                🛡️ Quản lý chủ đề tranh luận
+                            </h1>
+                            <p className="text-gray-600">
+                                Duyệt, quản lý và giám sát các chủ đề tranh luận trong hệ thống
+                            </p>
+                        </div>
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={refreshStats}
+                            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            <ArrowPathIcon className="h-4 w-4 mr-2" />
+                            Làm mới thống kê
+                        </motion.button>
+                    </div>
                 </motion.div>
 
                 {/* Quick Stats */}
@@ -351,9 +611,6 @@ const AdminThreadsPage = () => {
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-sm text-gray-600 mb-2">
-                                        Danh mục: {thread.category}
-                                    </p>
                                     <p className="text-gray-700 mb-3">
                                         {thread.description}
                                     </p>
@@ -441,6 +698,15 @@ const AdminThreadsPage = () => {
                                 </div>
                             )}
 
+                            {/* Closed status info */}
+                            {thread.status === 'CLOSED' && (
+                                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                    <p className="text-sm text-red-800">
+                                        <strong>Trạng thái:</strong> Thread đã được đóng và không thể hoạt động trở lại
+                                    </p>
+                                </div>
+                            )}
+
                             {/* Actions */}
                             <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                                 {thread.status === 'DRAFT' ? (
@@ -488,15 +754,17 @@ const AdminThreadsPage = () => {
                                                 Tiếp tục
                                             </motion.button>
                                         )}
-                                        <motion.button
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
-                                            onClick={() => handleThreadAction(thread.id, 'CLOSE')}
-                                            className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                                        >
-                                            <XCircleIcon className="h-4 w-4 mr-1" />
-                                            Đóng
-                                        </motion.button>
+                                        {thread.status !== 'CLOSED' && (
+                                            <motion.button
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                onClick={() => handleThreadAction(thread.id, 'CLOSE')}
+                                                className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                            >
+                                                <XCircleIcon className="h-4 w-4 mr-1" />
+                                                Đóng
+                                            </motion.button>
+                                        )}
                                     </div>
                                 )}
 
@@ -504,6 +772,7 @@ const AdminThreadsPage = () => {
                                     <motion.button
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
+                                        onClick={() => handleViewThreadDetails(thread.id)}
                                         className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                                     >
                                         <EyeIcon className="h-4 w-4 mr-1" />
@@ -522,14 +791,14 @@ const AdminThreadsPage = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+                            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
                             onClick={() => setIsModalOpen(false)}
                         >
                             <motion.div
                                 initial={{ scale: 0.9, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 exit={{ scale: 0.9, opacity: 0 }}
-                                className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                                className="bg-white/95 backdrop-blur-md rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/20 shadow-2xl"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <div className="p-6 border-b border-gray-200">
@@ -541,41 +810,97 @@ const AdminThreadsPage = () => {
                                     </p>
                                 </div>
                                 <div className="p-6">
-                                    <div className="space-y-6">
-                                        <div>
-                                            <h4 className="font-medium text-gray-900 mb-3">
-                                                Chọn kiểm duyệt viên cho bên A (Ủng hộ)
-                                            </h4>
-                                            <select
-                                                value={selectedModerators.sideA}
-                                                onChange={(e) => setSelectedModerators({ ...selectedModerators, sideA: e.target.value })}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                            >
-                                                <option value="">Chọn kiểm duyệt viên...</option>
-                                                {availableModerators.map((mod) => (
-                                                    <option key={mod.id} value={mod.id}>
-                                                        {mod.name} - {mod.specialty} (Đang xử lý: {mod.workload})
-                                                    </option>
-                                                ))}
-                                            </select>
+                                    <div className="space-y-8">
+                                        {/* Moderator Selection for Side A */}
+                                        <div className="space-y-4">
+                                            <div className="flex items-center space-x-3">
+                                                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                                                    <span className="text-white font-bold text-lg">A</span>
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-lg font-semibold text-gray-900">Bên A - Ủng hộ</h4>
+                                                    <p className="text-sm text-gray-600">Chọn kiểm duyệt viên cho phe ủng hộ</p>
+                                                </div>
+                                            </div>
+
+                                            {loadingModerators ? (
+                                                <div className="flex items-center justify-center py-8">
+                                                    <div className="flex items-center space-x-3">
+                                                        <div className="w-6 h-6 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                                                        <span className="text-gray-600">Đang tải danh sách kiểm duyệt viên...</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="relative">
+                                                    <select
+                                                        value={selectedModerators.sideA}
+                                                        onChange={(e) => setSelectedModerators({ ...selectedModerators, sideA: e.target.value })}
+                                                        className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 appearance-none cursor-pointer"
+                                                    >
+                                                        <option value="">Chọn kiểm duyệt viên cho bên A...</option>
+                                                        {availableModerators.map((mod) => (
+                                                            <option
+                                                                key={mod.id}
+                                                                value={mod.id}
+                                                                disabled={mod.id === selectedModerators.sideB}
+                                                            >
+                                                                {mod.name} (@{mod.username}) - ⭐{mod.rating} - 📊{mod.workload} việc - {mod.status === 'ONLINE' ? '🟢 Trực tuyến' : '⚫ Ngoại tuyến'}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
-                                        <div>
-                                            <h4 className="font-medium text-gray-900 mb-3">
-                                                Chọn kiểm duyệt viên cho bên B (Phản đối)
-                                            </h4>
-                                            <select
-                                                value={selectedModerators.sideB}
-                                                onChange={(e) => setSelectedModerators({ ...selectedModerators, sideB: e.target.value })}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                            >
-                                                <option value="">Chọn kiểm duyệt viên...</option>
-                                                {availableModerators.filter(mod => mod.id !== selectedModerators.sideA).map((mod) => (
-                                                    <option key={mod.id} value={mod.id}>
-                                                        {mod.name} - {mod.specialty} (Đang xử lý: {mod.workload})
-                                                    </option>
-                                                ))}
-                                            </select>
+                                        {/* Moderator Selection for Side B */}
+                                        <div className="space-y-4">
+                                            <div className="flex items-center space-x-3">
+                                                <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
+                                                    <span className="text-white font-bold text-lg">B</span>
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-lg font-semibold text-gray-900">Bên B - Phản đối</h4>
+                                                    <p className="text-sm text-gray-600">Chọn kiểm duyệt viên cho phe phản đối</p>
+                                                </div>
+                                            </div>
+
+                                            {loadingModerators ? (
+                                                <div className="flex items-center justify-center py-8">
+                                                    <div className="flex items-center space-x-3">
+                                                        <div className="w-6 h-6 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                                                        <span className="text-gray-600">Đang tải danh sách kiểm duyệt viên...</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="relative">
+                                                    <select
+                                                        value={selectedModerators.sideB}
+                                                        onChange={(e) => setSelectedModerators({ ...selectedModerators, sideB: e.target.value })}
+                                                        className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 appearance-none cursor-pointer"
+                                                    >
+                                                        <option value="">Chọn kiểm duyệt viên cho bên B...</option>
+                                                        {availableModerators.map((mod) => (
+                                                            <option
+                                                                key={mod.id}
+                                                                value={mod.id}
+                                                                disabled={mod.id === selectedModerators.sideA}
+                                                            >
+                                                                {mod.name} (@{mod.username}) - ⭐{mod.rating} - 📊{mod.workload} việc - {mod.status === 'ONLINE' ? '🟢 Trực tuyến' : '⚫ Ngoại tuyến'}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="bg-blue-50 p-4 rounded-lg">
@@ -586,20 +911,125 @@ const AdminThreadsPage = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
-                                    <button
-                                        onClick={() => setIsModalOpen(false)}
-                                        className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-                                    >
-                                        Hủy
-                                    </button>
-                                    <button
-                                        onClick={() => handleApproveThread(selectedThread.id)}
-                                        disabled={!selectedModerators.sideA || !selectedModerators.sideB}
-                                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        Duyệt và Kích hoạt
-                                    </button>
+                                <div className="p-6 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50">
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-sm text-gray-600">
+                                            {selectedModerators.sideA && selectedModerators.sideB ? (
+                                                <span className="text-green-600 font-medium">✅ Đã chọn đủ 2 kiểm duyệt viên</span>
+                                            ) : (
+                                                <span className="text-orange-600">⚠️ Vui lòng chọn đủ 2 kiểm duyệt viên</span>
+                                            )}
+                                        </div>
+
+                                        <div className="flex space-x-3">
+                                            <motion.button
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                onClick={() => setIsModalOpen(false)}
+                                                className="px-6 py-2 text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                                            >
+                                                Hủy
+                                            </motion.button>
+                                            <motion.button
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                onClick={() => handleApproveThread(selectedThread.id)}
+                                                disabled={!selectedModerators.sideA || !selectedModerators.sideB}
+                                                className="px-6 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
+                                            >
+                                                <div className="flex items-center space-x-2">
+                                                    <CheckCircleIcon className="w-4 h-4" />
+                                                    <span>Duyệt và Kích hoạt</span>
+                                                </div>
+                                            </motion.button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Reject Modal */}
+                <AnimatePresence>
+                    {rejectModalOpen && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                            onClick={() => setRejectModalOpen(false)}
+                        >
+                            <motion.div
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.9, opacity: 0 }}
+                                className="bg-white/95 backdrop-blur-md rounded-xl max-w-md w-full border border-white/20 shadow-2xl"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="p-6 border-b border-gray-200">
+                                    <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                                        <XCircleIcon className="h-6 w-6 mr-2 text-red-600" />
+                                        Từ chối Thread
+                                    </h3>
+                                    <p className="text-gray-600 mt-1">
+                                        Vui lòng nhập lý do từ chối thread này
+                                    </p>
+                                </div>
+                                <div className="p-6">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Lý do từ chối *
+                                            </label>
+                                            <textarea
+                                                value={rejectReason}
+                                                onChange={(e) => setRejectReason(e.target.value)}
+                                                placeholder="Nhập lý do từ chối thread..."
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 resize-none"
+                                                rows={4}
+                                            />
+                                        </div>
+                                        <div className="bg-red-50 p-4 rounded-lg">
+                                            <p className="text-sm text-red-800">
+                                                <strong>Lưu ý:</strong> Thread sẽ được đánh dấu là REJECTED và không thể hoạt động trở lại.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="p-6 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-red-50">
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-sm text-gray-600">
+                                            {rejectReason.trim() ? (
+                                                <span className="text-green-600 font-medium">✅ Đã nhập lý do từ chối</span>
+                                            ) : (
+                                                <span className="text-orange-600">⚠️ Vui lòng nhập lý do từ chối</span>
+                                            )}
+                                        </div>
+
+                                        <div className="flex space-x-3">
+                                            <motion.button
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                onClick={() => setRejectModalOpen(false)}
+                                                className="px-6 py-2 text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                                            >
+                                                Hủy
+                                            </motion.button>
+                                            <motion.button
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                onClick={handleRejectThread}
+                                                disabled={!rejectReason.trim()}
+                                                className="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
+                                            >
+                                                <div className="flex items-center space-x-2">
+                                                    <XCircleIcon className="w-4 h-4" />
+                                                    <span>Từ chối Thread</span>
+                                                </div>
+                                            </motion.button>
+                                        </div>
+                                    </div>
                                 </div>
                             </motion.div>
                         </motion.div>
