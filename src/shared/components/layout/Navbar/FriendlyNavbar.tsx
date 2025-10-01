@@ -157,6 +157,29 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
         return user.firstName ? `${user.firstName} ${user.lastName}`.trim() : user.username
     }
 
+    // Helper to render avatar: show user.avatar if exists, else fallback to first letter
+    const renderUserAvatar = (size: number, fontSize: string = "text-sm font-semibold") => {
+        if (user && user.avatar) {
+            return (
+                <Image
+                    src={user.avatar}
+                    alt={getUserDisplayName()}
+                    width={size}
+                    height={size}
+                    className={`rounded-full object-cover`}
+                />
+            )
+        }
+        return (
+            <div
+                className={`w-${size} h-${size} bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white ${fontSize}`}
+                style={{ width: size, height: size, minWidth: size, minHeight: size }}
+            >
+                {getUserDisplayName().charAt(0).toUpperCase()}
+            </div>
+        )
+    }
+
     return (
         <motion.nav
             initial={{ y: -100 }}
@@ -268,9 +291,7 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
                                 >
                                     {/* Avatar */}
                                     <div className="relative">
-                                        <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                                            {getUserDisplayName().charAt(0).toUpperCase()}
-                                        </div>
+                                        {renderUserAvatar(32, "text-sm font-semibold")}
                                         <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
                                     </div>
 
@@ -315,8 +336,8 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
                                             {/* User Header */}
                                             <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
                                                 <div className="flex items-center space-x-3">
-                                                    <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-lg font-bold">
-                                                        {getUserDisplayName().charAt(0).toUpperCase()}
+                                                    <div>
+                                                        {renderUserAvatar(48, "text-lg font-bold")}
                                                     </div>
                                                     <div>
                                                         <h3 className="font-semibold text-gray-800">{getUserDisplayName()}</h3>
