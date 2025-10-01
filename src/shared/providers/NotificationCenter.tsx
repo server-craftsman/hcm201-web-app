@@ -54,25 +54,25 @@ const notificationStyles = {
         gradient: 'from-emerald-500 via-green-500 to-teal-600',
         icon: CheckCircleIcon,
         color: 'emerald',
-        sound: '/audios/success.mp3'
+        sound: '/audios/bai-ca-ho-chi-minh.mp3' // Use existing audio file
     },
     error: {
         gradient: 'from-red-500 via-rose-500 to-pink-600',
         icon: XCircleIcon,
         color: 'red',
-        sound: '/audios/error.mp3'
+        sound: '/audios/bac-ho-mot-tinh-yeu-bao-la.mp3' // Use existing audio file
     },
     warning: {
         gradient: 'from-amber-500 via-orange-500 to-yellow-600',
         icon: ExclamationTriangleIcon,
         color: 'amber',
-        sound: '/audios/warning.mp3'
+        sound: '/audios/ca-ngoi-ho-chu-tich.mp3' // Use existing audio file
     },
     info: {
         gradient: 'from-blue-500 via-indigo-500 to-purple-600',
         icon: InformationCircleIcon,
         color: 'blue',
-        sound: '/audios/info.mp3'
+        sound: '/audios/ho-chi-minh-dep-nhat-ten-nguoi.mp3' // Use existing audio file
     }
 }
 
@@ -311,9 +311,13 @@ const playNotificationSound = (type: NotificationType, enabled: boolean) => {
     try {
         const audio = new Audio(notificationStyles[type].sound)
         audio.volume = 0.3
-        audio.play().catch(() => { }) // Ignore errors if sound can't play
+        audio.play().catch((error) => {
+            // Silently ignore audio errors (file not found, etc.)
+            console.debug('Audio playback failed:', error.message)
+        })
     } catch (error) {
-        // Ignore sound errors
+        // Silently ignore sound errors
+        console.debug('Audio creation failed:', error)
     }
 }
 
