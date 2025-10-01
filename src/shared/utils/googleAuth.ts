@@ -8,7 +8,6 @@ declare global {
 
 export interface GoogleTokens {
     accessToken: string
-    idToken: string
 }
 
 export function loadGoogleScript(clientId: string): Promise<void> {
@@ -145,7 +144,7 @@ function loadGoogleScriptFallback(): Promise<void> {
     })
 }
 
-export async function getGoogleTokens(clientId: string, scope: string = 'openid email profile'): Promise<GoogleTokens> {
+export async function getGoogleTokens(clientId: string, scope: string = 'email profile'): Promise<GoogleTokens> {
     await loadGoogleScript(clientId)
 
     return new Promise<GoogleTokens>((resolve, reject) => {
@@ -153,64 +152,30 @@ export async function getGoogleTokens(clientId: string, scope: string = 'openid 
             console.log('🔐 Starting Google authentication with client ID:', clientId.substring(0, 20) + '...')
 
             // Check if Google API is available
-            if (!window.google?.accounts?.id || !window.google?.accounts?.oauth2) {
-                console.error('❌ Google API not available - likely blocked by ad blocker')
+            if (!window.google?.accounts?.oauth2) {
+                console.error('❌ Google OAuth2 API not available - likely blocked by ad blocker')
                 reject(new Error('Google Sign-In is blocked by your browser or ad blocker. Please disable ad blockers for this site or try a different browser.'))
                 return
             }
 
-            // Use OAuth2 flow which can provide both tokens in one call
+            // Use OAuth2 flow to get access token
             const tokenClient = window.google.accounts.oauth2.initTokenClient({
                 client_id: clientId,
-                scope: scope + ' openid', // Include openid scope for ID token
+                scope: scope, // Only need email and profile scopes
                 callback: (response: any) => {
                     console.log('📝 Google OAuth response received:', response)
 
                     if (response && response.access_token) {
                         console.log('✅ Access token received successfully')
-
-                        // Check if we also got an ID token
-                        if (response.id_token) {
-                            console.log('✅ ID token also received in OAuth response')
-                            resolve({
-                                accessToken: response.access_token,
-                                idToken: response.id_token
-                            })
-                        } else {
-                            // If no ID token in OAuth response, try to get it separately
-                            console.log('⚠️ No ID token in OAuth response, trying to get it separately...')
-
-                            window.google.accounts.id.initialize({
-                                client_id: clientId,
-                                callback: (credentialResponse: any) => {
-                                    console.log('📝 Google ID token received separately:', credentialResponse)
-
-                                    if (credentialResponse.credential) {
-                                        console.log('✅ Both tokens received successfully')
-                                        resolve({
-                                            accessToken: response.access_token,
-                                            idToken: credentialResponse.credential
-                                        })
-                                    } else {
-                                        console.error('❌ No ID token received from separate call')
-                                        reject(new Error('Failed to get ID token from Google'))
-                                    }
-                                },
-                                error_callback: (error: any) => {
-                                    console.error('❌ Google Identity error callback:', error)
-                                    reject(new Error(`Failed to get ID token: ${error}`))
-                                }
-                            })
-
-                            // Request ID token
-                            window.google.accounts.id.prompt()
-                        }
+                        resolve({
+                            accessToken: response.access_token
+                        })
                     } else if (response && response.error) {
                         console.error('❌ Google OAuth error:', response.error)
                         reject(new Error(`Google OAuth error: ${response.error}`))
                     } else {
-                        console.error('❌ No tokens received from Google')
-                        reject(new Error('No tokens received from Google'))
+                        console.error('❌ No access token received from Google')
+                        reject(new Error('No access token received from Google'))
                     }
                 },
                 error_callback: (error: any) => {
@@ -224,7 +189,7 @@ export async function getGoogleTokens(clientId: string, scope: string = 'openid 
                 }
             })
 
-            console.log('🚀 Requesting Google tokens...')
+            console.log('🚀 Requesting Google access token...')
             tokenClient.requestAccessToken()
 
             // Add a timeout as safety measure
