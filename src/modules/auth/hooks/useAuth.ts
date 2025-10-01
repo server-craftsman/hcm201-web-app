@@ -265,8 +265,15 @@ export function useAuth(): UseAuthReturn {
                 throw new Error('Google Client ID not configured')
             }
 
+            console.log('🔐 Starting Google login process...')
+
             const { accessToken, idToken } = await getGoogleTokens(googleClientId, authConfig.google.scopes)
+
+            console.log('✅ Google tokens received, sending to backend...')
+
             const result: AuthResult = await authApi.googleOAuth({ accessToken, idToken })
+
+            console.log('✅ Backend authentication successful, storing user data...')
 
             // Store auth data and trigger sync
             authSync.storeAuthData(result.user, {
@@ -290,10 +297,16 @@ export function useAuth(): UseAuthReturn {
             setState(prev => ({ ...prev, isLoading: false }))
             const errorMessage = (error as any)?.response?.data?.message || (error as Error)?.message || 'Google đăng nhập thất bại'
 
+            console.error('❌ Google login error:', errorMessage)
+
             // Check if it's an ad blocker issue
             if (errorMessage.includes('blocked') || errorMessage.includes('ad blocker')) {
                 // Show special notification for ad blocker issues
                 authNotifications.showGoogleLoginError('Google Sign-In bị chặn bởi trình chặn quảng cáo. Vui lòng tắt trình chặn quảng cáo cho trang web này.')
+            } else if (errorMessage.includes('ID token is required')) {
+                authNotifications.showGoogleLoginError('Không thể lấy ID token từ Google. Vui lòng thử lại hoặc kiểm tra trình chặn quảng cáo.')
+            } else if (errorMessage.includes('Access token is required')) {
+                authNotifications.showGoogleLoginError('Không thể lấy Access token từ Google. Vui lòng thử lại hoặc kiểm tra trình chặn quảng cáo.')
             } else {
                 authNotifications.showGoogleLoginError(errorMessage)
             }
