@@ -451,6 +451,7 @@ const DebateDetailPage: React.FC = () => {
                                                         onDislike={handleArgumentDislike}
                                                         currentUserRole={user?.role as 'USER' | 'MODERATOR' | 'ADMIN' || 'USER'}
                                                         showModerationActions={user?.role === 'MODERATOR' || user?.role === 'ADMIN'}
+                                                        currentUser={user}
                                                     />
                                                 </motion.div>
                                             ))}
@@ -472,8 +473,18 @@ const DebateDetailPage: React.FC = () => {
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Thông tin tranh luận</h3>
                             <div className="space-y-4">
                                 <div className="flex items-center space-x-3">
-                                    <div className="w-8 h-8 hcm-gradient-luxury rounded-full flex items-center justify-center text-white text-sm font-bold">
-                                        {currentThread?.createdBy?.lastName?.[0] || currentThread?.createdBy?.firstName?.[0] || '👤'}
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold overflow-hidden bg-gray-200">
+                                        {currentThread?.createdBy?.avatar && currentThread?.createdBy?.avatar.startsWith('http') ? (
+                                            <img
+                                                src={currentThread.createdBy.avatar}
+                                                alt={`${currentThread?.createdBy?.firstName || ''} ${currentThread?.createdBy?.lastName || ''}`.trim() || 'User'}
+                                                className="w-8 h-8 object-cover rounded-full"
+                                            />
+                                        ) : (
+                                            currentThread?.createdBy?.lastName?.[0] ||
+                                            currentThread?.createdBy?.firstName?.[0] ||
+                                            '👤'
+                                        )}
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-gray-900">

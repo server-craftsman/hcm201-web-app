@@ -26,17 +26,6 @@ const RequestThreadPage = () => {
     const [loadingRequests, setLoadingRequests] = useState<boolean>(true)
     const [loadError, setLoadError] = useState<string | null>(null)
 
-    // const categories = [
-    //     'Tư tưởng Hồ Chí Minh về độc lập dân tộc',
-    //     'Tư tưởng Hồ Chí Minh về chủ nghĩa xã hội',
-    //     'Tư tưởng Hồ Chí Minh về Đảng Cộng sản',
-    //     'Tư tưởng Hồ Chí Minh về đại đoàn kết dân tộc',
-    //     'Tư tưởng Hồ Chí Minh về con người',
-    //     'Tư tưởng Hồ Chí Minh về đạo đức',
-    //     'Tư tưởng Hồ Chí Minh về văn hóa',
-    //     'Giá trị thời đại của tư tưởng Hồ Chí Minh'
-    // ]
-
     const importancelevels = [
         { value: 'high', label: 'Cao - Cần thảo luận gấp', color: 'text-red-600' },
         { value: 'medium', label: 'Trung bình - Thảo luận bình thường', color: 'text-yellow-600' },

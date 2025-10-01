@@ -17,7 +17,8 @@ import {
     PencilIcon,
     TrashIcon,
     ExclamationTriangleIcon,
-    ArrowPathIcon
+    ArrowPathIcon,
+    UserIcon
 } from '@heroicons/react/24/outline'
 import { threadApi } from '@/modules/debate/api/threadApi'
 import { debateApi } from '@/modules/debate/api/debateApi'
@@ -130,18 +131,42 @@ const AdminThreadsPage = () => {
                     id: t._id,
                     title: t.title,
                     description: t.description,
-                    author: { name: `${t.createdBy?.firstName || ''} ${t.createdBy?.lastName || ''}`.trim() || t.createdBy?.username || 'User', avatar: (t.createdBy?.firstName || 'U').slice(0, 1).toUpperCase(), reputation: 0 },
+                    author: {
+                        name: `${t.createdBy?.firstName || ''} ${t.createdBy?.lastName || ''}`.trim() || t.createdBy?.username || 'User',
+                        avatar: (t.createdBy as any)?.avatar || (t.createdBy?.firstName || 'U').slice(0, 1).toUpperCase(),
+                        username: t.createdBy?.username,
+                        email: t.createdBy?.email
+                    },
                     status: t.status,
                     priority: 'LOW',
                     createdAt: t.createdAt,
                     relatedTopics: [],
-                    assignedModerators: (t.modForSideA || t.modForSideB) ? { sideA: { id: t.modForSideA, name: 'Mod A' }, sideB: { id: t.modForSideB, name: 'Mod B' } } : null,
+                    assignedModerators: (t.modForSideA || t.modForSideB) ? {
+                        sideA: t.modForSideA ? {
+                            id: (t.modForSideA as any)._id,
+                            name: `${(t.modForSideA as any).firstName} ${(t.modForSideA as any).lastName}`,
+                            username: (t.modForSideA as any).username,
+                            email: (t.modForSideA as any).email,
+                            avatar: (t.modForSideA as any).avatar
+                        } : null,
+                        sideB: t.modForSideB ? {
+                            id: (t.modForSideB as any)._id,
+                            name: `${(t.modForSideB as any).firstName} ${(t.modForSideB as any).lastName}`,
+                            username: (t.modForSideB as any).username,
+                            email: (t.modForSideB as any).email,
+                            avatar: (t.modForSideB as any).avatar
+                        } : null
+                    } : null,
                     stats: {
                         arguments: t.totalArguments,
                         votes: t.totalVotes,
                         participants: t.totalVotes,
                         pendingModeration: t.requireModeration ? (t.totalArguments - t.totalApprovedArguments) : 0
-                    }
+                    },
+                    startDate: (t as any).startDate,
+                    allowVoting: t.allowVoting,
+                    allowArguments: t.allowArguments,
+                    requireModeration: t.requireModeration
                 }))
                 setThreads(items)
             }
@@ -217,7 +242,6 @@ const AdminThreadsPage = () => {
                     fontSize: '14px',
                     fontWeight: '500'
                 },
-                icon: '⚠️'
             })
             return
         }
@@ -239,7 +263,6 @@ const AdminThreadsPage = () => {
                     fontSize: '14px',
                     fontWeight: '500'
                 },
-                icon: '✅'
             })
         } catch (e) {
             console.error(e)
@@ -254,7 +277,6 @@ const AdminThreadsPage = () => {
                     fontSize: '14px',
                     fontWeight: '500'
                 },
-                icon: '❌'
             })
         }
         setIsModalOpen(false)
@@ -335,7 +357,6 @@ const AdminThreadsPage = () => {
                     fontSize: '14px',
                     fontWeight: '500'
                 },
-                icon: '❌'
             })
         }
     }
@@ -353,7 +374,6 @@ const AdminThreadsPage = () => {
                     fontSize: '14px',
                     fontWeight: '500'
                 },
-                icon: '⚠️'
             })
             return
         }
@@ -372,7 +392,6 @@ const AdminThreadsPage = () => {
                     fontSize: '14px',
                     fontWeight: '500'
                 },
-                icon: '✅'
             })
             setRejectModalOpen(false)
             setRejectReason('')
@@ -390,7 +409,6 @@ const AdminThreadsPage = () => {
                     fontSize: '14px',
                     fontWeight: '500'
                 },
-                icon: '❌'
             })
         }
     }
@@ -624,13 +642,27 @@ const AdminThreadsPage = () => {
                             {/* Author & Topics */}
                             <div className="mb-4">
                                 <div className="flex items-center space-x-4 mb-3">
-                                    <div className="flex items-center space-x-2">
-                                        <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                                            {thread.author.avatar}
+                                    <div className="flex items-center space-x-3">
+                                        <div className="relative">
+                                            {thread.author.avatar && thread.author.avatar.startsWith('http') ? (
+                                                <img
+                                                    src={thread.author.avatar}
+                                                    alt={thread.author.name}
+                                                    className="w-12 h-12 rounded-full object-cover border-2 border-blue-200 shadow-lg"
+                                                />
+                                            ) : (
+                                                <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-lg font-bold border-2 border-blue-200 shadow-lg">
+                                                    {thread.author.avatar}
+                                                </div>
+                                            )}
+                                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                                <UserIcon className="h-3 w-3 text-white" />
+                                            </div>
                                         </div>
                                         <div>
-                                            <p className="font-medium text-gray-900 text-sm">{thread.author.name}</p>
-                                            <p className="text-xs text-gray-500">Đề xuất bởi • {thread.author.reputation} điểm</p>
+                                            <p className="font-bold text-gray-900 text-sm">{thread.author.name}</p>
+                                            <p className="text-xs text-gray-600 mb-1">@{thread.author.username}</p>
+                                            <p className="text-xs text-gray-500">Đề xuất bởi • {thread.author.email}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -645,21 +677,151 @@ const AdminThreadsPage = () => {
                             </div>
 
                             {/* Moderators */}
-                            {thread.assignedModerators && (
-                                <div className="mb-4 p-3 bg-green-50 rounded-lg">
-                                    <p className="text-sm font-medium text-green-800 mb-2">Kiểm duyệt viên được phân công:</p>
-                                    <div className="flex items-center space-x-4">
-                                        <div className="flex items-center space-x-2">
-                                            <span className="text-xs text-green-700">Bên A:</span>
-                                            <span className="text-sm font-medium text-green-900">
-                                                {thread.assignedModerators.sideA.name}
-                                            </span>
+                            {thread.assignedModerators && (thread.assignedModerators.sideA || thread.assignedModerators.sideB) && (
+                                <div className="mb-6">
+                                    <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 rounded-2xl p-6 border border-emerald-200/50 shadow-lg">
+                                        <div className="flex items-center space-x-3 mb-6">
+                                            <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl shadow-lg">
+                                                <ShieldCheckIcon className="h-6 w-6 text-white" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-lg font-bold text-emerald-900">Kiểm duyệt viên được phân công</h4>
+                                                <p className="text-sm text-emerald-700">Chuyên gia kiểm duyệt cho từng phe</p>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center space-x-2">
-                                            <span className="text-xs text-green-700">Bên B:</span>
-                                            <span className="text-sm font-medium text-green-900">
-                                                {thread.assignedModerators.sideB.name}
-                                            </span>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            {/* Side A Moderator */}
+                                            {thread.assignedModerators.sideA && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, x: -20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    className="group relative overflow-hidden bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-emerald-200 shadow-lg hover:shadow-xl transition-all duration-300"
+                                                >
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                    <div className="relative">
+                                                        <div className="flex items-center space-x-4 mb-4">
+                                                            <div className="relative">
+                                                                {thread.assignedModerators.sideA.avatar && thread.assignedModerators.sideA.avatar.startsWith('http') ? (
+                                                                    <img
+                                                                        src={thread.assignedModerators.sideA.avatar}
+                                                                        alt={thread.assignedModerators.sideA.name}
+                                                                        className="w-16 h-16 rounded-full object-cover border-4 border-emerald-200 shadow-lg"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white text-xl font-bold border-4 border-emerald-200 shadow-lg">
+                                                                        {thread.assignedModerators.sideA.name?.charAt(0) || 'M'}
+                                                                    </div>
+                                                                )}
+                                                                <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full flex items-center justify-center">
+                                                                    <span className="text-white text-xs font-bold">A</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <h5 className="text-lg font-bold text-emerald-900 mb-1">
+                                                                    {thread.assignedModerators.sideA.name}
+                                                                </h5>
+                                                                <p className="text-sm text-emerald-700 mb-1">
+                                                                    @{thread.assignedModerators.sideA.username}
+                                                                </p>
+                                                                <p className="text-xs text-emerald-600">
+                                                                    {thread.assignedModerators.sideA.email}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center space-x-2">
+                                                                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                                                                <span className="text-xs font-medium text-emerald-700">Phe Ủng hộ</span>
+                                                            </div>
+                                                            <div className="px-3 py-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold rounded-full shadow-lg">
+                                                                Kiểm duyệt viên
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+
+                                            {/* Side B Moderator */}
+                                            {thread.assignedModerators.sideB && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, x: 20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    className="group relative overflow-hidden bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-red-200 shadow-lg hover:shadow-xl transition-all duration-300"
+                                                >
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                    <div className="relative">
+                                                        <div className="flex items-center space-x-4 mb-4">
+                                                            <div className="relative">
+                                                                {thread.assignedModerators.sideB.avatar && thread.assignedModerators.sideB.avatar.startsWith('http') ? (
+                                                                    <img
+                                                                        src={thread.assignedModerators.sideB.avatar}
+                                                                        alt={thread.assignedModerators.sideB.name}
+                                                                        className="w-16 h-16 rounded-full object-cover border-4 border-red-200 shadow-lg"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center text-white text-xl font-bold border-4 border-red-200 shadow-lg">
+                                                                        {thread.assignedModerators.sideB.name?.charAt(0) || 'M'}
+                                                                    </div>
+                                                                )}
+                                                                <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center">
+                                                                    <span className="text-white text-xs font-bold">B</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <h5 className="text-lg font-bold text-red-900 mb-1">
+                                                                    {thread.assignedModerators.sideB.name}
+                                                                </h5>
+                                                                <p className="text-sm text-red-700 mb-1">
+                                                                    @{thread.assignedModerators.sideB.username}
+                                                                </p>
+                                                                <p className="text-xs text-red-600">
+                                                                    {thread.assignedModerators.sideB.email}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center space-x-2">
+                                                                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                                                                <span className="text-xs font-medium text-red-700">Phe Phản đối</span>
+                                                            </div>
+                                                            <div className="px-3 py-1 bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs font-bold rounded-full shadow-lg">
+                                                                Kiểm duyệt viên
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </div>
+
+                                        {/* Thread Settings */}
+                                        <div className="mt-6 pt-6 border-t border-emerald-200/50">
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <div className="text-center">
+                                                    <div className={`w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center ${thread.allowVoting ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                                                        <UserGroupIcon className="h-4 w-4" />
+                                                    </div>
+                                                    <p className="text-xs font-medium text-emerald-700">
+                                                        {thread.allowVoting ? 'Cho phép bình chọn' : 'Không bình chọn'}
+                                                    </p>
+                                                </div>
+                                                <div className="text-center">
+                                                    <div className={`w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center ${thread.allowArguments ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                                                        <PencilIcon className="h-4 w-4" />
+                                                    </div>
+                                                    <p className="text-xs font-medium text-emerald-700">
+                                                        {thread.allowArguments ? 'Cho phép luận điểm' : 'Không luận điểm'}
+                                                    </p>
+                                                </div>
+                                                <div className="text-center">
+                                                    <div className={`w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center ${thread.requireModeration ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400'}`}>
+                                                        <ShieldCheckIcon className="h-4 w-4" />
+                                                    </div>
+                                                    <p className="text-xs font-medium text-emerald-700">
+                                                        {thread.requireModeration ? 'Cần kiểm duyệt' : 'Không kiểm duyệt'}
+                                                    </p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

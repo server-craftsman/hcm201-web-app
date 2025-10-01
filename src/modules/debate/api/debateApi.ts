@@ -12,6 +12,7 @@ export interface DebateThread {
         username: string
         firstName: string
         lastName: string
+        avatar?: string
     }
     moderators: string[]
     totalVotes: number

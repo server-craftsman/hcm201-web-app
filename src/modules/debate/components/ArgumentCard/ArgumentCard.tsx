@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
     HandThumbUpIcon,
@@ -14,7 +14,10 @@ import {
     FlagIcon,
     EllipsisHorizontalIcon,
     ChatBubbleLeftRightIcon,
-    ChatBubbleOvalLeftIcon
+    ChatBubbleOvalLeftIcon,
+    ChevronDownIcon,
+    ChevronUpIcon,
+    PlusIcon
 } from '@heroicons/react/24/outline'
 import {
     HandThumbUpIcon as HandThumbUpSolid,
@@ -22,7 +25,9 @@ import {
     StarIcon as StarSolid
 } from '@heroicons/react/24/solid'
 import { cn } from '@/shared/utils/shadcn'
-import { Argument } from '@/modules/debate/api/argumentApi'
+import { Argument, Reply, argumentApi } from '@/modules/debate/api/argumentApi'
+import { ReplyForm } from '../ReplyForm'
+import { ReplyCard } from '../ReplyCard'
 
 interface ArgumentCardProps {
     argument: Argument
@@ -32,6 +37,7 @@ interface ArgumentCardProps {
     currentUserRole?: 'USER' | 'MODERATOR' | 'ADMIN'
     isCompact?: boolean
     showModerationActions?: boolean
+    currentUser?: any
 }
 
 export const ArgumentCard: React.FC<ArgumentCardProps> = ({
@@ -41,12 +47,19 @@ export const ArgumentCard: React.FC<ArgumentCardProps> = ({
     onModerate,
     currentUserRole = 'USER',
     isCompact = false,
-    showModerationActions = false
+    showModerationActions = false,
+    currentUser
 }) => {
     const [isLiked, setIsLiked] = useState(false)
     const [isDisliked, setIsDisliked] = useState(false)
     const [showModerationMenu, setShowModerationMenu] = useState(false)
     const [moderationNotes, setModerationNotes] = useState('')
+    const [showReplies, setShowReplies] = useState(false)
+    const [showReplyForm, setShowReplyForm] = useState(false)
+    const [replies, setReplies] = useState<Reply[]>([])
+    const [isLoadingReplies, setIsLoadingReplies] = useState(false)
+    const [isSubmittingReply, setIsSubmittingReply] = useState(false)
+
     // Support both old fields (likesCount/dislikesCount) and new API fields (upvotes/downvotes)
     const [likesCount, setLikesCount] = useState<number>(
         (argument as any)?.likesCount ?? (argument as any)?.upvotes ?? 0
@@ -84,6 +97,39 @@ export const ArgumentCard: React.FC<ArgumentCardProps> = ({
         onModerate?.(argument._id, action, moderationNotes)
         setShowModerationMenu(false)
         setModerationNotes('')
+    }
+
+    const loadReplies = async () => {
+        setIsLoadingReplies(true)
+        try {
+            const response = await argumentApi.getReplies(argument._id)
+            setReplies(response.items)
+        } catch (error) {
+            console.error('Error loading replies:', error)
+            setReplies([])
+        } finally {
+            setIsLoadingReplies(false)
+        }
+    }
+
+    const handleReplySubmit = async (data: any) => {
+        setIsSubmittingReply(true)
+        try {
+            const newReply = await argumentApi.replyToArgument(argument._id, data)
+            setReplies(prev => [newReply, ...prev])
+            setShowReplyForm(false)
+        } catch (error) {
+            console.error('Error submitting reply:', error)
+        } finally {
+            setIsSubmittingReply(false)
+        }
+    }
+
+    const toggleReplies = () => {
+        if (!showReplies && replies.length === 0) {
+            loadReplies()
+        }
+        setShowReplies(!showReplies)
     }
 
     const getStatusConfig = () => {
@@ -374,12 +420,23 @@ export const ArgumentCard: React.FC<ArgumentCardProps> = ({
                         </motion.button>
 
                         <motion.button
+                            onClick={toggleReplies}
                             className="flex items-center space-x-2 px-3 py-1.5 rounded-lg hover:bg-gray-50 text-gray-600 hover:text-gray-800 transition-all duration-200"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
                             <ChatBubbleLeftRightIcon className="h-4 w-4" />
                             <span className="text-sm">Thảo luận</span>
+                            {replies.length > 0 && (
+                                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+                                    {replies.length}
+                                </span>
+                            )}
+                            {showReplies ? (
+                                <ChevronUpIcon className="h-4 w-4" />
+                            ) : (
+                                <ChevronDownIcon className="h-4 w-4" />
+                            )}
                         </motion.button>
                     </div>
 
@@ -440,6 +497,82 @@ export const ArgumentCard: React.FC<ArgumentCardProps> = ({
                     )}
                 </div>
             </div>
+
+            {/* Replies Section */}
+            <AnimatePresence>
+                {showReplies && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-4 border-t border-gray-200 pt-4"
+                    >
+                        {/* Reply Form */}
+                        {currentUser && (
+                            <div className="mb-6">
+                                {showReplyForm ? (
+                                    <ReplyForm
+                                        argumentId={argument._id}
+                                        onSubmit={handleReplySubmit}
+                                        onCancel={() => setShowReplyForm(false)}
+                                        isLoading={isSubmittingReply}
+                                    />
+                                ) : (
+                                    <motion.button
+                                        onClick={() => setShowReplyForm(true)}
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        className="w-full flex items-center justify-center space-x-2 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-dashed border-blue-200 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all duration-200"
+                                    >
+                                        <PlusIcon className="h-5 w-5 text-blue-600" />
+                                        <span className="text-blue-700 font-medium">Thêm phản hồi</span>
+                                    </motion.button>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Replies List */}
+                        <div className="space-y-4">
+                            {isLoadingReplies ? (
+                                <div className="flex items-center justify-center py-8">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-6 h-6 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                                        <span className="text-gray-600">Đang tải phản hồi...</span>
+                                    </div>
+                                </div>
+                            ) : replies.length === 0 ? (
+                                <div className="text-center py-8">
+                                    <ChatBubbleLeftRightIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                    <h3 className="text-lg font-medium text-gray-900 mb-2">Chưa có phản hồi</h3>
+                                    <p className="text-gray-600 mb-4">
+                                        {currentUser ? 'Hãy là người đầu tiên phản hồi luận điểm này.' : 'Đăng nhập để thêm phản hồi đầu tiên.'}
+                                    </p>
+                                    {currentUser && !showReplyForm && (
+                                        <motion.button
+                                            onClick={() => setShowReplyForm(true)}
+                                            className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                        >
+                                            Thêm phản hồi đầu tiên
+                                        </motion.button>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <h4 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                                        <ChatBubbleLeftRightIcon className="h-5 w-5 text-blue-600" />
+                                        <span>Phản hồi ({replies.length})</span>
+                                    </h4>
+                                    {replies.map((reply, index) => (
+                                        <ReplyCard key={reply._id} reply={reply} index={index} />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </motion.div>
     )
 }

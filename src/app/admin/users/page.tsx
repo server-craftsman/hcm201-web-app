@@ -114,7 +114,6 @@ const AdminUsersPage = () => {
                     fontSize: '14px',
                     fontWeight: '500'
                 },
-                icon: '❌'
             })
             return
         }
@@ -137,7 +136,6 @@ const AdminUsersPage = () => {
                     fontSize: '14px',
                     fontWeight: '500'
                 },
-                icon: '✅'
             })
 
             // Refresh users list
@@ -159,7 +157,6 @@ const AdminUsersPage = () => {
                     fontSize: '14px',
                     fontWeight: '500'
                 },
-                icon: '❌'
             })
         }
     }

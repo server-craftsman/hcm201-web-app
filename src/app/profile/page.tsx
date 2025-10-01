@@ -67,7 +67,6 @@ const ProfilePage = () => {
         gender: '',
         bio: '',
         location: '',
-        website: '',
         avatar: ''
     })
 
@@ -100,7 +99,6 @@ const ProfilePage = () => {
                     gender: currentUser.gender || '',
                     bio: currentUser.bio || '',
                     location: currentUser.location || '',
-                    website: currentUser.website || '',
                     avatar: currentUser.avatar || ''
                 })
             } else {
@@ -143,9 +141,18 @@ const ProfilePage = () => {
         if (!user) return
 
         try {
-            const response = await userApi.updateUserProfile(user.id, editForm)
+            // Filter out empty string values and zero phone numbers
+            const filteredForm = Object.entries(editForm).reduce((acc, [key, value]) => {
+                // Skip empty strings and zero phone numbers
+                if (value !== '' && value !== 0 && value !== null && value !== undefined) {
+                    acc[key] = value
+                }
+                return acc
+            }, {} as any)
 
-            // Update localStorage
+            const response = await userApi.updateUserProfile(user.id, filteredForm)
+
+            // Update localStorage with all form data (including empty values for display)
             const updatedUser = { ...user, ...editForm }
             localStorage.setItem('currentUser', JSON.stringify(updatedUser))
             setUser(updatedUser)
@@ -161,7 +168,6 @@ const ProfilePage = () => {
                     fontSize: '14px',
                     fontWeight: '500'
                 },
-                icon: '✅'
             })
 
             setIsEditing(false)
@@ -178,7 +184,6 @@ const ProfilePage = () => {
                     fontSize: '14px',
                     fontWeight: '500'
                 },
-                icon: '❌'
             })
         }
     }
@@ -219,7 +224,6 @@ const ProfilePage = () => {
                     fontSize: '14px',
                     fontWeight: '500'
                 },
-                icon: '✅'
             })
 
         } catch (error) {
@@ -235,7 +239,6 @@ const ProfilePage = () => {
                     fontSize: '14px',
                     fontWeight: '500'
                 },
-                icon: '❌'
             })
         } finally {
             setIsUploadingAvatar(false)
@@ -260,7 +263,6 @@ const ProfilePage = () => {
                         fontSize: '14px',
                         fontWeight: '500'
                     },
-                    icon: '❌'
                 })
                 return
             }
@@ -277,7 +279,6 @@ const ProfilePage = () => {
                         fontSize: '14px',
                         fontWeight: '500'
                     },
-                    icon: '❌'
                 })
                 return
             }
@@ -326,7 +327,6 @@ const ProfilePage = () => {
                     fontSize: '14px',
                     fontWeight: '500'
                 },
-                icon: '✅'
             })
 
             setIsPasswordModalOpen(false)
@@ -348,7 +348,6 @@ const ProfilePage = () => {
                     fontSize: '14px',
                     fontWeight: '500'
                 },
-                icon: '❌'
             })
         }
     }
@@ -787,7 +786,6 @@ const ProfilePage = () => {
                                                 gender: user.gender || '',
                                                 bio: user.bio || '',
                                                 location: user.location || '',
-                                                website: user.website || '',
                                                 avatar: user.avatar || ''
                                             })
                                         }}
