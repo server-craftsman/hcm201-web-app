@@ -21,7 +21,7 @@ import { threadApi } from '@/modules/debate/api/threadApi'
 import { debateApi } from '@/modules/debate/api/debateApi'
 
 const AdminThreadsPage = () => {
-    const [selectedTab, setSelectedTab] = useState('pending')
+    const [selectedTab, setSelectedTab] = useState('DRAFT')
     const [selectedThread, setSelectedThread] = useState<any>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedModerators, setSelectedModerators] = useState({ sideA: '', sideB: '' })
@@ -41,7 +41,7 @@ const AdminThreadsPage = () => {
         try {
             setLoading(true)
             if (tab === 'pending') {
-                const res = await threadApi.getThreadRequests(1, 20, 'PENDING')
+                const res = await threadApi.getThreadRequests(1, 20, 'DRAFT')
                 const items = res.data.items.map((r) => ({
                     id: r._id,
                     title: r.title,
@@ -508,14 +508,6 @@ const AdminThreadsPage = () => {
                                     >
                                         <EyeIcon className="h-4 w-4 mr-1" />
                                         Xem chi tiết
-                                    </motion.button>
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                                    >
-                                        <PencilIcon className="h-4 w-4 mr-1" />
-                                        Chỉnh sửa
                                     </motion.button>
                                 </div>
                             </div>

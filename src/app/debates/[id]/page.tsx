@@ -554,7 +554,7 @@ const DebateDetailPage: React.FC = () => {
                         >
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Tranh luận liên quan</h3>
                             <div className="space-y-3">
-                                {threads.filter(t => t._id !== threadId).slice(0, 3).map((thread) => (
+                                {threads.filter(t => t._id !== threadId && t.status === 'ACTIVE').slice(0, 3).map((thread) => (
                                     <Link
                                         key={thread._id}
                                         href={`/debates/${thread._id}`}
@@ -568,6 +568,11 @@ const DebateDetailPage: React.FC = () => {
                                         </p>
                                     </Link>
                                 ))}
+                                {threads.filter(t => t._id !== threadId && t.status === 'ACTIVE').length === 0 && (
+                                    <p className="text-sm text-gray-500 text-center py-4">
+                                        Không có tranh luận liên quan nào đang hoạt động
+                                    </p>
+                                )}
                             </div>
                         </motion.div>
                     </div>

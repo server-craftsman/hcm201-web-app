@@ -16,7 +16,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 const ModerationDashboard = () => {
-    const [selectedTab, setSelectedTab] = useState('pending')
+    const [selectedTab, setSelectedTab] = useState('PENDING')
 
     // Use API hook for real moderation queue data
     const {
@@ -26,17 +26,17 @@ const ModerationDashboard = () => {
         meta: queueMeta,
         refetch: refetchQueue
     } = useModerationQueue({
-        status: selectedTab === 'pending' ? 'pending' : '',
+        status: selectedTab === 'pending' ? 'PENDING' : '',
         page: 1,
         limit: 10
     })
 
     // Use API stats if available, fallback to mock data
     const stats = {
-        pendingArguments: queueItems.filter(item => item.status === 'pending').length || 12,
+        pendingArguments: queueItems.filter(item => item.status === 'PENDING').length || 12,
         approvedToday: 8, // This would need a separate API call for daily stats
         rejectedToday: 3,
-        flaggedArguments: queueItems.filter(item => item.status === 'pending' && item.content.includes('flag')).length || 2,
+        flaggedArguments: queueItems.filter(item => item.status === 'PENDING' && item.content.includes('flag')).length || 2,
         avgProcessingTime: 35, // phút
         myApprovalRate: 85,
         totalProcessed: 156

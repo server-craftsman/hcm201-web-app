@@ -12,6 +12,7 @@ export interface User {
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    fullName?: string
 }
 
 export interface LoginCredentials {
@@ -103,6 +104,10 @@ export interface DebateTopic {
         id: string
         name: string
         avatar?: string
+        firstName?: string
+        lastName?: string
+        username?: string
+        email?: string
     }
     viewCount?: number
     argumentCount?: number
@@ -114,6 +119,8 @@ export interface DebateTopic {
     isPinned?: boolean
     // Additional API fields
     totalApprovedArguments?: number
+    totalVotes?: number
+    totalArguments?: number
     allowVoting?: boolean
     allowArguments?: boolean
     requireModeration?: boolean
@@ -121,6 +128,7 @@ export interface DebateTopic {
     moderators?: string[]
     modForSideA?: string
     modForSideB?: string
+    requestedBy?: string
 }
 
 export interface SearchFilters {

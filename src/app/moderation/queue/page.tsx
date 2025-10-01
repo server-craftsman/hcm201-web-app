@@ -31,14 +31,14 @@ const ModerationQueuePage = () => {
         meta: apiMeta,
         refetch: refetchQueue
     } = useModerationQueue({
-        status: selectedFilter === 'pending' ? 'pending' : selectedFilter === 'flagged' ? 'flagged' : '',
+        status: selectedFilter === 'pending' ? 'PENDING' : selectedFilter === 'flagged' ? 'FLAGGED' : '',
         page: 1,
         limit: 20
     })
 
     // Use API stats if available, fallback to mock data
     const normalizeStatus = (s: unknown) => (typeof s === 'string' ? s.toLowerCase() : '')
-    const pendingCount = apiQueueItems.filter(item => normalizeStatus(item.status) === 'pending').length
+    const pendingCount = apiQueueItems.filter(item => normalizeStatus(item.status) === 'PENDING').length
     const flaggedCount = apiQueueItems.filter(item => normalizeStatus(item.status) === 'flagged').length
 
     const queueStats = {
