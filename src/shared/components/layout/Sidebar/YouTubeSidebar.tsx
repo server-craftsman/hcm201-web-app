@@ -93,13 +93,13 @@ export const YouTubeSidebar: React.FC<YouTubeSidebarProps> = ({
                 color: 'text-slate-600 dark:text-slate-400',
                 bgColor: 'bg-slate-50 dark:bg-slate-900/20'
             },
-            {
-                name: 'Thông báo',
-                href: '/notifications',
-                icon: BellIcon,
-                color: 'text-yellow-600 dark:text-yellow-400',
-                bgColor: 'bg-yellow-50 dark:bg-yellow-900/20'
-            }
+            // {
+            //     name: 'Thông báo',
+            //     href: '/notifications',
+            //     icon: BellIcon,
+            //     color: 'text-yellow-600 dark:text-yellow-400',
+            //     bgColor: 'bg-yellow-50 dark:bg-yellow-900/20'
+            // }
         ]
 
         switch (user.role?.toUpperCase()) {
@@ -357,7 +357,7 @@ export const YouTubeSidebar: React.FC<YouTubeSidebarProps> = ({
                     </div>
 
                     {/* User Info & Logout */}
-                    {isAuthenticated && user && (
+                    {isAuthenticated && user ? (
                         <div className="border-t border-slate-200 dark:border-slate-700 p-4">
                             {(!collapsed || isDrawer) && (
                                 <motion.div
@@ -365,11 +365,19 @@ export const YouTubeSidebar: React.FC<YouTubeSidebarProps> = ({
                                     animate={{ opacity: 1 }}
                                     className="flex items-center space-x-3 mb-3"
                                 >
-                                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                                        <span className="text-white font-semibold text-sm">
-                                            {user.firstName?.[0]?.toUpperCase() || 'U'}
-                                        </span>
-                                    </div>
+                                    {user.avatar ? (
+                                        <img
+                                            src={user.avatar}
+                                            alt={user.firstName || user.email}
+                                            className="w-10 h-10 rounded-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                                            <span className="text-white font-semibold text-sm">
+                                                {user.firstName?.[0]?.toUpperCase() || 'U'}
+                                            </span>
+                                        </div>
+                                    )}
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
                                             {user.firstName || user.email}
@@ -396,7 +404,7 @@ export const YouTubeSidebar: React.FC<YouTubeSidebarProps> = ({
                                 )}
                             </button>
                         </div>
-                    )}
+                    ) : null}
                 </div>
             </motion.aside>
         </>

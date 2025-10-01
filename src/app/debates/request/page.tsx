@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
     PlusCircleIcon,
@@ -11,6 +12,8 @@ import {
 } from '@heroicons/react/24/outline'
 import { cn } from '@/shared/utils/shadcn'
 import { threadApi } from '@/modules/debate'
+// Add toast import
+import { toast } from 'react-hot-toast'
 
 const RequestThreadPage = () => {
     const [formData, setFormData] = useState({
@@ -21,21 +24,12 @@ const RequestThreadPage = () => {
         expectedParticipants: ''
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [submitSuccess, setSubmitSuccess] = useState(false)
+    // Remove submitSuccess state, as we will use toast instead
+    // const [submitSuccess, setSubmitSuccess] = useState(false)
     const [myRequests, setMyRequests] = useState<any[]>([])
     const [loadingRequests, setLoadingRequests] = useState<boolean>(true)
     const [loadError, setLoadError] = useState<string | null>(null)
-
-    // const categories = [
-    //     'Tư tưởng Hồ Chí Minh về độc lập dân tộc',
-    //     'Tư tưởng Hồ Chí Minh về chủ nghĩa xã hội',
-    //     'Tư tưởng Hồ Chí Minh về Đảng Cộng sản',
-    //     'Tư tưởng Hồ Chí Minh về đại đoàn kết dân tộc',
-    //     'Tư tưởng Hồ Chí Minh về con người',
-    //     'Tư tưởng Hồ Chí Minh về đạo đức',
-    //     'Tư tưởng Hồ Chí Minh về văn hóa',
-    //     'Giá trị thời đại của tư tưởng Hồ Chí Minh'
-    // ]
+    const router = useRouter()
 
     const importancelevels = [
         { value: 'high', label: 'Cao - Cần thảo luận gấp', color: 'text-red-600' },
@@ -78,7 +72,11 @@ const RequestThreadPage = () => {
                 priority
             })
 
-            setSubmitSuccess(true)
+            // Show toast success with longer duration before redirect
+            toast.success('Đã gửi yêu cầu thành công! Admin sẽ xem xét và phản hồi trong 1-2 ngày làm việc.', {
+                duration: 3000
+            })
+
             // Reset form
             setFormData({
                 title: '',
@@ -88,9 +86,12 @@ const RequestThreadPage = () => {
                 expectedParticipants: ''
             })
 
-            // Refresh my requests
-            const res = await threadApi.getMyThreadRequests(1, 20)
-            setMyRequests(res.data.items)
+            // Sau khi tạo request thành công, quay về trang home
+            router.push('/')
+
+            // Nếu muốn giữ lại refresh requests, có thể để lại đoạn này (nhưng sẽ không chạy vì đã chuyển trang)
+            // const res = await threadApi.getMyThreadRequests(1, 20)
+            // setMyRequests(res.data.items)
         } catch (err) {
             console.error('Create thread request failed', err)
         } finally {
@@ -135,6 +136,8 @@ const RequestThreadPage = () => {
                 </motion.div>
 
                 {/* Success Message */}
+                {/* Removed in-page success message, now handled by toast */}
+                {/* 
                 {submitSuccess && (
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
@@ -149,6 +152,7 @@ const RequestThreadPage = () => {
                         </div>
                     </motion.div>
                 )}
+                */}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Form yêu cầu */}

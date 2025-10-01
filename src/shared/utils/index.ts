@@ -5,6 +5,7 @@ import { twMerge } from 'tailwind-merge'
 export * from './shadcn'
 export * from './googleAuth'
 export * from './authSync'
+export * from './cloudinary'
 
 /**
  * Utility function to merge Tailwind CSS classes

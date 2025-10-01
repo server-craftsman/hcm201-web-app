@@ -13,7 +13,7 @@ export interface ThreadRequest {
         firstName: string
         lastName: string
     }
-    status: 'PENDING' | 'APPROVED' | 'REJECTED'
+    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DRAFT'
     adminNotes?: string
     createdAt: string
     updatedAt: string

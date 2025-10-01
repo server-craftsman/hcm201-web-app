@@ -82,7 +82,8 @@ const getUserMenuItemsByRole = (userRole: string | undefined) => {
         // ADMIN - Link đến dashboard admin
         { name: 'Bảng điều khiển Admin', href: '/admin/dashboard', icon: CogIcon, roles: ['ADMIN'] },
         { name: 'Quản lý chủ đề', href: '/admin/threads', icon: ShieldCheckIcon, roles: ['ADMIN'] },
-        { name: 'Cài đặt hệ thống', href: '/admin/settings', icon: SparklesIcon, roles: ['ADMIN'] },
+        { name: 'Quản lý người dùng', href: '/admin/users', icon: UserGroupIcon, roles: ['ADMIN'] },
+        // { name: 'Cài đặt hệ thống', href: '/admin/settings', icon: SparklesIcon, roles: ['ADMIN'] },
     ]
 
     const allItems = [...baseItems, ...roleSpecificItems]

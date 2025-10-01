@@ -38,6 +38,60 @@ export interface CreateArgumentData {
     evidenceUrls?: string[]
 }
 
+export interface Reply {
+    _id: string
+    content: string
+    title: string
+    source?: string
+    evidenceUrls?: string[]
+    argumentId?: string
+    authorId?: string | {
+        _id: string
+        email: string
+        username: string
+        firstName: string
+        lastName: string
+        avatar?: string
+    }
+    author?: {
+        _id: string
+        email: string
+        username: string
+        firstName: string
+        lastName: string
+        avatar?: string
+    }
+    threadId?: {
+        _id: string
+        title: string
+        status: string
+    }
+    parentArgumentId?: {
+        _id: string
+        title: string
+        content: string
+    }
+    argumentType?: string
+    status?: string
+    upvotes?: number
+    downvotes?: number
+    score?: number
+    viewCount?: number
+    upvotedBy?: string[]
+    downvotedBy?: string[]
+    isHighlighted?: boolean
+    createdAt: string
+    updatedAt: string
+    __v: number
+}
+
+export interface CreateReplyData {
+    content: string
+    title: string
+    source?: string
+    evidenceUrls?: string[]
+}
+
 export interface ModerationAction {
     argumentId: string
     action: 'APPROVE' | 'REJECT' | 'FLAG' | 'HIGHLIGHT' | 'UNHIGHLIGHT'
@@ -318,6 +372,64 @@ export const argumentApi = {
             return {
                 likesCount: Math.floor(Math.random() * 50),
                 dislikesCount: Math.floor(Math.random() * 10) + 1
+            }
+        }
+    },
+
+    // Reply to argument
+    async replyToArgument(argumentId: string, data: CreateReplyData): Promise<Reply> {
+        try {
+            const response = await apiClient.post<{ data: Reply }>(`/debate/arguments/${argumentId}/reply`, data)
+            return response.data.data
+        } catch (error) {
+            console.warn('Backend not available, using mock data for replyToArgument')
+
+            // Create mock reply
+            const mockReply: Reply = {
+                _id: `reply_${Date.now()}`,
+                ...data,
+                argumentId,
+                authorId: {
+                    _id: 'current_user',
+                    email: 'user@example.com',
+                    username: 'user',
+                    firstName: 'Người',
+                    lastName: 'Dùng',
+                    avatar: 'N'
+                },
+                status: 'PENDING',
+                upvotes: 0,
+                downvotes: 0,
+                score: 0,
+                viewCount: 0,
+                upvotedBy: [],
+                downvotedBy: [],
+                isHighlighted: false,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                __v: 0
+            }
+
+            return mockReply
+        }
+    },
+
+    // Get replies for an argument
+    async getReplies(argumentId: string, page: number = 1, limit: number = 20): Promise<{ items: Reply[]; totalItems: number; page: number; limit: number }> {
+        try {
+            const response = await apiClient.get<{ data: { items: Reply[]; totalItems: number; page: number; limit: number } }>(`/debate/arguments/${argumentId}/replies`, {
+                params: { page, limit }
+            })
+            return response.data.data
+        } catch (error) {
+            console.warn('Backend not available, using mock data for getReplies')
+
+            // Return empty replies for now
+            return {
+                items: [],
+                totalItems: 0,
+                page,
+                limit
             }
         }
     }
