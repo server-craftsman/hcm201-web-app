@@ -1,0 +1,223 @@
+'use client'
+
+import React from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import Link from 'next/link'
+
+type Work = {
+    title: string
+    year?: string
+    summary: string
+    cover: string
+    tags?: string[]
+}
+
+const WORKS: Work[] = [
+    {
+        title: 'Đường Kách Mệnh',
+        year: '1927',
+        summary:
+            'Tập hợp các bài giảng về con đường cách mạng giải phóng dân tộc; đặt nền móng tư tưởng cho phong trào cách mạng Việt Nam thời kỳ mới.',
+        cover:
+            'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=1600&auto=format&fit=crop',
+        tags: ['Cách mạng', 'Tư tưởng', 'Giáo dục']
+    },
+    {
+        title: 'Bản án chế độ thực dân Pháp',
+        year: '1925',
+        summary:
+            'Tác phẩm chính luận sắc bén vạch trần bản chất áp bức, bóc lột của chủ nghĩa thực dân; khơi dậy tinh thần đấu tranh của các dân tộc thuộc địa.',
+        cover:
+            'https://images.unsplash.com/photo-1491841651911-c44c30c34548?q=80&w=1600&auto=format&fit=crop',
+        tags: ['Chính luận', 'Phê phán', 'Giải phóng dân tộc']
+    },
+    {
+        title: 'Nhật ký trong tù',
+        year: '1942 – 1943',
+        summary:
+            'Tập thơ chữ Hán giàu nhân văn, phản chiếu ý chí kiên cường và tâm hồn nghệ sĩ giữa những tháng ngày lao ngục.',
+        cover:
+            'https://images.unsplash.com/photo-1496317899792-9d7dbcd928a1?q=80&w=1600&auto=format&fit=crop',
+        tags: ['Thơ', 'Nhân văn', 'Nghị lực']
+    },
+    {
+        title: 'Tuyên ngôn Độc lập',
+        year: '1945',
+        summary:
+            'Văn kiện lịch sử khai sinh nước Việt Nam Dân chủ Cộng hòa; khẳng định quyền tự do, bình đẳng của dân tộc Việt Nam.',
+        cover:
+            'https://images.unsplash.com/photo-1509021436665-8f07dbf5bf1d?q=80&w=1600&auto=format&fit=crop',
+        tags: ['Lịch sử', 'Độc lập', 'Tự do']
+    }
+]
+
+const QUOTES = [
+    'Không có gì quý hơn độc lập, tự do.',
+    'Dĩ bất biến, ứng vạn biến.',
+    'Học hỏi là một việc phải tiếp tục suốt đời.'
+]
+
+export default function WorksPage() {
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-rose-50/40 to-amber-50/40 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+            {/* Hero */}
+            <motion.section
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="relative overflow-hidden"
+            >
+                <div className="absolute inset-0">
+                    <div className="absolute -top-24 -left-24 w-[40rem] h-[40rem] rounded-full bg-rose-500/10 blur-3xl" />
+                    <div className="absolute -bottom-24 -right-24 w-[36rem] h-[36rem] rounded-full bg-amber-400/10 blur-3xl" />
+                </div>
+
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
+                    <div className="text-center">
+                        <motion.h1
+                            whileHover={{ scale: 1.01 }}
+                            className="text-4xl md:text-6xl font-extrabold bg-gradient-to-br from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent"
+                        >
+                            Tác phẩm của Chủ tịch Hồ Chí Minh
+                        </motion.h1>
+                        <p className="mt-4 text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
+                            Tuyển chọn các tác phẩm tiêu biểu, phản chiếu tư tưởng, đạo đức và phong cách của Người – nguồn cảm hứng bất tận cho tinh thần độc lập, tự do.
+                        </p>
+
+                        <div className="mt-8 flex items-center justify-center gap-4">
+                            <Link href="/debates" className="inline-flex items-center px-5 py-3 rounded-xl bg-rose-500 text-white shadow-lg hover:bg-rose-600 transition">
+                                Khám phá tranh luận
+                            </Link>
+                            <a href="#works" className="inline-flex items-center px-5 py-3 rounded-xl bg-white/60 backdrop-blur border border-white shadow-lg hover:bg-white transition dark:bg-slate-800/60 dark:border-slate-700 dark:text-white">
+                                Xem tác phẩm
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </motion.section>
+
+            {/* Quotes */}
+            <section className="relative">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                    <div className="grid md:grid-cols-3 gap-6">
+                        {QUOTES.map((q, i) => (
+                            <motion.blockquote
+                                key={i}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: i * 0.1 }}
+                                className="p-6 rounded-2xl bg-white/80 backdrop-blur border border-white shadow-md dark:bg-slate-800/70 dark:border-slate-700"
+                            >
+                                <p className="text-lg md:text-xl font-medium text-slate-800 dark:text-slate-100">“{q}”</p>
+                            </motion.blockquote>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Works Grid */}
+            <section id="works" className="relative">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {WORKS.map((work, idx) => (
+                            <motion.article
+                                key={work.title}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.6, delay: idx * 0.1 }}
+                                className="group overflow-hidden rounded-3xl border border-slate-200/70 dark:border-slate-700 bg-white/80 dark:bg-slate-900/60 shadow-xl hover:shadow-2xl transition-shadow backdrop-blur"
+                            >
+                                <div className="relative h-56 overflow-hidden">
+                                    <img
+                                        src={work.cover}
+                                        alt={work.title}
+                                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                                    {work.year && (
+                                        <span className="absolute bottom-3 left-3 px-3 py-1 text-xs font-semibold rounded-full bg-white/80 backdrop-blur-sm text-slate-800 shadow">
+                                            {work.year}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="p-6">
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{work.title}</h3>
+                                    <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4">
+                                        {work.summary}
+                                    </p>
+                                    {work.tags && (
+                                        <div className="flex flex-wrap gap-2">
+                                            {work.tags.map((t) => (
+                                                <span key={t} className="px-2.5 py-1 rounded-full text-xs bg-rose-50 text-rose-700 border border-rose-100 dark:bg-rose-500/10 dark:text-rose-200 dark:border-rose-500/20">
+                                                    {t}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.article>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Timeline */}
+            <section className="relative">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <h2 className="text-2xl md:text-3xl font-bold text-center mb-10 bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                        Dòng chảy tác phẩm
+                    </h2>
+                    <div className="relative">
+                        <div className="absolute left-1/2 -translate-x-1/2 h-full w-1 bg-gradient-to-b from-rose-300 via-amber-300 to-rose-300 rounded-full" />
+                        <div className="space-y-12">
+                            {WORKS.map((w, i) => (
+                                <motion.div
+                                    key={w.title}
+                                    initial={{ opacity: 0, x: i % 2 === 0 ? -40 : 40 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.6 }}
+                                    className={`relative grid md:grid-cols-2 gap-6 items-center ${i % 2 === 0 ? '' : 'md:flex-row-reverse'}`}
+                                >
+                                    <div className={`md:col-start-${i % 2 === 0 ? '1' : '2'} bg-white/80 dark:bg-slate-800/80 border border-white/40 dark:border-slate-700 rounded-2xl p-5 shadow-lg backdrop-blur`}>
+                                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{w.title} {w.year ? `(${w.year})` : ''}</h3>
+                                        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{w.summary}</p>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Footer CTA */}
+            <section className="relative">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                        className="rounded-3xl bg-gradient-to-r from-rose-500 to-amber-500 text-white p-10 shadow-2xl"
+                    >
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div>
+                                <h3 className="text-2xl md:text-3xl font-extrabold">Tiếp nối giá trị tinh thần</h3>
+                                <p className="text-white/90 mt-2 max-w-2xl">
+                                    Khơi nguồn cảm hứng học tập và sáng tạo từ những tác phẩm bất hủ – vì một Việt Nam độc lập, hùng cường, hạnh phúc.
+                                </p>
+                            </div>
+                            <Link href="/debates" className="inline-flex items-center px-5 py-3 rounded-xl bg-white text-rose-600 font-semibold shadow hover:bg-rose-50 transition">
+                                Khám phá tranh luận
+                            </Link>
+                        </div>
+                    </motion.div>
+                </div>
+            </section>
+        </div>
+    )
+}
+
+
