@@ -52,12 +52,20 @@ const defaultNavigation = [
         description: 'Tham gia thảo luận'
     },
     {
+        name: 'Tác phẩm',
+        href: '/ho-chi-minh/works',
+        icon: DocumentTextIcon,
+        color: 'text-amber-500',
+        bgColor: 'bg-amber-50 hover:bg-amber-100',
+        description: 'Tác phẩm Hồ Chí Minh'
+    },
+    {
         name: 'Học tập',
-        href: '/study',
+        href: '/ho-chi-minh/quiz',
         icon: AcademicCapIcon,
-        color: 'text-green-500',
-        bgColor: 'bg-green-50 hover:bg-green-100',
-        description: 'Học và luyện tập'
+        color: 'text-rose-500',
+        bgColor: 'bg-rose-50 hover:bg-rose-100',
+        description: 'Quiz tư tưởng Hồ Chí Minh'
     }
 ]
 

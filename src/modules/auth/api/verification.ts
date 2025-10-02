@@ -54,6 +54,20 @@ export const verificationApi = {
         }
     },
 
+    // Verify email with hash (new endpoint)
+    async verifyEmailWithHash(hash: string): Promise<VerifyEmailResponse> {
+        try {
+            const response = await apiClient.post(`/v1/auth/email/verify-email/${hash}`)
+            return response.data
+        } catch (error: any) {
+            console.error('Verify email with hash API error:', error)
+            throw new Error(
+                error.response?.data?.message ||
+                'Không thể xác thực email. Liên kết có thể đã hết hạn.'
+            )
+        }
+    },
+
     // Check verification status
     async checkVerificationStatus(email: string): Promise<{ isVerified: boolean }> {
         try {

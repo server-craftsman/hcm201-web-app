@@ -19,7 +19,7 @@ const WORKS: Work[] = [
         summary:
             'Tập hợp các bài giảng về con đường cách mạng giải phóng dân tộc; đặt nền móng tư tưởng cho phong trào cách mạng Việt Nam thời kỳ mới.',
         cover:
-            'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=1600&auto=format&fit=crop',
+            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_Cbs0tqaY19-_PE8SsvifSTPCfbjXyV0ibw&s',
         tags: ['Cách mạng', 'Tư tưởng', 'Giáo dục']
     },
     {
@@ -28,7 +28,7 @@ const WORKS: Work[] = [
         summary:
             'Tác phẩm chính luận sắc bén vạch trần bản chất áp bức, bóc lột của chủ nghĩa thực dân; khơi dậy tinh thần đấu tranh của các dân tộc thuộc địa.',
         cover:
-            'https://images.unsplash.com/photo-1491841651911-c44c30c34548?q=80&w=1600&auto=format&fit=crop',
+            'https://www.nxbctqg.org.vn/img_data/images/741482510710_ban-an.jpg',
         tags: ['Chính luận', 'Phê phán', 'Giải phóng dân tộc']
     },
     {
@@ -37,7 +37,7 @@ const WORKS: Work[] = [
         summary:
             'Tập thơ chữ Hán giàu nhân văn, phản chiếu ý chí kiên cường và tâm hồn nghệ sĩ giữa những tháng ngày lao ngục.',
         cover:
-            'https://images.unsplash.com/photo-1496317899792-9d7dbcd928a1?q=80&w=1600&auto=format&fit=crop',
+            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7flIW8YdukUZfDgBYryoyol2axPnTe3Kbrg&s',
         tags: ['Thơ', 'Nhân văn', 'Nghị lực']
     },
     {
@@ -46,7 +46,7 @@ const WORKS: Work[] = [
         summary:
             'Văn kiện lịch sử khai sinh nước Việt Nam Dân chủ Cộng hòa; khẳng định quyền tự do, bình đẳng của dân tộc Việt Nam.',
         cover:
-            'https://images.unsplash.com/photo-1509021436665-8f07dbf5bf1d?q=80&w=1600&auto=format&fit=crop',
+            'https://bvhttdl.mediacdn.vn/2020/8/25/img32113-1598326357834672315893.jpg',
         tags: ['Lịch sử', 'Độc lập', 'Tự do']
     }
 ]
@@ -204,7 +204,7 @@ export default function WorksPage() {
                     >
                         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                             <div>
-                                <h3 className="text-2xl md:text-3xl font-extrabold">Tiếp nối giá trị tinh thần</h3>
+                                <h3 className="text-2xl text-white md:text-3xl font-extrabold">Tiếp nối giá trị tinh thần</h3>
                                 <p className="text-white/90 mt-2 max-w-2xl">
                                     Khơi nguồn cảm hứng học tập và sáng tạo từ những tác phẩm bất hủ – vì một Việt Nam độc lập, hùng cường, hạnh phúc.
                                 </p>

@@ -114,15 +114,34 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
     return (
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
-            <Card padding="lg" className={className}>
-                <form onSubmit={handleSubmit} className="space-y-5">
+            <Card padding="lg" className={`bg-white/80 dark:bg-slate-800/80 backdrop-blur border border-white/40 dark:border-slate-700 shadow-2xl ${className}`}>
+                <form onSubmit={handleSubmit} className="space-y-6">
                     {submitError && (
-                        <div className="rounded-md bg-red-50 border border-red-200 text-red-700 px-3 py-2 text-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 text-sm font-medium"
+                        >
                             {submitError}
-                        </div>
+                        </motion.div>
                     )}
-                    <div className="text-center">
-                        <h2 className="text-2xl font-bold text-neutral-900">Tạo tài khoản</h2>
+                    <div className="text-center pb-6">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                            className="mb-6"
+                        >
+                            <div className="w-16 h-16 mx-auto bg-gradient-to-r from-rose-500 to-amber-500 rounded-2xl flex items-center justify-center mb-4">
+                                <UserPlusIcon className="w-8 h-8 text-white" />
+                            </div>
+                            <h2 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                                Tạo tài khoản
+                            </h2>
+                            <p className="text-slate-600 dark:text-slate-300 mt-2">
+                                Tham gia cộng đồng học tập và tranh luận
+                            </p>
+                        </motion.div>
                     </div>
 
                     <div className="grid grid-cols-1 gap-4">
@@ -144,7 +163,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                         type="submit"
                         variant="luxury"
                         size="lg"
-                        className="w-full group relative overflow-hidden"
+                        className="w-full group relative overflow-hidden bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 shadow-lg hover:shadow-xl"
                         isLoading={isLoading}
                         disabled={isLoading}
                     >
@@ -180,10 +199,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                         </AnimatePresence>
                     </Button>
 
-                    <div className="my-4 flex items-center gap-4">
-                        <div className="h-px flex-1 bg-neutral-200" />
-                        <span className="text-xs uppercase tracking-wider text-neutral-500">hoặc</span>
-                        <div className="h-px flex-1 bg-neutral-200" />
+                    <div className="my-6 flex items-center gap-4">
+                        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-600" />
+                        <span className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">hoặc</span>
+                        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-600" />
                     </div>
 
                     <motion.button
@@ -192,7 +211,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                         disabled={isLoading}
                         whileHover={{ scale: 1.02, y: -2 }}
                         whileTap={{ scale: 0.98 }}
-                        className="group flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-200 bg-white py-3 shadow-sm hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:y-0"
+                        className="group flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-600 bg-white/60 dark:bg-slate-700/60 backdrop-blur py-4 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:y-0"
                     >
                         <motion.div
                             animate={isLoading ? { rotate: 360 } : {}}
@@ -200,7 +219,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                         >
                             <Image src="/images/google.svg" alt="Google" width={20} height={20} />
                         </motion.div>
-                        <span className="font-medium text-neutral-700 group-hover:text-neutral-900">
+                        <span className="font-semibold text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">
                             {isLoading ? 'Đang kết nối...' : 'Đăng ký với Google'}
                         </span>
                     </motion.button>

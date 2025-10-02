@@ -44,11 +44,11 @@ const navigationItems = [
         description: 'Các chủ đề tranh luận'
     },
     {
-        name: 'Học tập',
-        href: '/study',
+        name: 'Tác phẩm',
+        href: '/ho-chi-minh/works',
         icon: AcademicCapIcon,
         gradient: 'from-green-500 to-emerald-600',
-        description: 'Tài liệu học tập'
+        description: 'Tác phẩm Hồ Chí Minh'
     }
 ]
 
