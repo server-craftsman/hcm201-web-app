@@ -41,18 +41,18 @@ const navigationItems = [
         description: 'Tham gia thảo luận'
     },
     {
-        name: 'Học tập',
-        href: '/study',
+        name: 'Tác phẩm',
+        href: '/ho-chi-minh/works',
         icon: AcademicCapIcon,
         gradient: 'from-green-500 to-emerald-600',
-        description: 'Học và luyện tập'
+        description: 'Tác phẩm Hồ Chí Minh'
     },
     {
-        name: 'Yêu cầu chủ đề',
-        href: '/debates/request',
+        name: 'Học tập',
+        href: '/ho-chi-minh/quiz',
         icon: PlusCircleIcon,
         gradient: 'from-orange-500 to-red-600',
-        description: 'Đề xuất chủ đề mới'
+        description: 'Quiz tư tưởng Hồ Chí Minh'
     }
 ]
 
@@ -63,24 +63,6 @@ const quickActions = [
         icon: UserCircleIcon,
         color: 'bg-blue-50 text-blue-600 hover:bg-blue-100'
     },
-    {
-        name: 'Luận điểm của tôi',
-        href: '/my-arguments',
-        icon: DocumentTextIcon,
-        color: 'bg-green-50 text-green-600 hover:bg-green-100'
-    },
-    {
-        name: 'Bình chọn của tôi',
-        href: '/my-votes',
-        icon: HeartIcon,
-        color: 'bg-red-50 text-red-600 hover:bg-red-100'
-    },
-    {
-        name: 'Thành tích',
-        href: '/achievements',
-        icon: TrophyIcon,
-        color: 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100'
-    }
 ]
 
 export const UserLayout: React.FC<UserLayoutProps> = ({ children }) => {

@@ -64,20 +64,20 @@ export const YouTubeSidebar: React.FC<YouTubeSidebarProps> = ({
             description: 'Tham gia thảo luận'
         },
         {
-            name: 'Học tập',
-            href: '/study',
+            name: 'Tác phẩm',
+            href: '/ho-chi-minh/works',
             icon: AcademicCapIcon,
             color: 'text-green-600 dark:text-green-400',
             bgColor: 'bg-green-50 dark:bg-green-900/20',
-            description: 'Học và luyện tập'
+            description: 'Tác phẩm Hồ Chí Minh'
         },
         {
-            name: 'Cộng đồng',
-            href: '/community',
+            name: 'Học tập',
+            href: '/ho-chi-minh/quiz',
             icon: UsersIcon,
             color: 'text-orange-600 dark:text-orange-400',
             bgColor: 'bg-orange-50 dark:bg-orange-900/20',
-            description: 'Kết nối cộng đồng'
+            description: 'Quiz tư tưởng Hồ Chí Minh'
         }
     ]
 
@@ -147,13 +147,6 @@ export const YouTubeSidebar: React.FC<YouTubeSidebarProps> = ({
                         name: 'Dashboard cá nhân',
                         href: '/my-dashboard',
                         icon: ChartBarIcon,
-                        color: 'text-blue-600 dark:text-blue-400',
-                        bgColor: 'bg-blue-50 dark:bg-blue-900/20'
-                    },
-                    {
-                        name: 'Luận điểm của tôi',
-                        href: '/my-arguments',
-                        icon: DocumentTextIcon,
                         color: 'text-blue-600 dark:text-blue-400',
                         bgColor: 'bg-blue-50 dark:bg-blue-900/20'
                     }
