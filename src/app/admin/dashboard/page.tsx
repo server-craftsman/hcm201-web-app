@@ -27,6 +27,7 @@ import {
 import { threadApi } from '@/modules/debate/api/threadApi'
 import { debateApi } from '@/modules/debate/api/debateApi'
 import { useModerationQueue } from '@/modules/debate/hooks/useDebateApi'
+import Link from 'next/link'
 
 const AdminDashboard = () => {
     const [dashboardData, setDashboardData] = useState<any>(null)
@@ -380,17 +381,19 @@ const AdminDashboard = () => {
                                 <p className="text-xs text-red-600 text-center">Quản lý và duyệt các chủ đề tranh luận</p>
                             </motion.button>
 
-                            <motion.button
-                                whileHover={{ scale: 1.05, y: -2 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="group flex flex-col items-center justify-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-xl border border-blue-200 hover:border-blue-300 transition-all duration-200 shadow-md hover:shadow-lg"
-                            >
-                                <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl mb-3 group-hover:scale-110 transition-transform duration-200">
-                                    <UserGroupIcon className="h-6 w-6 text-white" />
-                                </div>
-                                <h4 className="font-semibold text-blue-700 mb-1">Quản lý user</h4>
-                                <p className="text-xs text-blue-600 text-center">Quản lý người dùng và phân quyền</p>
-                            </motion.button>
+                            <Link href="/admin/users">
+                                <motion.button
+                                    whileHover={{ scale: 1.05, y: -2 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="group flex flex-col items-center justify-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-xl border border-blue-200 hover:border-blue-300 transition-all duration-200 shadow-md hover:shadow-lg"
+                                >
+                                    <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl mb-3 group-hover:scale-110 transition-transform duration-200">
+                                        <UserGroupIcon className="h-6 w-6 text-white" />
+                                    </div>
+                                    <h4 className="font-semibold text-blue-700 mb-1">Quản lý user</h4>
+                                    <p className="text-xs text-blue-600 text-center">Quản lý người dùng và phân quyền</p>
+                                </motion.button>
+                            </Link>
 
                             <motion.button
                                 whileHover={{ scale: 1.05, y: -2 }}
