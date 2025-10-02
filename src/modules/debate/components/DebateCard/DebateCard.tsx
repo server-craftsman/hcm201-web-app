@@ -122,7 +122,7 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                                 initial={{ opacity: 0, scale: 0, rotate: -180 }}
                                 animate={{ opacity: 1, scale: 1, rotate: 0 }}
                                 exit={{ opacity: 0, scale: 0, rotate: 180 }}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 hcm-gradient-luxury text-white rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 hcm-gradient-luxury text-black rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm"
                             >
                                 <StarSolidIcon className="h-3.5 w-3.5 animate-luxury-glow" />
                                 <span>Nổi bật</span>

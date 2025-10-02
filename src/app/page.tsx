@@ -330,7 +330,10 @@ export default function HomePage() {
             {/* CTA Buttons with Hyper Speed Effects */}
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <Link href="/study" className="group relative">
-                <button className="relative px-8 py-4 bg-white text-red-600 font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:bg-red-50">
+                <button
+                  className="relative px-8 py-4 bg-white text-red-600 font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:bg-red-50 cursor-pointer"
+                  type="button"
+                >
                   <span className="relative flex items-center space-x-2">
                     {React.createElement(sliderContent[currentSlide].icon, { className: "h-6 w-6 group-hover:scale-110 transition-transform duration-300" })}
                     <span className="group-hover:font-bold transition-all duration-300">{sliderContent[currentSlide].cta}</span>
@@ -338,7 +341,10 @@ export default function HomePage() {
                 </button>
               </Link>
               <Link href="/debates" className="group relative">
-                <button className="relative px-8 py-4 bg-transparent border-2 border-white text-white font-semibold text-lg rounded-xl hover:bg-white hover:text-red-600 transition-all duration-300 hover:scale-105">
+                <button
+                  className="relative px-8 py-4 bg-transparent border-2 border-white text-white font-semibold text-lg rounded-xl hover:bg-white hover:text-red-600 transition-all duration-300 hover:scale-105 cursor-pointer"
+                  type="button"
+                >
                   <span className="relative flex items-center space-x-2">
                     {React.createElement(sliderContent[currentSlide].iconSecondary, { className: "h-6 w-6 group-hover:scale-110 transition-transform duration-300" })}
                     <span className="group-hover:font-bold transition-all duration-300">{sliderContent[currentSlide].ctaSecondary}</span>
@@ -388,7 +394,8 @@ export default function HomePage() {
             {/* Previous Button */}
             <button
               onClick={prevSlide}
-              className="p-2 bg-white/20 rounded-full border border-white/30 hover:bg-white/30 transition-all duration-300 group"
+              className="p-2 bg-white/20 rounded-full border border-white/30 hover:bg-white/30 transition-all duration-300 group cursor-pointer"
+              type="button"
             >
               <ChevronLeftIcon className="h-5 w-5 text-white" />
             </button>
