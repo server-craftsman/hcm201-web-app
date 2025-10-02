@@ -13,8 +13,6 @@ import {
     ArrowRightOnRectangleIcon,
     BellIcon,
     MagnifyingGlassIcon,
-    SunIcon,
-    MoonIcon,
     HeartIcon,
     SparklesIcon,
     CogIcon,
@@ -31,6 +29,7 @@ import {
 import Image from 'next/image'
 import { useAuthContext } from '@/modules/auth'
 import { cn } from '@/shared/utils/shadcn'
+import { ThemeToggle } from '@/shared/components/ui/ThemeToggle'
 import logo from '@/shared/assets/images/logo.png'
 
 // Default navigation cho guest users và public pages
@@ -113,7 +112,6 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
     const [isScrolled, setIsScrolled] = useState(false)
-    const [isDarkMode, setIsDarkMode] = useState(false)
     const { user, isAuthenticated, logout } = useAuthContext()
 
     // Get user menu items dựa trên role
@@ -147,11 +145,6 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
         } catch (error) {
             console.error('Logout error:', error)
         }
-    }
-
-    const toggleDarkMode = () => {
-        setIsDarkMode(!isDarkMode)
-        // TODO: Implement dark mode logic
     }
 
     const getGreeting = () => {
@@ -217,8 +210,8 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
             className={cn(
                 'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
                 isScrolled
-                    ? 'bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-200/50'
-                    : 'bg-white/80 backdrop-blur-md',
+                    ? 'bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-lg border-b border-gray-200/50 dark:border-slate-700/50'
+                    : 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-md',
                 className
             )}
         >
@@ -248,7 +241,7 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
                                 <h1 className="text-xl font-bold bg-gradient-to-r from-red-600 to-yellow-600 bg-clip-text text-transparent">
                                     HCM201
                                 </h1>
-                                <p className="text-xs text-gray-500">Tư tưởng Hồ Chí Minh</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Tư tưởng Hồ Chí Minh</p>
                             </div>
                         </Link>
                     </motion.div>
@@ -279,11 +272,11 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
                     {showNavigation && (
                         <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
                             <div className="relative w-full">
-                                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                                 <input
                                     type="text"
                                     placeholder="Tìm kiếm bài học, thảo luận..."
-                                    className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                                    className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-full text-sm text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                 />
                             </div>
                         </div>
@@ -294,19 +287,8 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
 
                     {/* User Section */}
                     <div className="flex items-center space-x-4">
-                        {/* Dark Mode Toggle */}
-                        <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={toggleDarkMode}
-                            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
-                        >
-                            {isDarkMode ? (
-                                <SunIcon className="h-5 w-5 text-yellow-500" />
-                            ) : (
-                                <MoonIcon className="h-5 w-5 text-gray-600" />
-                            )}
-                        </motion.button>
+                        {/* Theme Toggle */}
+                        <ThemeToggle />
 
                         {isAuthenticated && user ? (
                             <div className="relative">
@@ -317,7 +299,7 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
                                         e.stopPropagation()
                                         setIsUserMenuOpen(!isUserMenuOpen)
                                     }}
-                                    className="flex items-center space-x-3 p-2 rounded-full bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 transition-all duration-200 border border-blue-200/50"
+                                    className="flex items-center space-x-3 p-2 rounded-full bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-800/40 dark:hover:to-purple-800/40 transition-all duration-200 border border-blue-200/50 dark:border-blue-700/50"
                                 >
                                     {/* Avatar */}
                                     <div className="relative">
@@ -327,10 +309,10 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
 
                                     {/* User Info */}
                                     <div className="hidden md:block text-left">
-                                        <p className="text-sm font-medium text-gray-800">
+                                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
                                             {getGreeting()}, {getUserDisplayName()}!
                                         </p>
-                                        <p className="text-xs text-gray-500 capitalize">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
                                             {user.role === 'ADMIN' ? (
                                                 <span className="text-red-500 font-medium">👑 Quản trị viên</span>
                                             ) : user.role === 'MODERATOR' ? (
@@ -360,19 +342,19 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
                                             initial={{ opacity: 0, scale: 0.95, y: -10 }}
                                             animate={{ opacity: 1, scale: 1, y: 0 }}
                                             exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                                            className="absolute right-0 mt-3 w-72 bg-white rounded-2xl shadow-xl border border-gray-200/50 backdrop-blur-xl overflow-hidden"
+                                            className="absolute right-0 mt-3 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-200/50 dark:border-slate-700/50 backdrop-blur-xl overflow-hidden"
                                             onClick={(e) => e.stopPropagation()}
                                         >
                                             {/* User Header */}
-                                            <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
+                                            <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 border-b border-gray-100 dark:border-slate-700">
                                                 <div className="flex items-center space-x-3">
                                                     <div>
                                                         {renderUserAvatar(48, "text-lg font-bold")}
                                                     </div>
                                                     <div>
-                                                        <h3 className="font-semibold text-gray-800">{getUserDisplayName()}</h3>
-                                                        <p className="text-sm text-gray-500">@{user.username}</p>
-                                                        <p className="text-xs text-green-600 flex items-center">
+                                                        <h3 className="font-semibold text-gray-800 dark:text-gray-200">{getUserDisplayName()}</h3>
+                                                        <p className="text-sm text-gray-500 dark:text-gray-400">@{user.username}</p>
+                                                        <p className="text-xs text-green-600 dark:text-green-400 flex items-center">
                                                             <HeartIcon className="w-3 h-3 mr-1" />
                                                             Hoạt động tích cực
                                                         </p>
@@ -386,19 +368,19 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
                                                     <Link
                                                         key={item.name}
                                                         href={item.href}
-                                                        className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
+                                                        className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors duration-150"
                                                         onClick={() => setIsUserMenuOpen(false)}
                                                     >
-                                                        <item.icon className="h-5 w-5 text-gray-400" />
+                                                        <item.icon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                                                         <span>{item.name}</span>
                                                     </Link>
                                                 ))}
 
-                                                <hr className="my-2 border-gray-100" />
+                                                <hr className="my-2 border-gray-100 dark:border-slate-700" />
 
                                                 <button
                                                     onClick={handleLogout}
-                                                    className="flex items-center space-x-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150 w-full text-left"
+                                                    className="flex items-center space-x-3 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150 w-full text-left"
                                                 >
                                                     <ArrowRightOnRectangleIcon className="h-5 w-5" />
                                                     <span>Đăng xuất</span>
@@ -412,13 +394,13 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
                             <div className="flex items-center space-x-3">
                                 <Link
                                     href="/login"
-                                    className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors duration-200"
+                                    className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors duration-200"
                                 >
                                     Đăng nhập
                                 </Link>
                                 <Link
                                     href="/register"
-                                    className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-medium rounded-full hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                                    className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 text-white text-sm font-medium rounded-full hover:from-blue-600 hover:to-purple-700 dark:hover:from-blue-700 dark:hover:to-purple-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                                 >
                                     Đăng ký
                                 </Link>
@@ -434,12 +416,12 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
                                     e.stopPropagation()
                                     setIsMobileMenuOpen(!isMobileMenuOpen)
                                 }}
-                                className="md:hidden p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+                                className="md:hidden p-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors duration-200"
                             >
                                 {isMobileMenuOpen ? (
-                                    <XMarkIcon className="h-6 w-6 text-gray-600" />
+                                    <XMarkIcon className="h-6 w-6 text-gray-600 dark:text-gray-300" />
                                 ) : (
-                                    <Bars3Icon className="h-6 w-6 text-gray-600" />
+                                    <Bars3Icon className="h-6 w-6 text-gray-600 dark:text-gray-300" />
                                 )}
                             </motion.button>
                         )}
@@ -454,16 +436,16 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
-                                className="md:hidden border-t border-gray-200 bg-white/95 backdrop-blur-xl"
+                                className="md:hidden border-t border-gray-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl"
                             >
                                 <div className="px-4 py-4 space-y-2">
                                     {/* Search on Mobile */}
                                     <div className="relative mb-4">
-                                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                                         <input
                                             type="text"
                                             placeholder="Tìm kiếm..."
-                                            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                            className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-full text-sm text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500"
                                         />
                                     </div>
 
@@ -489,14 +471,14 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
 
                                     {/* User Section for Mobile */}
                                     {isAuthenticated && user && (
-                                        <div className="pt-4 border-t border-gray-200">
-                                            <div className="flex items-center space-x-3 px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
+                                        <div className="pt-4 border-t border-gray-200 dark:border-slate-700">
+                                            <div className="flex items-center space-x-3 px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 rounded-xl">
                                                 <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
                                                     {getUserDisplayName().charAt(0).toUpperCase()}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-gray-800">{getUserDisplayName()}</p>
-                                                    <p className="text-xs text-gray-500">@{user.username}</p>
+                                                    <p className="font-medium text-gray-800 dark:text-gray-200">{getUserDisplayName()}</p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">@{user.username}</p>
                                                 </div>
                                             </div>
 
@@ -505,17 +487,17 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
                                                     <Link
                                                         key={item.name}
                                                         href={item.href}
-                                                        className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-150"
+                                                        className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-lg transition-colors duration-150"
                                                         onClick={() => setIsMobileMenuOpen(false)}
                                                     >
-                                                        <item.icon className="h-4 w-4 text-gray-400" />
+                                                        <item.icon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                                                         <span>{item.name}</span>
                                                     </Link>
                                                 ))}
 
                                                 <button
                                                     onClick={handleLogout}
-                                                    className="flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-150 w-full text-left"
+                                                    className="flex items-center space-x-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-150 w-full text-left"
                                                 >
                                                     <ArrowRightOnRectangleIcon className="h-4 w-4" />
                                                     <span>Đăng xuất</span>

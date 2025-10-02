@@ -34,7 +34,7 @@ const WORKS: (Work & { id: string })[] = [
         title: 'Nhật ký trong tù',
         year: '1942 – 1943',
         summary: 'Tập thơ chữ Hán được sáng tác trong thời gian bị giam giữ, thể hiện ý chí bất khuất và tinh thần lạc quan của người chiến sĩ cách mạng.',
-        cover: 'https://product.hstatic.net/1000363117/product/nhat-ky-trong-tu_c1b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8.jpg',
+        cover: 'https://cdn1.fahasa.com/media/flashmagazine/images/page_images/nhat_ky_trong_tu/2024_08_27_16_16_20_1-390x510.jpg',
         tags: ['Thơ', 'Nhân văn', 'Nghị lực']
     },
     {
