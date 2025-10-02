@@ -54,25 +54,25 @@ const notificationStyles = {
         gradient: 'from-emerald-500 via-green-500 to-teal-600',
         icon: CheckCircleIcon,
         color: 'emerald',
-        sound: '/audios/bai-ca-ho-chi-minh.mp3' // Use existing audio file
+        sound: '' // mp3 disabled
     },
     error: {
         gradient: 'from-red-500 via-rose-500 to-pink-600',
         icon: XCircleIcon,
         color: 'red',
-        sound: '/audios/bac-ho-mot-tinh-yeu-bao-la.mp3' // Use existing audio file
+        sound: '' // mp3 disabled
     },
     warning: {
         gradient: 'from-amber-500 via-orange-500 to-yellow-600',
         icon: ExclamationTriangleIcon,
         color: 'amber',
-        sound: '/audios/ca-ngoi-ho-chu-tich.mp3' // Use existing audio file
+        sound: '' // mp3 disabled
     },
     info: {
         gradient: 'from-blue-500 via-indigo-500 to-purple-600',
         icon: InformationCircleIcon,
         color: 'blue',
-        sound: '/audios/ho-chi-minh-dep-nhat-ten-nguoi.mp3' // Use existing audio file
+        sound: '' // mp3 disabled
     }
 }
 
@@ -306,19 +306,8 @@ const CornerNotification: React.FC<{
 
 // Sound Manager
 const playNotificationSound = (type: NotificationType, enabled: boolean) => {
-    if (!enabled) return
-
-    try {
-        const audio = new Audio(notificationStyles[type].sound)
-        audio.volume = 0.3
-        audio.play().catch((error) => {
-            // Silently ignore audio errors (file not found, etc.)
-            console.debug('Audio playback failed:', error.message)
-        })
-    } catch (error) {
-        // Silently ignore sound errors
-        console.debug('Audio creation failed:', error)
-    }
+    // mp3 disabled: do nothing
+    return
 }
 
 // Haptic Feedback
