@@ -3,6 +3,7 @@
 import React from 'react'
 import { AuthProvider } from '@/modules/auth'
 import { NotificationCenter } from './NotificationCenter'
+import { ThemeProvider } from '@/shared/contexts/ThemeContext'
 
 export interface AppProvidersProps {
     children: React.ReactNode
@@ -10,11 +11,13 @@ export interface AppProvidersProps {
 
 export function AppProviders({ children }: AppProvidersProps) {
     return (
-        <NotificationCenter>
-            <AuthProvider>
-                {children}
-            </AuthProvider>
-        </NotificationCenter>
+        <ThemeProvider defaultTheme="system" storageKey="hcm201-theme">
+            <NotificationCenter>
+                <AuthProvider>
+                    {children}
+                </AuthProvider>
+            </NotificationCenter>
+        </ThemeProvider>
     )
 }
 
