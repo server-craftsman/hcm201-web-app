@@ -43,15 +43,17 @@ export default function LoginPage() {
 
                     <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16">
                         {/* Logo & Brand */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8 }}
-                            className="mb-12"
-                        >
-                            <div className="flex items-center space-x-4 mb-8">
-                                <div className="relative">
-                                    {/* <motion.div
+                        <Link href="/">
+                            <motion.div
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.8 }}
+                                className="mb-12"
+                            >
+                                <div className="flex items-center space-x-4 mb-8">
+
+                                    <div className="relative">
+                                        {/* <motion.div
                                         animate={{ rotate: [0, 360] }}
                                         transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
                                         className="absolute inset-0 bg-gradient-to-r from-red-400 to-yellow-400 rounded-full blur opacity-30"
@@ -59,16 +61,18 @@ export default function LoginPage() {
                                     <div className="relative w-16 h-16 bg-gradient-to-r from-red-500 to-yellow-500 rounded-full flex items-center justify-center">
                                         <span className="text-2xl font-bold text-white">HCM</span>
                                     </div> */}
-                                    <Image src={logo} alt="HCM201" width={40} height={40} className="relative rounded-full" />
+                                        <Image src={logo} alt="HCM201" width={40} height={40} className="relative rounded-full" />
+                                    </div>
+
+                                    <div>
+                                        <h1 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-yellow-600 bg-clip-text text-transparent">
+                                            HCM201
+                                        </h1>
+                                        <p className="text-slate-600 dark:text-slate-300">Tư tưởng Hồ Chí Minh</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h1 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-yellow-600 bg-clip-text text-transparent">
-                                        HCM201
-                                    </h1>
-                                    <p className="text-slate-600 dark:text-slate-300">Tư tưởng Hồ Chí Minh</p>
-                                </div>
-                            </div>
-                        </motion.div>
+                            </motion.div>
+                        </Link>
 
                         {/* Welcome Message */}
                         <motion.div

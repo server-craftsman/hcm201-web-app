@@ -45,24 +45,29 @@ export default function RegisterPage() {
 
                     <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16">
                         {/* Logo & Brand */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8 }}
-                            className="mb-12"
-                        >
-                            <div className="flex items-center space-x-4 mb-8">
-                                <div className="relative">
-                                    <Image src={logo} alt="HCM201" width={40} height={40} className="relative rounded-full" />
+                        <Link href="/">
+                            <motion.div
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.8 }}
+                                className="mb-12"
+                            >
+                                <div className="flex items-center space-x-4 mb-8">
+
+                                    <div className="relative">
+                                        <Image src={logo} alt="HCM201" width={40} height={40} className="relative rounded-full" />
+                                    </div>
+
+                                    <div>
+                                        <h1 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-yellow-600 bg-clip-text text-transparent">
+                                            HCM201
+                                        </h1>
+                                        <p className="text-slate-600 dark:text-slate-300">Tư tưởng Hồ Chí Minh</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h1 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-yellow-600 bg-clip-text text-transparent">
-                                        HCM201
-                                    </h1>
-                                    <p className="text-slate-600 dark:text-slate-300">Tư tưởng Hồ Chí Minh</p>
-                                </div>
-                            </div>
-                        </motion.div>
+                            </motion.div>
+
+                        </Link>
 
                         {/* Welcome Message */}
                         <motion.div
