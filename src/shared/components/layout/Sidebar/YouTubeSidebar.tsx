@@ -119,6 +119,13 @@ export const YouTubeSidebar: React.FC<YouTubeSidebarProps> = ({
                         icon: ShieldCheckIcon,
                         color: 'text-red-600 dark:text-red-400',
                         bgColor: 'bg-red-50 dark:bg-red-900/20'
+                    },
+                    {
+                        name: 'Quản lý người dùng',
+                        href: '/admin/users',
+                        icon: UserGroupIcon,
+                        color: 'text-red-600 dark:text-red-400',
+                        bgColor: 'bg-red-50 dark:bg-red-900/20'
                     }
                 ]
             case 'MODERATOR':
