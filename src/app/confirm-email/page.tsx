@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
@@ -16,7 +16,7 @@ import { toast } from 'react-hot-toast'
 
 type VerificationStatus = 'loading' | 'success' | 'error' | 'expired'
 
-export default function ConfirmEmailPage() {
+function ConfirmEmailContent() {
     const [status, setStatus] = useState<VerificationStatus>('loading')
     const [message, setMessage] = useState('')
     const searchParams = useSearchParams()
@@ -307,5 +307,45 @@ export default function ConfirmEmailPage() {
                 </motion.div>
             </div>
         </div>
+    )
+}
+
+// Loading component for Suspense fallback
+function ConfirmEmailLoading() {
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-rose-50/40 to-amber-50/40 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 relative overflow-hidden">
+            <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute -top-24 -left-24 w-[40rem] h-[40rem] rounded-full bg-rose-500/10 blur-3xl animate-pulse" />
+                <div className="absolute -bottom-24 -right-24 w-[36rem] h-[36rem] rounded-full bg-amber-400/10 blur-3xl animate-pulse" />
+            </div>
+
+            <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-12">
+                <div className="w-full max-w-md">
+                    <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur border border-white/40 dark:border-slate-700 rounded-3xl shadow-2xl p-8 text-center">
+                        <div className="flex justify-center mb-6">
+                            <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                                className="w-16 h-16 border-4 border-rose-200 border-t-rose-500 rounded-full"
+                            />
+                        </div>
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+                            Đang tải...
+                        </h1>
+                        <p className="text-slate-600 dark:text-slate-300">
+                            Vui lòng chờ trong giây lát
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default function ConfirmEmailPage() {
+    return (
+        <Suspense fallback={<ConfirmEmailLoading />}>
+            <ConfirmEmailContent />
+        </Suspense>
     )
 }
