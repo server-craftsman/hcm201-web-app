@@ -494,7 +494,7 @@ export default function DebatesPage() {
                                             Xóa bộ lọc
                                         </Button>
                                     )}
-                                    <Link href="/debates/create">
+                                    <Link href="/debates/request">
                                         <Button
                                             variant="luxury"
                                             size="lg"
