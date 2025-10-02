@@ -195,7 +195,7 @@ export default function DebatesPage() {
             <div className="container mx-auto px-4 relative z-10 space-y-12 pb-16">{/* Opening container div */}
 
                 {/* Luxury Stats Grid */}
-                <motion.div
+                {/* <motion.div
                     initial={{ opacity: 0, y: 40 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.3 }}
@@ -221,13 +221,11 @@ export default function DebatesPage() {
                                 whileHover={{ y: -8, scale: 1.02 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             >
-                                {/* Floating background gradient */}
                                 <motion.div
                                     className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}
                                     animate={hoveredStat === index ? { scale: 1.1, rotate: 1 } : { scale: 1, rotate: 0 }}
                                 />
 
-                                {/* Glowing border effect */}
                                 <motion.div
                                     className={`absolute inset-0 rounded-3xl bg-gradient-to-r ${stat.color} opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500`}
                                     animate={hoveredStat === index ? { scale: 1.05 } : { scale: 1 }}
@@ -272,14 +270,14 @@ export default function DebatesPage() {
                             </motion.div>
                         </motion.div>
                     ))}
-                </motion.div>
+                </motion.div> */}
 
                 {/* Luxury Filters Section */}
                 <motion.div
                     initial={{ opacity: 0, y: 40 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.6 }}
-                    className="relative bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl rounded-3xl p-8 border border-white/20 dark:border-slate-700/50 shadow-xl overflow-hidden"
+                    className="relative bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl rounded-3xl p-8 mt-8 border border-white/20 dark:border-slate-700/50 shadow-xl overflow-hidden"
                 >
                     {/* Decorative background */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/10 to-amber-500/10 rounded-full blur-3xl" />
@@ -439,6 +437,7 @@ export default function DebatesPage() {
                                     showActions={false}
                                     showAuthor={true}
                                     showStats={true}
+                                    variant="featured"
                                 />
                             </motion.div>
                         ))}
