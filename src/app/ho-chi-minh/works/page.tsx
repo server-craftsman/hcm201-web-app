@@ -12,42 +12,38 @@ type Work = {
     tags?: string[]
 }
 
-const WORKS: Work[] = [
+const WORKS: (Work & { id: string })[] = [
     {
+        id: 'duong-kach-menh',
         title: 'Đường Kách Mệnh',
         year: '1927',
-        summary:
-            'Tập hợp các bài giảng về con đường cách mạng giải phóng dân tộc; đặt nền móng tư tưởng cho phong trào cách mạng Việt Nam thời kỳ mới.',
-        cover:
-            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_Cbs0tqaY19-_PE8SsvifSTPCfbjXyV0ibw&s',
+        summary: 'Tập hợp các bài giảng về con đường cách mạng giải phóng dân tộc; đặt nền móng tư tưởng cho phong trào cách mạng Việt Nam thời kỳ mới.',
+        cover: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_Cbs0tqaY19-_PE8SsvifSTPCfbjXyV0ibw&s',
         tags: ['Cách mạng', 'Tư tưởng', 'Giáo dục']
     },
     {
+        id: 'ban-an-che-do-thuc-dan-phap',
         title: 'Bản án chế độ thực dân Pháp',
         year: '1925',
-        summary:
-            'Tác phẩm chính luận sắc bén vạch trần bản chất áp bức, bóc lột của chủ nghĩa thực dân; khơi dậy tinh thần đấu tranh của các dân tộc thuộc địa.',
-        cover:
-            'https://www.nxbctqg.org.vn/img_data/images/741482510710_ban-an.jpg',
+        summary: 'Tác phẩm chính luận sắc bén vạch trần bản chất áp bức, bóc lột của chủ nghĩa thực dân; khơi dậy tinh thần đấu tranh của các dân tộc thuộc địa.',
+        cover: 'https://www.nxbctqg.org.vn/img_data/images/741482510710_ban-an.jpg',
         tags: ['Chính luận', 'Phê phán', 'Giải phóng dân tộc']
     },
     {
+        id: 'nhat-ky-trong-tu',
         title: 'Nhật ký trong tù',
         year: '1942 – 1943',
-        summary:
-            'Tập thơ chữ Hán giàu nhân văn, phản chiếu ý chí kiên cường và tâm hồn nghệ sĩ giữa những tháng ngày lao ngục.',
-        cover:
-            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7flIW8YdukUZfDgBYryoyol2axPnTe3Kbrg&s',
+        summary: 'Tập thơ chữ Hán được sáng tác trong thời gian bị giam giữ, thể hiện ý chí bất khuất và tinh thần lạc quan của người chiến sĩ cách mạng.',
+        cover: 'https://product.hstatic.net/1000363117/product/nhat-ky-trong-tu_c1b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8.jpg',
         tags: ['Thơ', 'Nhân văn', 'Nghị lực']
     },
     {
+        id: 'tuyen-ngon-doc-lap',
         title: 'Tuyên ngôn Độc lập',
         year: '1945',
-        summary:
-            'Văn kiện lịch sử khai sinh nước Việt Nam Dân chủ Cộng hòa; khẳng định quyền tự do, bình đẳng của dân tộc Việt Nam.',
-        cover:
-            'https://bvhttdl.mediacdn.vn/2020/8/25/img32113-1598326357834672315893.jpg',
-        tags: ['Lịch sử', 'Độc lập', 'Tự do']
+        summary: 'Bản Tuyên ngôn độc lập khai sinh ra nước Việt Nam Dân chủ Cộng hòa, được đọc tại Quảng trường Ba Đình ngày 2/9/1945.',
+        cover: 'https://vnn-imgs-f.vgcloud.vn/2021/09/01/22/tuyen-ngon-1.jpeg?width=0&s=dJ_sMpzdAPkAamKH3kwrpg',
+        tags: ['Độc lập', 'Lịch sử', 'Chính trị']
     }
 ]
 
@@ -127,35 +123,72 @@ export default function WorksPage() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.6, delay: idx * 0.1 }}
-                                className="group overflow-hidden rounded-3xl border border-slate-200/70 dark:border-slate-700 bg-white/80 dark:bg-slate-900/60 shadow-xl hover:shadow-2xl transition-shadow backdrop-blur"
+                                className="group overflow-hidden rounded-3xl border border-slate-200/70 dark:border-slate-700 bg-white/80 dark:bg-slate-900/60 shadow-xl hover:shadow-2xl transition-shadow backdrop-blur flex flex-col h-full"
                             >
-                                <div className="relative h-56 overflow-hidden">
-                                    <img
-                                        src={work.cover}
-                                        alt={work.title}
-                                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                                    {work.year && (
-                                        <span className="absolute bottom-3 left-3 px-3 py-1 text-xs font-semibold rounded-full bg-white/80 backdrop-blur-sm text-slate-800 shadow">
-                                            {work.year}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="p-6">
-                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{work.title}</h3>
-                                    <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4">
+                                <Link href={`/ho-chi-minh/works/${work.id}`}>
+                                    <div className="relative h-48 overflow-hidden cursor-pointer">
+                                        <img
+                                            src={work.cover}
+                                            alt={work.title}
+                                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                                        {work.year && (
+                                            <span className="absolute bottom-3 left-3 px-3 py-1 text-xs font-semibold rounded-full bg-white/80 backdrop-blur-sm text-slate-800 shadow">
+                                                {work.year}
+                                            </span>
+                                        )}
+                                        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="bg-white/90 backdrop-blur rounded-full p-2">
+                                                <svg className="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Link>
+                                <div className="p-6 flex flex-col flex-1">
+                                    <Link href={`/ho-chi-minh/works/${work.id}`}>
+                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer line-clamp-2">
+                                            {work.title}
+                                        </h3>
+                                    </Link>
+                                    <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4 flex-1 line-clamp-3">
                                         {work.summary}
                                     </p>
                                     {work.tags && (
-                                        <div className="flex flex-wrap gap-2">
-                                            {work.tags.map((t) => (
+                                        <div className="flex flex-wrap gap-2 mb-4">
+                                            {work.tags.slice(0, 3).map((t) => (
                                                 <span key={t} className="px-2.5 py-1 rounded-full text-xs bg-rose-50 text-rose-700 border border-rose-100 dark:bg-rose-500/10 dark:text-rose-200 dark:border-rose-500/20">
                                                     {t}
                                                 </span>
                                             ))}
                                         </div>
                                     )}
+                                    <div className="flex items-center justify-between mt-auto">
+                                        <Link
+                                            href={`/ho-chi-minh/works/${work.id}`}
+                                            className="inline-flex items-center px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-sm font-medium rounded-lg transition-colors"
+                                        >
+                                            Đọc ngay
+                                        </Link>
+                                        <div className="flex items-center space-x-4 text-xs text-slate-500 dark:text-slate-400">
+                                            <span className="flex items-center">
+                                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                                1.2k
+                                            </span>
+                                            <span className="flex items-center">
+                                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                                </svg>
+                                                89
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </motion.article>
                         ))}

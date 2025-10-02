@@ -26,7 +26,6 @@ export function useAuthNotifications() {
             title: 'Đăng nhập thành công',
             message: 'Chào mừng bạn!',
             duration: 2500, // Tự đóng sau 2.5 giây
-            sound: playSound,
             haptic: hapticFeedback,
             dismissible: true
         })
@@ -116,7 +115,6 @@ export function useAuthNotifications() {
                 type: 'warning',
                 title: '📧 Xác thực email để hoàn tất đăng ký',
                 message: `Chúng tôi đã gửi email xác thực đến ${user?.email || 'email của bạn'}. Vui lòng kiểm tra hộp thư và nhấp vào liên kết để kích hoạt tài khoản.`,
-                sound: playSound,
                 haptic: hapticFeedback,
                 dismissible: false,
                 actions: [
@@ -168,7 +166,6 @@ export function useAuthNotifications() {
                 title: 'Đăng ký thành công',
                 message: 'Chào mừng bạn đến với HCM201!',
                 duration: 3000, // Tự đóng sau 3 giây
-                sound: playSound,
                 haptic: hapticFeedback,
                 dismissible: true
             })
@@ -244,7 +241,6 @@ export function useAuthNotifications() {
             title: 'Google đăng nhập thành công',
             message: 'Chào mừng bạn!',
             duration: 2500, // Tự đóng sau 2.5 giây
-            sound: playSound,
             haptic: hapticFeedback,
             dismissible: true
         })
@@ -261,7 +257,6 @@ export function useAuthNotifications() {
             title: '🔐 Google đăng nhập thất bại',
             message: 'Không thể đăng nhập qua Google. Vui lòng thử lại hoặc sử dụng email/mật khẩu.',
             duration: 6000,
-            sound: true,
             haptic: true,
             actions: [
                 {
@@ -285,7 +280,6 @@ export function useAuthNotifications() {
             title: 'Đăng xuất thành công',
             message: 'Cảm ơn bạn đã sử dụng dịch vụ. Hẹn gặp lại bạn!',
             duration: 4000,
-            sound: true,
             haptic: false,
             actions: [
                 {
@@ -310,7 +304,6 @@ export function useAuthNotifications() {
             title: titles[type],
             message,
             dismissible: false,
-            sound: false,
             haptic: false
         })
     }
@@ -322,7 +315,6 @@ export function useAuthNotifications() {
             title: '✅ Cập nhật thành công',
             message: 'Thông tin cá nhân của bạn đã được cập nhật.',
             duration: 3000,
-            sound: true,
             haptic: true
         })
     }
@@ -334,7 +326,6 @@ export function useAuthNotifications() {
             title: '❌ Cập nhật thất bại',
             message: error || 'Không thể cập nhật thông tin. Vui lòng thử lại sau.',
             duration: 5000,
-            sound: true,
             haptic: true,
             actions: [
                 {
@@ -353,7 +344,6 @@ export function useAuthNotifications() {
             title: '⏰ Phiên đăng nhập hết hạn',
             message: 'Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại để tiếp tục sử dụng.',
             dismissible: false,
-            sound: true,
             haptic: true,
             actions: [
                 {
@@ -377,7 +367,6 @@ export function useAuthNotifications() {
             message: 'Vui lòng đợi trong giây lát',
             duration: 0,
             dismissible: false,
-            sound: false,
             haptic: false
         })
 
@@ -392,7 +381,6 @@ export function useAuthNotifications() {
                 title: '✅ Email đã được gửi lại',
                 message: `Email xác thực mới đã được gửi đến ${email}. Vui lòng kiểm tra hộp thư và thư mục Spam.`,
                 duration: 8000,
-                sound: true,
                 haptic: true,
                 actions: [
                     {
@@ -415,7 +403,6 @@ export function useAuthNotifications() {
                 title: '❌ Gửi email thất bại',
                 message: (error as Error).message || 'Không thể gửi email xác thực. Vui lòng thử lại sau.',
                 duration: 8000,
-                sound: true,
                 haptic: true,
                 actions: [
                     {
@@ -439,7 +426,6 @@ export function useAuthNotifications() {
             type: 'success',
             title: '🎉 Email đã được xác thực!',
             message: 'Tài khoản của bạn đã được kích hoạt thành công. Bây giờ bạn có thể đăng nhập và sử dụng đầy đủ các tính năng.',
-            sound: true,
             haptic: true,
             actions: [
                 {
@@ -460,7 +446,6 @@ export function useAuthNotifications() {
             type: 'error',
             title: '❌ Xác thực email thất bại',
             message: error || 'Liên kết xác thực không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu gửi lại email xác thực.',
-            sound: true,
             haptic: true,
             actions: [
                 {
@@ -490,7 +475,6 @@ export function useAuthNotifications() {
             title: '⚠️ Tài khoản chưa được xác thực',
             message: `Tài khoản ${email} chưa được xác thực email. Vui lòng kiểm tra email và nhấp vào liên kết xác thực trước khi đăng nhập.`,
             dismissible: false,
-            sound: true,
             haptic: true,
             actions: [
                 {
