@@ -30,9 +30,14 @@ export default function WorkDetailPage() {
     const [isPlaying, setIsPlaying] = useState(false)
     const [currentChapter, setCurrentChapter] = useState(0)
     const [isDarkMode, setIsDarkMode] = useState(false)
-    const [fontSize, setFontSize] = useState(16)
+    // Sửa lại fontSize thành số thực tế (em/rem) và dùng state cho đơn vị
+    const [fontSize, setFontSize] = useState(1.125) // 1.125rem = 18px mặc định
     const [isBookmarked, setIsBookmarked] = useState(false)
     const [isLiked, setIsLiked] = useState(false)
+
+    const MIN_FONT_SIZE = 0.75 // rem ~ 12px
+    const MAX_FONT_SIZE = 1.5 // rem ~ 24px
+    const FONT_STEP = 0.125 // rem ~ 2px
 
     const synthRef = useRef<SpeechSynthesis | null>(null)
     const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
@@ -208,15 +213,17 @@ export default function WorkDetailPage() {
 
                             <div className="flex items-center space-x-1 bg-slate-100/80 dark:bg-slate-700/80 backdrop-blur rounded-xl p-1 border border-slate-200/50 dark:border-slate-600/50">
                                 <button
-                                    onClick={() => setFontSize(Math.max(12, fontSize - 2))}
+                                    onClick={() => setFontSize(prev => Math.max(MIN_FONT_SIZE, parseFloat((prev - FONT_STEP).toFixed(3))))}
                                     className="px-3 py-1 text-sm hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors"
+                                    aria-label="Giảm cỡ chữ"
                                 >
                                     A-
                                 </button>
-                                <span className="text-sm text-slate-500 dark:text-slate-400 px-2">{fontSize}px</span>
+                                <span className="text-sm text-slate-500 dark:text-slate-400 px-2">{Math.round(fontSize * 16)}px</span>
                                 <button
-                                    onClick={() => setFontSize(Math.min(24, fontSize + 2))}
+                                    onClick={() => setFontSize(prev => Math.min(MAX_FONT_SIZE, parseFloat((prev + FONT_STEP).toFixed(3))))}
                                     className="px-3 py-1 text-sm hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors"
+                                    aria-label="Tăng cỡ chữ"
                                 >
                                     A+
                                 </button>
@@ -428,13 +435,19 @@ export default function WorkDetailPage() {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.3 }}
                                     className="prose prose-slate dark:prose-invert max-w-none"
-                                    style={{ fontSize: `${fontSize}px` }}
+                                    style={{ fontSize: `${fontSize}rem` }}
                                 >
-                                    <h3 className="text-2xl font-bold mb-6 bg-gradient-to-r from-rose-600 to-amber-600 bg-clip-text text-transparent">
+                                    <h3
+                                        className="text-2xl font-bold mb-6 bg-gradient-to-r from-rose-600 to-amber-600 bg-clip-text text-transparent"
+                                        style={{ fontSize: `calc(${fontSize}rem + 0.5rem)` }}
+                                    >
                                         {work.chapters[currentChapter]?.title}
                                     </h3>
 
-                                    <div className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
+                                    <div
+                                        className="text-slate-700 dark:text-slate-300 leading-relaxed"
+                                        style={{ fontSize: `${fontSize}rem` }}
+                                    >
                                         {work.chapters[currentChapter]?.content}
                                     </div>
                                 </motion.div>

@@ -125,7 +125,7 @@ export function useAuth(): UseAuthReturn {
             }))
 
             authNotifications.showLoginSuccess({
-                redirectDelay: 2000,
+                redirectDelay: 500,
                 playSound: true,
                 hapticFeedback: true
             })
