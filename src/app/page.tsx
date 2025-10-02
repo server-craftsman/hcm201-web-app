@@ -409,7 +409,8 @@ export default function HomePage() {
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentSlide
                     ? 'bg-yellow-300'
                     : 'bg-white/50 hover:bg-white/70'
-                    }`}
+                    } cursor-pointer`}
+                  type="button"
                 />
               ))}
             </div>
@@ -417,7 +418,8 @@ export default function HomePage() {
             {/* Next Button */}
             <button
               onClick={nextSlide}
-              className="p-2 bg-white/20 rounded-full border border-white/30 hover:bg-white/30 transition-all duration-300 group"
+              className="p-2 bg-white/20 rounded-full border border-white/30 hover:bg-white/30 transition-all duration-300 group cursor-pointer"
+              type="button"
             >
               <ChevronRightIcon className="h-5 w-5 text-white" />
             </button>
@@ -441,7 +443,7 @@ export default function HomePage() {
               {lifeTimeline.map((item, idx) => (
                 <div key={idx} className="relative flex flex-col md:flex-row items-center md:items-stretch">
                   <div className="hidden md:block w-1/2" />
-                  <div className="z-10 flex items-center justify-center w-12 h-12 rounded-full bg-white border border-red-200 shadow-md mx-6">
+                  <div className="z-10 flex items-center justify-center w-12 h-12 rounded-full bg-white border border-red-200 shadow-md mx-6 group cursor-pointer">
                     <CalendarDaysIcon className="w-6 h-6 text-red-600" />
                   </div>
                   <div className="hidden md:block w-1/2" />
@@ -449,7 +451,7 @@ export default function HomePage() {
                   <div className={`w-full md:w-[46%] ${idx % 2 === 0 ? 'md:ml-auto md:pr-10' : 'md:mr-auto md:pl-10'}`}>
                     <div className="group relative rounded-2xl border border-gray-100 bg-white/70 backdrop-blur p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
                       <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-red-50 to-yellow-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <div className="relative">
+                      <div className="relative group cursor-pointer">
                         <div className="mb-4 relative w-full h-40 overflow-hidden rounded-xl">
                           <Image src={item.image} alt={item.title} fill className="object-cover" />
                         </div>
@@ -478,7 +480,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {podcasts.map((pod, i) => (
-              <div key={i} className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+              <div key={i} className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 group cursor-pointer">
                 <div className="relative h-44 w-full overflow-hidden">
                   <Image src={pod.cover} alt={pod.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
@@ -526,7 +528,8 @@ export default function HomePage() {
             {/* Previous Button */}
             <button
               onClick={prevQuote}
-              className="p-2 bg-white/20 rounded-full border border-white/30 hover:bg-white/30 transition-all duration-300 group"
+              className="p-2 bg-white/20 rounded-full border border-white/30 hover:bg-white/30 transition-all duration-300 group cursor-pointer"
+              type="button"
             >
               <ChevronLeftIcon className="h-5 w-5 text-white" />
             </button>
@@ -540,7 +543,8 @@ export default function HomePage() {
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentQuoteIndex
                     ? 'bg-yellow-300'
                     : 'bg-white/50 hover:bg-white/70'
-                    }`}
+                    } cursor-pointer`}
+                  type="button"
                 />
               ))}
             </div>
@@ -548,7 +552,8 @@ export default function HomePage() {
             {/* Next Button */}
             <button
               onClick={nextQuote}
-              className="p-2 bg-white/20 rounded-full border border-white/30 hover:bg-white/30 transition-all duration-300 group"
+              className="p-2 bg-white/20 rounded-full border border-white/30 hover:bg-white/30 transition-all duration-300 group cursor-pointer"
+              type="button"
             >
               <ChevronRightIcon className="h-5 w-5 text-white" />
             </button>
@@ -609,12 +614,12 @@ export default function HomePage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/register">
-                <button className="px-8 py-4 bg-red-600 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:bg-red-700">
+                <button className="px-8 py-4 bg-red-600 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:bg-red-700 cursor-pointer" type="button">
                   Đăng ký miễn phí
                 </button>
               </Link>
               <Link href="/study">
-                <button className="px-8 py-4 bg-white border-2 border-red-600 text-red-600 font-semibold text-lg rounded-xl hover:bg-red-600 hover:text-white transition-all duration-300 hover:scale-105">
+                <button className="px-8 py-4 bg-white border-2 border-red-600 text-red-600 font-semibold text-lg rounded-xl hover:bg-red-600 hover:text-white transition-all duration-300 hover:scale-105 cursor-pointer" type="button">
                   Khám phá ngay
                 </button>
               </Link>
