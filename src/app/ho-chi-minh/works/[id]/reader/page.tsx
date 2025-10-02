@@ -48,6 +48,14 @@ export default function WorkReaderPage() {
     const [speechVolume, setSpeechVolume] = useState(0.9) // Âm lượng (0.0 - 1.0)
     const [speechPitch, setSpeechPitch] = useState(1) // Cao độ giọng nói (0.1 - 2.0)
 
+    // Continuous reading state
+    const [isContinuousMode, setIsContinuousMode] = useState(true) // Bật continuous mode mặc định
+    const [readingProgress, setReadingProgress] = useState(0) // Tiến độ đọc hiện tại
+    const [totalReadingTime, setTotalReadingTime] = useState(0) // Tổng thời gian đọc
+    const [currentReadingTime, setCurrentReadingTime] = useState(0) // Thời gian đọc hiện tại
+    const readingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+    const isReadingRef = useRef(false)
+
     useEffect(() => {
         const workId = params.id as string
         const workData = WORK_READER_DATA[workId]
@@ -63,20 +71,20 @@ export default function WorkReaderPage() {
                 setSpeechSupported(false)
                 return
             }
-            
+
             // Kiểm tra các API cần thiết
             const hasAPI = !!(window.speechSynthesis && window.SpeechSynthesisUtterance)
-            
+
             if (!hasAPI) {
                 console.log('❌ Speech Synthesis API không được hỗ trợ')
                 setSpeechSupported(false)
                 return
             }
-            
+
             // Kiểm tra xem có giọng nói không
             const voices = window.speechSynthesis.getVoices()
             console.log('🔊 Available voices:', voices.length)
-            
+
             // Nếu chưa có giọng, đợi một chút rồi kiểm tra lại
             if (voices.length === 0) {
                 setTimeout(() => {
@@ -88,9 +96,9 @@ export default function WorkReaderPage() {
                 setSpeechSupported(true)
             }
         }
-        
+
         checkSpeechSupport()
-        
+
         // Lắng nghe sự kiện voiceschanged
         if (typeof window !== 'undefined' && window.speechSynthesis) {
             window.speechSynthesis.addEventListener('voiceschanged', checkSpeechSupport)
@@ -109,14 +117,216 @@ export default function WorkReaderPage() {
         }
     }, [])
 
-    // Stop speech when changing page
+    // Stop reading interval when component unmounts
     useEffect(() => {
-        if (typeof window !== 'undefined' && window.speechSynthesis) {
-            window.speechSynthesis.cancel()
-            setIsPlaying(false)
+        return () => {
+            if (readingIntervalRef.current) {
+                clearInterval(readingIntervalRef.current)
+            }
+        }
+    }, [])
+
+    // Don't auto-stop when page changes in continuous mode
+    useEffect(() => {
+        // Only reset reading time when manually changing pages (not in continuous mode)
+        if (!isReadingRef.current) {
+            setCurrentReadingTime(0)
+            setReadingProgress(0)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage])
+
+    // Calculate total reading time for progress tracking
+    const calculateTotalReadingTime = useCallback(() => {
+        if (!work) return 0
+        return work.pages.reduce((total, page) => {
+            // Estimate ~3 seconds per 100 characters at normal speed
+            const estimatedTime = (page.content.length / 100) * 3 / speechRate
+            return total + estimatedTime
+        }, 0)
+    }, [work, speechRate])
+
+    // Start continuous reading from current page
+    const startContinuousReading = useCallback(() => {
+        if (!work || !speechSupported) return
+
+        console.log('🎆 Starting continuous reading from page:', currentPage + 1)
+        setIsPlaying(true)
+        isReadingRef.current = true
+        setTotalReadingTime(calculateTotalReadingTime())
+        setCurrentReadingTime(0)
+        setReadingProgress(0)
+
+        // Start reading timer
+        readingIntervalRef.current = setInterval(() => {
+            setCurrentReadingTime(prev => {
+                const newTime = prev + 1
+                const totalTime = calculateTotalReadingTime()
+                setReadingProgress((newTime / totalTime) * 100)
+                return newTime
+            })
+        }, 1000)
+
+        readPageRecursively(currentPage)
+    }, [work, speechSupported, currentPage, calculateTotalReadingTime])
+
+    // Recursive function to read pages continuously
+    const readPageRecursively = useCallback((pageIndex: number) => {
+        // Check if we should stop reading
+        if (!work || !isReadingRef.current) {
+            // Stopped by user
+            setIsPlaying(false)
+            isReadingRef.current = false
+            if (readingIntervalRef.current) {
+                clearInterval(readingIntervalRef.current)
+            }
+            return
+        }
+
+        if (pageIndex >= work.pages.length) {
+            // End of book - completed reading
+            setIsPlaying(false)
+            isReadingRef.current = false
+            if (readingIntervalRef.current) {
+                clearInterval(readingIntervalRef.current)
+            }
+
+            toast.success('🎆 Đã đọc xong toàn bộ tác phẩm!', {
+                duration: 4000,
+                style: {
+                    background: '#f0fdf4',
+                    color: '#16a34a',
+                    border: '1px solid #bbf7d0',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontWeight: '600'
+                }
+            })
+            return
+        }
+
+        const pageData = work.pages[pageIndex]
+        if (!pageData || !pageData.content) {
+            // Skip to next page if no content
+            setTimeout(() => readPageRecursively(pageIndex + 1), 500)
+            return
+        }
+
+        console.log(`📖 Reading page ${pageIndex + 1}/${work.pages.length}: ${pageData.title}`)
+
+        // Update current page immediately
+        setCurrentPage(pageIndex)
+
+        // Cancel any ongoing speech
+        if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel()
+        }
+
+        // Wait for cancel to complete
+        setTimeout(() => {
+            if (!isReadingRef.current) return
+
+            const utterance = new window.SpeechSynthesisUtterance(pageData.content)
+            utterance.lang = 'vi-VN'
+            utterance.rate = speechRate
+            utterance.pitch = speechPitch
+            utterance.volume = speechVolume
+
+            utterance.onstart = () => {
+                console.log(`🎤 Started reading page ${pageIndex + 1}`)
+                if (isContinuousMode && pageIndex === currentPage) {
+                    toast.success(`🔊 Đang đọc: ${pageData.title}`, {
+                        duration: 2000,
+                        style: {
+                            background: '#f0fdf4',
+                            color: '#16a34a'
+                        }
+                    })
+                }
+            }
+
+            utterance.onend = () => {
+                console.log(`✅ Finished reading page ${pageIndex + 1}`)
+
+                if (!isReadingRef.current) return
+
+                if (isContinuousMode && pageIndex < work.pages.length - 1) {
+                    // Auto-advance to next page after a short pause
+                    setTimeout(() => {
+                        if (isReadingRef.current) {
+                            readPageRecursively(pageIndex + 1)
+                        }
+                    }, 1000) // 1 second pause between pages
+                } else {
+                    // End of continuous reading or single page mode
+                    setIsPlaying(false)
+                    isReadingRef.current = false
+                    if (readingIntervalRef.current) {
+                        clearInterval(readingIntervalRef.current)
+                    }
+
+                    if (pageIndex >= work.pages.length - 1) {
+                        toast.success('🎆 Đã đọc xong toàn bộ tác phẩm!', {
+                            duration: 4000,
+                            style: {
+                                background: '#f0fdf4',
+                                color: '#16a34a',
+                                border: '1px solid #bbf7d0',
+                                borderRadius: '12px',
+                                fontSize: '16px',
+                                fontWeight: '600'
+                            }
+                        })
+                    } else {
+                        toast.success(`✅ Đã đọc xong: ${pageData.title}`, {
+                            duration: 2000,
+                            style: {
+                                background: '#f0f9ff',
+                                color: '#0369a1'
+                            }
+                        })
+                    }
+                }
+            }
+
+            utterance.onerror = (event) => {
+                console.error(`❌ Error reading page ${pageIndex + 1}:`, event)
+                toast.error(`❌ Lỗi khi đọc trang ${pageIndex + 1}: ${event.error}`, {
+                    duration: 3000,
+                    style: {
+                        background: '#fef2f2',
+                        color: '#dc2626'
+                    }
+                })
+
+                // Try to continue with next page after error
+                if (isContinuousMode && pageIndex < work.pages.length - 1) {
+                    setTimeout(() => {
+                        if (isReadingRef.current) {
+                            readPageRecursively(pageIndex + 1)
+                        }
+                    }, 2000)
+                } else {
+                    setIsPlaying(false)
+                    isReadingRef.current = false
+                    if (readingIntervalRef.current) {
+                        clearInterval(readingIntervalRef.current)
+                    }
+                }
+            }
+
+            utteranceRef.current = utterance
+
+            try {
+                window.speechSynthesis.speak(utterance)
+            } catch (error) {
+                console.error('❌ Error starting speech:', error)
+                toast.error('❌ Lỗi khi bắt đầu đọc')
+                setIsPlaying(false)
+                isReadingRef.current = false
+            }
+        }, 200)
+    }, [work, speechRate, speechPitch, speechVolume, isContinuousMode, currentPage])
 
     // Play/pause handler
     const handlePlayPause = useCallback(() => {
@@ -140,9 +350,18 @@ export default function WorkReaderPage() {
 
         // If currently playing, pause
         if (isPlaying) {
-            console.log('🔇 Stopping speech synthesis')
-            window.speechSynthesis.cancel()
+            console.log('🔇 Pausing continuous reading')
             setIsPlaying(false)
+            isReadingRef.current = false
+
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel()
+            }
+
+            if (readingIntervalRef.current) {
+                clearInterval(readingIntervalRef.current)
+            }
+
             toast.success('⏸️ Đã tạm dừng đọc', {
                 duration: 1500,
                 style: {
@@ -153,149 +372,81 @@ export default function WorkReaderPage() {
             return
         }
 
-        // Otherwise, start reading
-        const pageData = work.pages[currentPage]
-        if (!pageData || !pageData.content) {
-            toast.error('❌ Không có nội dung để đọc.')
-            return
-        }
-
-        console.log('🔊 Starting speech synthesis for:', pageData.title)
-        
-        // Cancel any ongoing speech
-        window.speechSynthesis.cancel()
-
-        // Wait a bit for cancel to complete
-        setTimeout(() => {
-            // Remove previous event listeners if any
-            if (utteranceRef.current) {
-                utteranceRef.current.onstart = null
-                utteranceRef.current.onend = null
-                utteranceRef.current.onerror = null
-            }
-
-            // Create new utterance
-            const utterance = new window.SpeechSynthesisUtterance(pageData.content)
-            utterance.lang = 'vi-VN'
-            utterance.rate = speechRate
-            utterance.pitch = speechPitch
-            utterance.volume = speechVolume
-
-            utterance.onstart = () => {
-                console.log('🎤 Speech started')
-                setIsPlaying(true)
-                toast.success('🔊 Bắt đầu đọc: ' + pageData.title, {
-                    duration: 2000,
-                    style: {
-                        background: '#f0fdf4',
-                        color: '#16a34a'
-                    }
-                })
-            }
-            
-            utterance.onend = () => {
-                console.log('✅ Speech ended')
-                setIsPlaying(false)
-                toast.success('✅ Đã đọc xong trang này', {
-                    duration: 2000,
-                    style: {
-                        background: '#f0f9ff',
-                        color: '#0369a1'
-                    }
-                })
-            }
-            
-            utterance.onerror = (event) => {
-                console.error('❌ Speech synthesis error:', event)
-                setIsPlaying(false)
-                toast.error('❌ Lỗi khi đọc văn bản. Lý do: ' + (event.error || 'Không xác định'), {
-                    duration: 4000,
-                    style: {
-                        background: '#fef2f2',
-                        color: '#dc2626',
-                        border: '1px solid #fecaca'
-                    }
-                })
-            }
-
-            utteranceRef.current = utterance
-
-            // Check if synthesis is available và xử lý các trường hợp đặc biệt
-            if (window.speechSynthesis.speaking) {
-                console.log('⚠️ Speech synthesis is already speaking, cancelling...')
-                window.speechSynthesis.cancel()
-                setTimeout(() => {
-                    try {
-                        window.speechSynthesis.speak(utterance)
-                    } catch (error) {
-                        console.error('Error speaking:', error)
-                        toast.error('❌ Lỗi khi bắt đầu đọc. Vui lòng thử lại.')
-                        setIsPlaying(false)
-                    }
-                }, 200)
-            } else {
-                console.log('🎯 Starting speech synthesis')
-                try {
-                    // Một số trình duyệt cần delay ngắn
-                    setTimeout(() => {
-                        if (window.speechSynthesis.paused) {
-                            window.speechSynthesis.resume()
-                        }
-                        window.speechSynthesis.speak(utterance)
-                        
-                        // Fallback check sau 500ms xem đã bắt đầu chưa
-                        setTimeout(() => {
-                            if (!window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
-                                console.log('⚠️ Speech didn\'t start, trying again...')
-                                window.speechSynthesis.speak(utterance)
-                            }
-                        }, 500)
-                    }, 50)
-                } catch (error) {
-                    console.error('Error speaking:', error)
-                    toast.error('❌ Lỗi khi bắt đầu đọc. Vui lòng thử lại.')
-                    setIsPlaying(false)
-                }
-            }
-        }, 100)
-    }, [isPlaying, work, currentPage])
+        // Start continuous reading
+        startContinuousReading()
+    }, [work, isPlaying, speechSupported, startContinuousReading])
 
     const handleStop = useCallback(() => {
-        if (typeof window !== 'undefined' && window.speechSynthesis) {
-            console.log('🚫 Stopping speech synthesis')
+        console.log('🚫 Stopping all reading')
+
+        setIsPlaying(false)
+        isReadingRef.current = false
+
+        if (typeof window !== 'undefined' && window.speechSynthesis.speaking) {
             window.speechSynthesis.cancel()
-            setIsPlaying(false)
-            toast.success('🚫 Đã dừng đọc', {
-                duration: 1500,
-                style: {
-                    background: '#fef3c7',
-                    color: '#d97706'
-                }
-            })
         }
+
+        if (readingIntervalRef.current) {
+            clearInterval(readingIntervalRef.current)
+        }
+
+        setCurrentReadingTime(0)
+        setReadingProgress(0)
+
+        toast.success('🚫 Đã dừng đọc hoàn toàn', {
+            duration: 2000,
+            style: {
+                background: '#fef3c7',
+                color: '#d97706',
+                fontWeight: '600'
+            }
+        })
     }, [])
 
     const handlePageChange = (direction: 'prev' | 'next') => {
         if (!work) return
 
-        // Stop audio first if playing
-        if (isPlaying) {
+        // Only stop if not in continuous reading mode or manually triggered
+        if (isPlaying && !isReadingRef.current) {
             handleStop()
         }
 
+        let newPage = currentPage
         if (direction === 'prev' && currentPage > 0) {
-            setCurrentPage(currentPage - 1)
+            newPage = currentPage - 1
         } else if (direction === 'next' && currentPage < work.pages.length - 1) {
-            setCurrentPage(currentPage + 1)
+            newPage = currentPage + 1
+        }
+
+        // If in continuous reading mode, stop current and start from new page
+        if (isPlaying && isReadingRef.current) {
+            handleStop()
+            setCurrentPage(newPage)
+            // Small delay then restart from new page
+            setTimeout(() => {
+                startContinuousReading()
+            }, 500)
+        } else {
+            setCurrentPage(newPage)
         }
     }
 
     const handlePageSelect = (pageIndex: number) => {
-        // Stop audio first if playing
-        if (isPlaying) {
+        // If in continuous reading mode, stop current and start from selected page
+        if (isPlaying && isReadingRef.current) {
             handleStop()
+            setCurrentPage(pageIndex)
+            // Small delay then restart from selected page
+            setTimeout(() => {
+                startContinuousReading()
+            }, 500)
+        } else {
+            // Stop audio first if playing in single mode
+            if (isPlaying) {
+                handleStop()
+            }
+            setCurrentPage(pageIndex)
         }
-        setCurrentPage(pageIndex)
     }
 
     if (!work) {
@@ -430,11 +581,10 @@ export default function WorkReaderPage() {
                                     <div className="flex items-center space-x-2 mb-4">
                                         <button
                                             onClick={handlePlayPause}
-                                            className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
-                                                isPlaying 
-                                                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg animate-pulse' 
-                                                    : 'bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-md'
-                                            }`}
+                                            className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${isPlaying
+                                                ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg animate-pulse'
+                                                : 'bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-md'
+                                                }`}
                                             type="button"
                                             disabled={!speechSupported}
                                             title={isPlaying ? 'Ấn để tạm dừng' : 'Ấn để bắt đầu đọc'}
@@ -444,7 +594,7 @@ export default function WorkReaderPage() {
                                             ) : (
                                                 <PlayIcon className="w-6 h-6 text-white ml-0.5" />
                                             )}
-                                            
+
                                             {/* Animated ring khi đang phát */}
                                             {isPlaying && (
                                                 <div className="absolute inset-0 rounded-full border-2 border-white/30 animate-ping"></div>
@@ -453,11 +603,10 @@ export default function WorkReaderPage() {
 
                                         <button
                                             onClick={handleStop}
-                                            className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
-                                                isPlaying 
-                                                    ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg' 
-                                                    : 'bg-slate-400 hover:bg-slate-500 shadow-sm'
-                                            }`}
+                                            className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${isPlaying
+                                                ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg'
+                                                : 'bg-slate-400 hover:bg-slate-500 shadow-sm'
+                                                }`}
                                             type="button"
                                             disabled={!speechSupported || !isPlaying}
                                             title="Dừng đọc"
@@ -465,21 +614,87 @@ export default function WorkReaderPage() {
                                             <SpeakerXMarkIcon className="w-5 h-5 text-white" />
                                         </button>
                                     </div>
-                                    
+
+                                    {/* Continuous Mode Toggle */}
+                                    <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200/50 dark:border-blue-700/50">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div>
+                                                <label className="text-sm font-semibold text-blue-700 dark:text-blue-300 flex items-center">
+                                                    🔄 Chế độ đọc liên tục
+                                                </label>
+                                                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                                    {isContinuousMode ? 'Tự động chuyển trang khi hết nội dung' : 'Chỉ đọc trang hiện tại'}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => setIsContinuousMode(!isContinuousMode)}
+                                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isContinuousMode ? 'bg-gradient-to-r from-blue-500 to-indigo-600' : 'bg-gray-300 dark:bg-gray-600'
+                                                    }`}
+                                            >
+                                                <span
+                                                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform ${isContinuousMode ? 'translate-x-6' : 'translate-x-1'
+                                                        }`}
+                                                />
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     {/* Status indicator */}
                                     <div className="mb-3">
                                         {isPlaying ? (
-                                            <div className="flex items-center text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full">
+                                            <div className="flex items-center text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-lg border border-green-200 dark:border-green-700">
                                                 <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                                                Đang phát âm thanh
+                                                {isContinuousMode ? 'Đang đọc liên tục' : 'Đang phát âm thanh'}
                                             </div>
                                         ) : (
                                             <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                                                 <div className="w-2 h-2 bg-gray-400 rounded-full mr-2"></div>
-                                                Sẵn sàng đọc
+                                                Sẵn sàng đọc {isContinuousMode ? 'liên tục' : ''}
                                             </div>
                                         )}
                                     </div>
+
+                                    {/* Reading Progress */}
+                                    {/* {isPlaying && isContinuousMode && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="mb-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl border border-emerald-200/50 dark:border-emerald-700/50"
+                                        >
+                                            <div className="flex items-center justify-between mb-3">
+                                                <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300 flex items-center">
+                                                    📚 Đang đọc liên tục
+                                                </span>
+                                                <span className="text-xs text-emerald-600 dark:text-emerald-400">
+                                                    Trang {currentPage + 1} / {work.pages.length}
+                                                </span>
+                                            </div>
+
+                                            <div className="mb-2">
+                                                <div className="flex justify-between text-xs text-emerald-600 dark:text-emerald-400 mb-1">
+                                                    <span>Tiến độ toàn bộ</span>
+                                                    <span>{Math.round(readingProgress)}%</span>
+                                                </div>
+                                                <div className="w-full bg-emerald-200 dark:bg-emerald-800 rounded-full h-2 overflow-hidden">
+                                                    <motion.div
+                                                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full"
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: `${readingProgress}%` }}
+                                                        transition={{ duration: 0.5 }}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="flex justify-between text-xs text-emerald-600 dark:text-emerald-400">
+                                                <span>Đã đọc: {Math.floor(currentReadingTime / 60)}:{(currentReadingTime % 60).toString().padStart(2, '0')}</span>
+                                                <span>Dự kiến: {Math.floor(totalReadingTime / 60)}:{Math.floor(totalReadingTime % 60).toString().padStart(2, '0')}</span>
+                                            </div>
+
+                                            <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-2 text-center font-medium">
+                                                🎙️ {work.pages[currentPage]?.title}
+                                            </div>
+                                        </motion.div>
+                                    )} */}
                                     {!speechSupported && (
                                         <div className="text-xs text-red-600 dark:text-red-400 mb-2 p-2 bg-red-50 dark:bg-red-900/20 rounded">
                                             ❌ Trình duyệt của bạn không hỗ trợ tính năng đọc văn bản.
@@ -487,23 +702,44 @@ export default function WorkReaderPage() {
                                             Vui lòng sử dụng Chrome, Firefox hoặc Safari mới nhất.
                                         </div>
                                     )}
-                                    
-                                    {speechSupported && (
-                                        <button
-                                            onClick={() => {
-                                                const testUtterance = new window.SpeechSynthesisUtterance('Xin chào! Đây là bài kiểm tra giọng nói.')
-                                                testUtterance.lang = 'vi-VN'
-                                                testUtterance.rate = speechRate
-                                                testUtterance.pitch = speechPitch
-                                                testUtterance.volume = speechVolume
-                                                window.speechSynthesis.speak(testUtterance)
-                                                toast.success('🎤 Kiểm tra giọng nói')
-                                            }}
-                                            className="w-full text-xs py-2 px-3 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/20 dark:hover:bg-blue-800/30 text-blue-700 dark:text-blue-300 rounded-lg transition-colors mb-2"
-                                        >
-                                            🎤 Kiểm tra giọng nói
-                                        </button>
-                                    )}
+
+                                    {/* Quick Actions */}
+                                    <div className="space-y-2 mb-4">
+                                        {speechSupported && (
+                                            <button
+                                                onClick={() => {
+                                                    const testUtterance = new window.SpeechSynthesisUtterance('Xin chào! Đây là bài kiểm tra giọng nói.')
+                                                    testUtterance.lang = 'vi-VN'
+                                                    testUtterance.rate = speechRate
+                                                    testUtterance.pitch = speechPitch
+                                                    testUtterance.volume = speechVolume
+                                                    window.speechSynthesis.speak(testUtterance)
+                                                    toast.success('🎤 Kiểm tra giọng nói')
+                                                }}
+                                                className="w-full text-xs py-2 px-3 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/20 dark:hover:bg-blue-800/30 text-blue-700 dark:text-blue-300 rounded-lg transition-colors"
+                                            >
+                                                🎤 Kiểm tra giọng nói
+                                            </button>
+                                        )}
+
+                                        {/* {isContinuousMode && (
+                                            <button
+                                                onClick={() => {
+                                                    if (isPlaying) {
+                                                        handleStop()
+                                                    }
+                                                    setCurrentPage(0)
+                                                    setTimeout(() => {
+                                                        startContinuousReading()
+                                                    }, 500)
+                                                }}
+                                                className="w-full text-xs py-2 px-3 bg-gradient-to-r from-emerald-100 to-teal-100 hover:from-emerald-200 hover:to-teal-200 dark:from-emerald-900/20 dark:to-teal-900/20 dark:hover:from-emerald-800/30 dark:hover:to-teal-800/30 text-emerald-700 dark:text-emerald-300 rounded-lg transition-colors font-medium"
+                                                disabled={!speechSupported}
+                                            >
+                                                🚀 Đọc từ đầu tác phẩm
+                                            </button>
+                                        )} */}
+                                    </div>
 
                                     <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
                                         <div className="flex items-center">
