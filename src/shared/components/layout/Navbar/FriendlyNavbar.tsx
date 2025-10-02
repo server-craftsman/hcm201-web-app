@@ -288,7 +288,7 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
                     {/* User Section */}
                     <div className="flex items-center space-x-4">
                         {/* Theme Toggle */}
-                        <ThemeToggle />
+                        {/* <ThemeToggle /> */}
 
                         {isAuthenticated && user ? (
                             <div className="relative">
@@ -342,7 +342,8 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
                                             initial={{ opacity: 0, scale: 0.95, y: -10 }}
                                             animate={{ opacity: 1, scale: 1, y: 0 }}
                                             exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                                            className="absolute right-0 mt-3 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-200/50 dark:border-slate-700/50 backdrop-blur-xl overflow-hidden"
+                                            className="absolute z-[2147483647] right-0 mt-3 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-200/50 dark:border-slate-700/50 backdrop-blur-xl overflow-hidden"
+                                            style={{ zIndex: 2147483647 }}
                                             onClick={(e) => e.stopPropagation()}
                                         >
                                             {/* User Header */}

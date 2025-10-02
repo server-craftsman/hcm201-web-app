@@ -25,7 +25,7 @@ export function useAuthNotifications() {
             type: 'success',
             title: 'Đăng nhập thành công',
             message: 'Chào mừng bạn!',
-            duration: 2500, // Tự đóng sau 2.5 giây
+            duration: 3000, // Tự đóng sau 2.5 giây
             haptic: hapticFeedback,
             dismissible: true
         })
@@ -238,9 +238,9 @@ export function useAuthNotifications() {
 
         notification.showCorner({
             type: 'success',
-            title: 'Google đăng nhập thành công',
+            title: 'Đăng nhập qua Google thành công',
             message: 'Chào mừng bạn!',
-            duration: 2500, // Tự đóng sau 2.5 giây
+            duration: 3000, // Tự đóng sau 2.5 giây
             haptic: hapticFeedback,
             dismissible: true
         })
@@ -254,7 +254,7 @@ export function useAuthNotifications() {
     const showGoogleLoginError = (error: string) => {
         notification.showCorner({
             type: 'error',
-            title: '🔐 Google đăng nhập thất bại',
+            title: '🔐 Đăng nhập qua Google thất bại',
             message: 'Không thể đăng nhập qua Google. Vui lòng thử lại hoặc sử dụng email/mật khẩu.',
             duration: 6000,
             haptic: true,
@@ -279,7 +279,7 @@ export function useAuthNotifications() {
             type: 'info',
             title: 'Đăng xuất thành công',
             message: 'Cảm ơn bạn đã sử dụng dịch vụ. Hẹn gặp lại bạn!',
-            duration: 4000,
+            duration: 2000,
             haptic: false,
             actions: [
                 {

@@ -1,3 +1,8 @@
+import duongKachMenh from '@/shared/assets/images/tac-pham/duong-kach-menh.jpg'
+import banAnCheDoThucDanPhap from '@/shared/assets/images/tac-pham/ban-an-che-do-thuc-dan-phap.jpg'
+import nhatKyTrongTu from '@/shared/assets/images/tac-pham/nhat-ky-trong-tu.jpg'
+import tuyenNgonDocLap from '@/shared/assets/images/tac-pham/tuyen-ngon-doc-lap.jpeg'
+
 export type Page = {
     id: string
     title: string
@@ -46,7 +51,7 @@ export const WORK_READER_DATA: Record<string, WorkReader> = {
         id: 'duong-kach-menh',
         title: 'Đường Kách Mệnh',
         year: '1927',
-        cover: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_Cbs0tqaY19-_PE8SsvifSTPCfbjXyV0ibw&s',
+        cover: duongKachMenh.src,
         totalPages: 8,
         readingTime: 90,
         views: 1250,
@@ -208,7 +213,7 @@ Kết luận: Đường Cách Mệnh đã chỉ ra con đường đúng đắn c
         id: 'ban-an-che-do-thuc-dan-phap',
         title: 'Bản án chế độ thực dân Pháp',
         year: '1925',
-        cover: 'https://www.nxbctqg.org.vn/img_data/images/741482510710_ban-an.jpg',
+        cover: banAnCheDoThucDanPhap.src,
         totalPages: 12,
         readingTime: 120,
         views: 980,
@@ -368,7 +373,7 @@ Khẳng Định Vị Thế: Tác phẩm đã khẳng định vị thế của Ng
         id: 'nhat-ky-trong-tu',
         title: 'Nhật Ký Trong Tù',
         year: '1942-1943',
-        cover: 'https://product.hstatic.net/1000363117/product/nhat-ky-trong-tu_c1b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8.jpg',
+        cover: nhatKyTrongTu.src,
         totalPages: 10,
         readingTime: 100,
         views: 1520,
@@ -557,7 +562,7 @@ Kết Thúc Vinh Quang: Bài thơ cuối cùng đánh dấu sự trở lại v�
         id: 'tuyen-ngon-doc-lap',
         title: 'Tuyên Ngôn Độc Lập',
         year: '1945',
-        cover: 'https://vnn-imgs-f.vgcloud.vn/2021/09/01/22/tuyen-ngon-1.jpeg?width=0&s=dJ_sMpzdAPkAamKH3kwrpg',
+        cover: tuyenNgonDocLap.src,
         totalPages: 8,
         readingTime: 45,
         views: 2850,

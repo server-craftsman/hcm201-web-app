@@ -3,6 +3,10 @@
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import duongKachMenh from '@/shared/assets/images/tac-pham/duong-kach-menh.jpg'
+import banAnCheDoThucDanPhap from '@/shared/assets/images/tac-pham/ban-an-che-do-thuc-dan-phap.jpg'
+import nhatKyTrongTu from '@/shared/assets/images/tac-pham/nhat-ky-trong-tu.jpg'
+import tuyenNgonDocLap from '@/shared/assets/images/tac-pham/tuyen-ngon-doc-lap.jpeg'
 
 type Work = {
     title: string
@@ -18,7 +22,7 @@ const WORKS: (Work & { id: string })[] = [
         title: 'Đường Kách Mệnh',
         year: '1927',
         summary: 'Tập hợp các bài giảng về con đường cách mạng giải phóng dân tộc; đặt nền móng tư tưởng cho phong trào cách mạng Việt Nam thời kỳ mới.',
-        cover: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_Cbs0tqaY19-_PE8SsvifSTPCfbjXyV0ibw&s',
+        cover: duongKachMenh.src,
         tags: ['Cách mạng', 'Tư tưởng', 'Giáo dục']
     },
     {
@@ -26,7 +30,7 @@ const WORKS: (Work & { id: string })[] = [
         title: 'Bản án chế độ thực dân Pháp',
         year: '1925',
         summary: 'Tác phẩm chính luận sắc bén vạch trần bản chất áp bức, bóc lột của chủ nghĩa thực dân; khơi dậy tinh thần đấu tranh của các dân tộc thuộc địa.',
-        cover: 'https://www.nxbctqg.org.vn/img_data/images/741482510710_ban-an.jpg',
+        cover: banAnCheDoThucDanPhap.src,
         tags: ['Chính luận', 'Phê phán', 'Giải phóng dân tộc']
     },
     {
@@ -34,7 +38,7 @@ const WORKS: (Work & { id: string })[] = [
         title: 'Nhật ký trong tù',
         year: '1942 – 1943',
         summary: 'Tập thơ chữ Hán được sáng tác trong thời gian bị giam giữ, thể hiện ý chí bất khuất và tinh thần lạc quan của người chiến sĩ cách mạng.',
-        cover: 'https://cdn1.fahasa.com/media/flashmagazine/images/page_images/nhat_ky_trong_tu/2024_08_27_16_16_20_1-390x510.jpg',
+        cover: nhatKyTrongTu.src,
         tags: ['Thơ', 'Nhân văn', 'Nghị lực']
     },
     {
@@ -42,7 +46,7 @@ const WORKS: (Work & { id: string })[] = [
         title: 'Tuyên ngôn Độc lập',
         year: '1945',
         summary: 'Bản Tuyên ngôn độc lập khai sinh ra nước Việt Nam Dân chủ Cộng hòa, được đọc tại Quảng trường Ba Đình ngày 2/9/1945.',
-        cover: 'https://vnn-imgs-f.vgcloud.vn/2021/09/01/22/tuyen-ngon-1.jpeg?width=0&s=dJ_sMpzdAPkAamKH3kwrpg',
+        cover: tuyenNgonDocLap.src,
         tags: ['Độc lập', 'Lịch sử', 'Chính trị']
     }
 ]
