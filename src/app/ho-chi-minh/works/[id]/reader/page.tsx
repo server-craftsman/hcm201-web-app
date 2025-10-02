@@ -493,12 +493,12 @@ export default function WorkReaderPage() {
                                 <BookOpenIcon className="w-5 h-5" />
                             </button>
 
-                            <button
+                            {/* <button
                                 onClick={() => setIsDarkMode(!isDarkMode)}
                                 className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                             >
                                 {isDarkMode ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
-                            </button>
+                            </button> */}
 
                             <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
                                 <button
