@@ -19,12 +19,12 @@ export function useAuthNotifications() {
 
     // Login Success - Corner notification đơn giản
     const showLoginSuccess = (options: AuthNotificationOptions = {}) => {
-        const { redirectDelay = 2000, playSound = true, hapticFeedback = true } = options
+        const { redirectDelay = 500, playSound = true, hapticFeedback = true } = options
 
         notification.showCorner({
             type: 'success',
             title: 'Đăng nhập thành công',
-            message: 'Chào mừng bạn!',
+            message: 'Chào mừng bạn đến với HCM201!',
             duration: 3000, // Tự đóng sau 2.5 giây
             haptic: hapticFeedback,
             dismissible: true
@@ -55,7 +55,7 @@ export function useAuthNotifications() {
 
             if (error.includes('User not found') || error.includes('not exist')) {
                 return {
-                    title: '👤 Tài khoản không tồn tại',
+                    title: 'Tài khoản không tồn tại',
                     message: 'Tài khoản này chưa được đăng ký. Bạn có muốn tạo tài khoản mới không?',
                     actions: [
                         {

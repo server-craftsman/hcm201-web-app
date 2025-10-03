@@ -59,6 +59,7 @@ export interface GetModerationQueueParams {
     page?: number
     limit?: number
     sort?: string
+    groupBySide?: boolean
 }
 
 export interface ApiResponse<T> {
@@ -160,7 +161,7 @@ export const debateApi = {
     },
 
     // GET /api/v1/debate/moderation/queue  
-    async getModerationQueue(params: GetModerationQueueParams = {}): Promise<ApiResponse<DebateModerationItem>> {
+    async getModerationQueue(params: GetModerationQueueParams = {}): Promise<ApiResponse<DebateModerationItem> | any> {
         try {
             const queryParams = new URLSearchParams()
 
@@ -171,6 +172,7 @@ export const debateApi = {
             if (params.page) queryParams.append('page', params.page.toString())
             if (params.limit) queryParams.append('limit', params.limit.toString())
             if (params.sort) queryParams.append('sort', params.sort)
+            if (params.groupBySide) queryParams.append('groupBySide', params.groupBySide.toString())
 
             const url = `/debate/moderation/queue${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
             const response = await apiClient.get<ApiResponse<DebateModerationItem>>(url)
@@ -229,7 +231,7 @@ export const debateApi = {
     // Approve thread request
     approveThreadRequest: async (threadId: string, moderators: { modForSideA: string, modForSideB: string }) => {
         try {
-            const response = await apiClient.patch(`/debate/threads/${threadId}/approve`, moderators)
+            const response = await apiClient.post(`/debate/threads/${threadId}/approve`, moderators)
             return response.data
         } catch (error) {
             console.error('Failed to approve thread request:', error)

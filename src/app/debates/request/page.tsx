@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
@@ -13,9 +13,12 @@ import {
 import { cn } from '@/shared/utils/shadcn'
 import { threadApi } from '@/modules/debate'
 // Add toast import
-import { toast } from 'react-hot-toast'
+import { useNotificationCenter } from '@/shared'
+import { useAuth } from '@/modules/auth'
 
 const RequestThreadPage = () => {
+    const notification = useNotificationCenter();
+    const { user } = useAuth();
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -72,9 +75,12 @@ const RequestThreadPage = () => {
                 priority
             })
 
-            // Show toast success with longer duration before redirect
-            toast.success('Đã gửi yêu cầu thành công! Admin sẽ xem xét và phản hồi trong 1-2 ngày làm việc.', {
-                duration: 3000
+            notification.showCorner({
+                type: 'success',
+                title: 'Đã gửi yêu cầu thành công! Admin sẽ xem xét và phản hồi trong 1-2 ngày làm việc.',
+                message: '',
+                duration: 3000, // Tự đóng sau 2.5 giây
+                dismissible: true
             })
 
             // Reset form

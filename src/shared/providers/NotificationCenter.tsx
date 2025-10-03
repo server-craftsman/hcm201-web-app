@@ -439,7 +439,7 @@ export function NotificationCenter({ children }: { children: React.ReactNode }) 
             </div>
 
             {/* Sound Toggle */}
-            <button
+            {/* <button
                 onClick={() => setSoundEnabled(!soundEnabled)}
                 className="fixed bottom-6 right-6 z-[9996] p-3 bg-white/90 backdrop-blur-sm 
                    rounded-full shadow-lg border border-white/20 hover:scale-105 
@@ -451,7 +451,7 @@ export function NotificationCenter({ children }: { children: React.ReactNode }) 
                 ) : (
                     <SpeakerXMarkIcon className="w-5 h-5 text-gray-400" />
                 )}
-            </button>
+            </button> */}
         </NotificationContext.Provider>
     )
 }

@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { toast, Toaster } from 'react-hot-toast'
 import { useModerationQueue } from '@/modules/debate/hooks'
 import { debateApi } from '@/modules/debate/api/debateApi'
+import { argumentApi } from '@/modules/debate/api/argumentApi'
 import {
     ClipboardDocumentListIcon,
     CheckCircleIcon,
@@ -24,18 +25,18 @@ import {
 } from '@heroicons/react/24/outline'
 
 const ModerationQueuePage = () => {
-    const [selectedFilter, setSelectedFilter] = useState('all')
+    const [selectedFilter, setSelectedFilter] = useState('pending')
     const [selectedArgument, setSelectedArgument] = useState<any>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [moderationNote, setModerationNote] = useState('')
     const [modalAction, setModalAction] = useState<'APPROVE' | 'REJECT' | 'FLAG' | null>(null)
     const [moderatorStats, setModeratorStats] = useState<any>(null)
     const [statsLoading, setStatsLoading] = useState(false)
-    const [assignedThreads, setAssignedThreads] = useState<any[]>([])
-    const [assignedThreadsLoading, setAssignedThreadsLoading] = useState(false)
+    // Removed assignedThreads and assignedThreadsLoading
     const [argumentDetails, setArgumentDetails] = useState<any>(null)
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
     const [detailsLoading, setDetailsLoading] = useState(false)
+    const [activeTab, setActiveTab] = useState('PENDING')
 
     // Use API hook for real moderation queue data
     const {
@@ -43,14 +44,29 @@ const ModerationQueuePage = () => {
         loading: apiLoading,
         error: apiError,
         meta: apiMeta,
-        refetch: refetchQueue
+        refetch: refetchQueue,
+        groupedItems
     } = useModerationQueue({
-        status: selectedFilter === 'pending' ? 'PENDING' :
-            selectedFilter === 'flagged' ? 'FLAGGED' :
-                selectedFilter === 'approved' ? 'APPROVED' : '',
+        status: activeTab,
         page: 1,
-        limit: 20
+        limit: 20,
+        groupBySide: true
     })
+
+    // Get current user information from localStorage
+    const [currentUser, setCurrentUser] = useState<any>(null)
+
+    useEffect(() => {
+        // Load user data from localStorage
+        try {
+            const userData = localStorage.getItem('currentUser')
+            if (userData) {
+                setCurrentUser(JSON.parse(userData))
+            }
+        } catch (error) {
+            console.error('Error loading user data:', error)
+        }
+    }, [])
 
     // Calculate stats from API data
     const normalizeStatus = (s: unknown) => (typeof s === 'string' ? s.toLowerCase() : '')
@@ -63,7 +79,7 @@ const ModerationQueuePage = () => {
         pending: pendingCount || 0,
         flagged: flaggedCount || 0,
         approved: approvedCount || 0,
-        myAssigned: assignedThreads.length || 0,
+        // myAssigned: assignedThreads.length || 0, // Removed
         avgWaitTime: apiQueueItems.length > 0 ?
             Math.floor(apiQueueItems.reduce((acc, item) => {
                 const waitTime = Math.floor((new Date().getTime() - new Date(item.createdAt).getTime()) / 60000)
@@ -111,20 +127,8 @@ const ModerationQueuePage = () => {
     // Use only API data
     const allArgumentsData = convertedApiItems
 
-    const filteredArgumentsData = allArgumentsData.filter(arg => {
-        switch (selectedFilter) {
-            case 'pending':
-                return arg.status === 'PENDING'
-            case 'flagged':
-                return arg.status === 'FLAGGED'
-            case 'approved':
-                return arg.status === 'APPROVED'
-            case 'my-assigned':
-                return arg.assignedTo === 'current_moderator'
-            default:
-                return true
-        }
-    })
+    // Không cần lọc theo selectedFilter nữa vì đã sử dụng activeTab để lọc từ API
+    const filteredArgumentsData = allArgumentsData
 
     const getStatusStyle = (status: string) => {
         switch (status) {
@@ -187,20 +191,7 @@ const ModerationQueuePage = () => {
         }
     }
 
-    // Load assigned threads
-    const loadAssignedThreads = async () => {
-        try {
-            setAssignedThreadsLoading(true)
-            const response = await debateApi.getAssignedThreads(1, 20)
-            setAssignedThreads(response.data.items)
-            console.log('🧵 Assigned threads loaded:', response.data.items)
-        } catch (error) {
-            console.error('Failed to load assigned threads:', error)
-            setAssignedThreads([])
-        } finally {
-            setAssignedThreadsLoading(false)
-        }
-    }
+    // Removed loadAssignedThreads
 
     const handleModerationAction = async (notes: string = '') => {
         if (!selectedArgument || !modalAction) return
@@ -209,12 +200,11 @@ const ModerationQueuePage = () => {
             console.log(`${modalAction} argument ${selectedArgument.id} with notes: ${notes}`)
 
             // Call real API
-            await debateApi.moderateArgument(
-                selectedArgument.id.toString(),
-                modalAction,
-                notes || undefined,
-                notes || undefined
-            )
+            await argumentApi.moderateArgument({
+                argumentId: selectedArgument.id.toString(),
+                action: modalAction,
+                notes: notes || undefined
+            })
 
             // Show success toast
             const actionText = modalAction === 'APPROVE' ? 'Duyệt' :
@@ -267,12 +257,10 @@ const ModerationQueuePage = () => {
             console.log(`${action} argument ${argumentId}`)
 
             // Call real API
-            await debateApi.moderateArgument(
-                argumentId.toString(),
-                action,
-                undefined,
-                undefined
-            )
+            await argumentApi.moderateArgument({
+                argumentId: argumentId.toString(),
+                action: action
+            })
 
             // Show success toast
             const actionText = action === 'HIGHLIGHT' ? 'Đánh dấu nổi bật' : 'Bỏ đánh dấu nổi bật'
@@ -324,9 +312,9 @@ const ModerationQueuePage = () => {
         try {
             setDetailsLoading(true)
             setIsDetailsModalOpen(true)
-            const response = await debateApi.getArgumentById(argumentId)
-            setArgumentDetails(response.data)
-            console.log('Argument details loaded:', response.data)
+            const response = await argumentApi.getArgumentById(argumentId)
+            setArgumentDetails(response)
+            console.log('Argument details loaded:', response)
         } catch (error) {
             console.error('Failed to load argument details:', error)
             toast.error('Không thể tải chi tiết luận điểm', {
@@ -363,12 +351,7 @@ const ModerationQueuePage = () => {
         loadModeratorStats()
     }, [])
 
-    // Load assigned threads when my-assigned filter is selected
-    useEffect(() => {
-        if (selectedFilter === 'my-assigned') {
-            loadAssignedThreads()
-        }
-    }, [selectedFilter])
+    // Removed useEffect for assigned threads
 
     return (
         <div className="min-h-screen bg-gray-50 pt-20 pb-8">
@@ -450,20 +433,7 @@ const ModerationQueuePage = () => {
                         </div>
                     </motion.div>
 
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.4 }}
-                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4"
-                    >
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Của tôi</p>
-                                <p className="text-2xl font-bold text-purple-600">{queueStats.myAssigned}</p>
-                            </div>
-                            <UserIcon className="h-8 w-8 text-purple-600" />
-                        </div>
-                    </motion.div>
+                    {/* Removed "Của tôi" card */}
 
                     {/* <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
@@ -513,39 +483,48 @@ const ModerationQueuePage = () => {
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                             <FunnelIcon className="h-5 w-5 mr-2 text-gray-600" />
-                            Bộ lọc
+                            Trạng thái
                         </h3>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                        {[
-                            { id: 'all', label: 'Tất cả', count: queueStats.total },
-                            { id: 'pending', label: 'Chờ duyệt', count: queueStats.pending },
-                            { id: 'approved', label: 'Đã duyệt', count: queueStats.approved },
-                            { id: 'flagged', label: 'Đã flag', count: queueStats.flagged },
-                            { id: 'my-assigned', label: 'Được gán cho tôi', count: queueStats.myAssigned }
-                        ].map((filter) => (
-                            <motion.button
-                                key={filter.id}
-                                whileHover={{ scale: 1.05, y: -1 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setSelectedFilter(filter.id)}
-                                className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 shadow-md hover:shadow-lg ${selectedFilter === filter.id
-                                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-2 border-blue-400'
-                                    : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-                                    }`}
-                            >
-                                <div className="flex items-center space-x-2">
-                                    <span>{filter.label}</span>
-                                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${selectedFilter === filter.id
-                                        ? 'bg-white/20 text-white'
-                                        : 'bg-blue-100 text-blue-600'
-                                        }`}>
-                                        {filter.count}
-                                    </span>
-                                </div>
-                            </motion.button>
-                        ))}
+                        <button
+                            onClick={() => setActiveTab('PENDING')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'PENDING'
+                                ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                        >
+                            Chờ duyệt
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('APPROVED')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'APPROVED'
+                                ? 'bg-green-100 text-green-800 border border-green-300'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                        >
+                            Đã duyệt
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('REJECTED')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'REJECTED'
+                                ? 'bg-red-100 text-red-800 border border-red-300'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                        >
+                            Đã từ chối
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('FLAGGED')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'FLAGGED'
+                                ? 'bg-orange-100 text-orange-800 border border-orange-300'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                        >
+                            Đã flag
+                        </button>
                     </div>
+
                 </motion.div>
 
                 {/* Moderator Statistics Section */}
@@ -617,124 +596,14 @@ const ModerationQueuePage = () => {
                     </motion.div>
                 )}
 
-                {/* Arguments List or Assigned Threads */}
+                {/* Arguments List */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.7 }}
                     className="space-y-6"
                 >
-                    {selectedFilter === 'my-assigned' ? (
-                        // Show assigned threads
-                        assignedThreadsLoading ? (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-                                <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                                <p className="text-gray-600 text-lg">Đang tải threads được gán...</p>
-                            </div>
-                        ) : assignedThreads.length === 0 ? (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <UserIcon className="h-8 w-8 text-gray-400" />
-                                </div>
-                                <p className="text-gray-500 text-lg">Không có thread nào được gán cho bạn</p>
-                                <p className="text-gray-400 text-sm mt-1">Các thread sẽ hiển thị ở đây khi được assign</p>
-                            </div>
-                        ) : (
-                            assignedThreads.map((thread) => (
-                                <div key={thread._id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                    {/* Thread Header */}
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="flex-1">
-                                            <div className="flex items-center space-x-2 mb-2">
-                                                <h4 className="text-lg font-semibold text-gray-900">{thread.title}</h4>
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${thread.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
-                                                    thread.status === 'CLOSED' ? 'bg-red-100 text-red-800' :
-                                                        thread.status === 'PAUSED' ? 'bg-yellow-100 text-yellow-800' :
-                                                            'bg-gray-100 text-gray-800'
-                                                    }`}>
-                                                    {thread.status === 'ACTIVE' ? 'Đang hoạt động' :
-                                                        thread.status === 'CLOSED' ? 'Đã đóng' :
-                                                            thread.status === 'PAUSED' ? 'Tạm dừng' : thread.status}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm text-gray-600 mb-2">{thread.description}</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-sm text-gray-500">{formatTimeAgo(thread.createdAt)}</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Thread Stats */}
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                                        <div className="text-center">
-                                            <p className="text-2xl font-bold text-blue-600">{thread.totalVotes}</p>
-                                            <p className="text-xs text-gray-500">Votes</p>
-                                        </div>
-                                        <div className="text-center">
-                                            <p className="text-2xl font-bold text-green-600">{thread.totalArguments}</p>
-                                            <p className="text-xs text-gray-500">Arguments</p>
-                                        </div>
-                                        <div className="text-center">
-                                            <p className="text-2xl font-bold text-purple-600">{thread.totalApprovedArguments}</p>
-                                            <p className="text-xs text-gray-500">Approved</p>
-                                        </div>
-                                        <div className="text-center">
-                                            <p className="text-2xl font-bold text-orange-600">{thread.moderators.length}</p>
-                                            <p className="text-xs text-gray-500">Moderators</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Moderator Assignment */}
-                                    <div className="mb-4">
-                                        <h5 className="text-sm font-medium text-gray-700 mb-2">Phân công kiểm duyệt:</h5>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="bg-blue-50 p-3 rounded-lg">
-                                                <p className="text-xs text-blue-600 font-medium mb-1">Side A</p>
-                                                <p className="text-sm text-gray-800">
-                                                    {thread.modForSideA ? `${thread.modForSideA.firstName} ${thread.modForSideA.lastName}` : 'Chưa assign'}
-                                                </p>
-                                                <p className="text-xs text-gray-500">@{thread.modForSideA?.username || 'N/A'}</p>
-                                            </div>
-                                            <div className="bg-red-50 p-3 rounded-lg">
-                                                <p className="text-xs text-red-600 font-medium mb-1">Side B</p>
-                                                <p className="text-sm text-gray-800">
-                                                    {thread.modForSideB ? `${thread.modForSideB.firstName} ${thread.modForSideB.lastName}` : 'Chưa assign'}
-                                                </p>
-                                                <p className="text-xs text-gray-500">@{thread.modForSideB?.username || 'N/A'}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Thread Actions */}
-                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                        <div className="flex items-center space-x-3">
-                                            <motion.button
-                                                whileHover={{ scale: 1.05, y: -2 }}
-                                                whileTap={{ scale: 0.95 }}
-                                                onClick={() => window.open(`/debates/${thread._id}`, '_blank')}
-                                                className="group relative overflow-hidden bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                                            >
-                                                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                                <div className="relative flex items-center space-x-2">
-                                                    <EyeIcon className="h-5 w-5" />
-                                                    <span>Xem thread</span>
-                                                </div>
-                                                <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                                            </motion.button>
-                                        </div>
-                                        <div className="text-sm text-gray-500">
-                                            {thread.startDate && (
-                                                <span>Bắt đầu: {formatTimeAgo(thread.startDate)}</span>
-                                            )}
-                                            {thread.endDate && (
-                                                <span className="ml-4">Kết thúc: {formatTimeAgo(thread.endDate)}</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))
-                        )
-                    ) : apiLoading ? (
+                    {apiLoading ? (
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
                             <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                             <p className="text-gray-600 text-lg">Đang tải hàng chờ kiểm duyệt...</p>
@@ -795,7 +664,6 @@ const ModerationQueuePage = () => {
                                             <span>👤 {argument.author.name}</span>
                                             <span>⏰ {formatTimeAgo(argument.createdAt)}</span>
                                             <span>📝 {argument.wordCount} từ</span>
-                                            <span>👀 {(argument as any).viewCount || 0} lượt xem</span>
                                             <span>👍 {(argument as any).upvotes || 0} • 👎 {(argument as any).downvotes || 0}</span>
                                         </div>
                                     </div>
@@ -803,50 +671,62 @@ const ModerationQueuePage = () => {
 
                                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                                     <div className="flex items-center space-x-3">
-                                        {/* Approve Button */}
-                                        <motion.button
-                                            whileHover={{ scale: 1.05, y: -2 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={() => openModerationModal(argument, 'APPROVE')}
-                                            className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-green-600 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                                        >
-                                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-green-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                            <div className="relative flex items-center space-x-2">
-                                                <CheckCircleIcon className="h-5 w-5" />
-                                                <span>Duyệt</span>
-                                            </div>
-                                            <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                                        </motion.button>
+                                        {/* Chỉ hiển thị các nút hành động khi status là PENDING */}
+                                        {argument.status === 'PENDING' && (
+                                            <>
+                                                {/* Approve Button */}
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05, y: -2 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => openModerationModal(argument, 'APPROVE')}
+                                                    className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-green-600 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                                                >
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-green-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                    <div className="relative flex items-center space-x-2">
+                                                        <CheckCircleIcon className="h-5 w-5" />
+                                                        <span>Duyệt</span>
+                                                    </div>
+                                                    <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                                                </motion.button>
 
-                                        {/* Reject Button */}
-                                        <motion.button
-                                            whileHover={{ scale: 1.05, y: -2 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={() => openModerationModal(argument, 'REJECT')}
-                                            className="group relative overflow-hidden bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                                        >
-                                            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-rose-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                            <div className="relative flex items-center space-x-2">
-                                                <XCircleIcon className="h-5 w-5" />
-                                                <span>Từ chối</span>
-                                            </div>
-                                            <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                                        </motion.button>
+                                                {/* Reject Button */}
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05, y: -2 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => openModerationModal(argument, 'REJECT')}
+                                                    className="group relative overflow-hidden bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                                                >
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-rose-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                    <div className="relative flex items-center space-x-2">
+                                                        <XCircleIcon className="h-5 w-5" />
+                                                        <span>Từ chối</span>
+                                                    </div>
+                                                    <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                                                </motion.button>
 
-                                        {/* Flag Button */}
-                                        <motion.button
-                                            whileHover={{ scale: 1.05, y: -2 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={() => openModerationModal(argument, 'FLAG')}
-                                            className="group relative overflow-hidden bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                                        >
-                                            <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                            <div className="relative flex items-center space-x-2">
-                                                <FlagIcon className="h-5 w-5" />
-                                                <span>Flag</span>
+                                                {/* Flag Button */}
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05, y: -2 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => openModerationModal(argument, 'FLAG')}
+                                                    className="group relative overflow-hidden bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                                                >
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                    <div className="relative flex items-center space-x-2">
+                                                        <FlagIcon className="h-5 w-5" />
+                                                        <span>Flag</span>
+                                                    </div>
+                                                    <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                                                </motion.button>
+                                            </>
+                                        )}
+                                        {argument.status !== 'PENDING' && (
+                                            <div className="text-sm text-gray-500 italic">
+                                                Luận điểm đã được xử lý ({argument.status === 'APPROVED' ? 'Đã duyệt' :
+                                                    argument.status === 'REJECTED' ? 'Đã từ chối' :
+                                                        argument.status === 'FLAGGED' ? 'Đã đánh dấu' : argument.status})
                                             </div>
-                                            <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                                        </motion.button>
+                                        )}
                                     </div>
 
                                     {/* View Details Button */}

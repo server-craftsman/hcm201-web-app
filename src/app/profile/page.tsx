@@ -451,7 +451,7 @@ const ProfilePage = () => {
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                                👤 Hồ sơ cá nhân
+                                Hồ sơ cá nhân
                             </h1>
                             <p className="text-gray-600">
                                 Quản lý thông tin cá nhân và cài đặt tài khoản

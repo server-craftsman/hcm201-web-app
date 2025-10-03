@@ -299,7 +299,7 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
                                         e.stopPropagation()
                                         setIsUserMenuOpen(!isUserMenuOpen)
                                     }}
-                                    className="flex items-center space-x-3 p-2 rounded-full bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-800/40 dark:hover:to-purple-800/40 transition-all duration-200 border border-blue-200/50 dark:border-blue-700/50"
+                                    className="flex items-center space-x-3 p-2 rounded-full bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-800/40 dark:hover:to-purple-800/40 transition-all duration-200 border border-blue-200/50 dark:border-blue-700/50 group cursor-pointer"
                                 >
                                     {/* Avatar */}
                                     <div className="relative">

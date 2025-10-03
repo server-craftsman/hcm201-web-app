@@ -177,7 +177,7 @@ export default function WorksPage() {
                                         >
                                             Đọc ngay
                                         </Link>
-                                        <div className="flex items-center space-x-4 text-xs text-slate-500 dark:text-slate-400">
+                                        {/* <div className="flex items-center space-x-4 text-xs text-slate-500 dark:text-slate-400">
                                             <span className="flex items-center">
                                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -191,7 +191,7 @@ export default function WorksPage() {
                                                 </svg>
                                                 89
                                             </span>
-                                        </div>
+                                        </div> */}
                                     </div>
                                 </div>
                             </motion.article>

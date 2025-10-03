@@ -68,6 +68,18 @@ export const ArgumentCard: React.FC<ArgumentCardProps> = ({
         (argument as any)?.dislikesCount ?? (argument as any)?.downvotes ?? 0
     )
 
+    // Initialize liked/disliked state based on current user and argument vote arrays
+    useEffect(() => {
+        if (currentUser && (currentUser.id || currentUser._id)) {
+            const userId = currentUser.id || currentUser._id
+            setIsLiked((argument as any)?.upvotedBy?.includes(userId) ?? false)
+            setIsDisliked((argument as any)?.downvotedBy?.includes(userId) ?? false)
+        } else {
+            setIsLiked(false)
+            setIsDisliked(false)
+        }
+    }, [currentUser?.id, currentUser?._id, (argument as any)?.upvotedBy, (argument as any)?.downvotedBy])
+
     // Normalize author object: prefer argument.author, fallback to argument.authorId (new API shape)
     const author: any = (argument as any)?.author ?? (argument as any)?.authorId ?? null
 
@@ -231,7 +243,7 @@ export const ArgumentCard: React.FC<ArgumentCardProps> = ({
             {/* Highlight glow effect */}
             {argument.isHighlighted && (
                 <motion.div
-                    className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 rounded-xl opacity-75 blur"
+                    className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 rounded-xl opacity-75 blur pointer-events-none"
                     animate={{
                         opacity: [0.5, 0.8, 0.5],
                         scale: [1, 1.02, 1]
@@ -354,9 +366,24 @@ export const ArgumentCard: React.FC<ArgumentCardProps> = ({
                 {/* Author and time */}
                 <div className="flex items-center justify-between mb-4 text-sm text-gray-500">
                     <div className="flex items-center space-x-2">
-                        <div className="w-7 h-7 hcm-gradient-luxury rounded-full flex items-center justify-center text-white text-xs font-bold">
-                            {author?.lastName?.[0]?.toUpperCase() || author?.firstName?.[0]?.toUpperCase() || '👤'}
-                        </div>
+                        {author?.avatar ? (
+                            <img
+                                src={author.avatar}
+                                alt="avatar"
+                                className="w-7 h-7 rounded-full object-cover"
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none'
+                                    const fallback = document.createElement('div')
+                                    fallback.className = 'w-7 h-7 hcm-gradient-luxury rounded-full flex items-center justify-center text-white text-xs font-bold'
+                                    fallback.textContent = author?.lastName?.[0]?.toUpperCase() || author?.firstName?.[0]?.toUpperCase() || '👤'
+                                    e.currentTarget.parentNode?.appendChild(fallback)
+                                }}
+                            />
+                        ) : (
+                            <div className="w-7 h-7 hcm-gradient-luxury bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                {author?.lastName?.[0]?.toUpperCase() || author?.firstName?.[0]?.toUpperCase() || '👤'}
+                            </div>
+                        )}
                         <span className="font-medium">
                             {(author?.firstName || '')} {(author?.lastName || '')}
                         </span>
@@ -458,7 +485,7 @@ export const ArgumentCard: React.FC<ArgumentCardProps> = ({
                                         initial={{ opacity: 0, scale: 0.95, y: -10 }}
                                         animate={{ opacity: 1, scale: 1, y: 0 }}
                                         exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                                        className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border z-10"
+                                        className="absolute right-0 top-auto bottom-full mb-2 w-48 bg-white rounded-lg shadow-xl border z-50"
                                     >
                                         <div className="p-2 space-y-1">
                                             {argument.status === 'PENDING' && (
@@ -489,6 +516,17 @@ export const ArgumentCard: React.FC<ArgumentCardProps> = ({
                                             >
                                                 {argument.isHighlighted ? '🌟 Bỏ nổi bật' : '⭐ Nổi bật'}
                                             </button>
+                                            {/* {argument.status === 'APPROVED' && (
+                                                <button
+                                                    onClick={() => {
+                                                        const feedback = prompt('Nhập phản hồi của bạn:');
+                                                        if (feedback) handleModeration('ADD_FEEDBACK');
+                                                    }}
+                                                    className="w-full text-left px-3 py-2 text-sm text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+                                                >
+                                                    📝 Thêm phản hồi
+                                                </button>
+                                            )} */}
                                         </div>
                                     </motion.div>
                                 )}

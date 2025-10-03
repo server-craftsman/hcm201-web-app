@@ -18,6 +18,7 @@ export interface Argument {
     argumentType: 'SUPPORT' | 'OPPOSE' | 'NEUTRAL'
     status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'FLAGGED'
     moderatorId?: string
+    parentArgumentId?: string
     moderationNotes?: string
     isHighlighted: boolean
     likesCount: number
@@ -336,6 +337,64 @@ export const argumentApi = {
                 updatedArgument.moderationNotes = data.notes
             }
 
+            updatedArgument.updatedAt = new Date().toISOString()
+
+            return updatedArgument
+        }
+    },
+
+    // Approve argument (convenience method)
+    async approveArgument(argumentId: string, notes?: string): Promise<Argument> {
+        return this.moderateArgument({
+            argumentId,
+            action: 'APPROVE',
+            notes
+        })
+    },
+
+    // Reject argument (convenience method)
+    async rejectArgument(argumentId: string, notes?: string): Promise<Argument> {
+        return this.moderateArgument({
+            argumentId,
+            action: 'REJECT',
+            notes
+        })
+    },
+
+    // Highlight argument (convenience method)
+    async highlightArgument(argumentId: string, notes?: string): Promise<Argument> {
+        return this.moderateArgument({
+            argumentId,
+            action: 'HIGHLIGHT',
+            notes
+        })
+    },
+
+    // Unhighlight argument (convenience method)
+    async unhighlightArgument(argumentId: string, notes?: string): Promise<Argument> {
+        return this.moderateArgument({
+            argumentId,
+            action: 'UNHIGHLIGHT',
+            notes
+        })
+    },
+
+    // Add feedback to argument
+    async addFeedback(argumentId: string, feedback: string): Promise<Argument> {
+        try {
+            const response = await apiClient.post<{ data: Argument }>(`/debate/arguments/${argumentId}/feedback`, { feedback })
+            return response.data.data
+        } catch (error) {
+            console.warn('Backend not available, using mock data for addFeedback')
+
+            const argument = mockArguments.find(arg => arg._id === argumentId)
+            if (!argument) {
+                throw new Error('Argument not found')
+            }
+
+            // Update mock argument with feedback
+            const updatedArgument = { ...argument }
+            updatedArgument.moderationNotes = feedback
             updatedArgument.updatedAt = new Date().toISOString()
 
             return updatedArgument
