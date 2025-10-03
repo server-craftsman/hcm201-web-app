@@ -2,40 +2,54 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 
-type Theme = 'light' | 'dark' | 'system'
+/**
+ * Theme type
+ *  - light: always light mode
+ *  - dark: always dark mode
+ *  - system: follow OS preference (prefers-color-scheme)
+ */
+export type Theme = 'light' | 'dark' | 'system'
 
-interface ThemeContextType {
+interface ThemeContextValue {
+    /** current theme preference (light | dark | system) */
     theme: Theme
+    /** concrete theme applied after resolving system preference */
     actualTheme: 'light' | 'dark'
+    /** set the theme */
     setTheme: (theme: Theme) => void
+    /** toggle between light and dark theme */
     toggleTheme: () => void
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
+const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
 
-export const useTheme = () => {
-    const context = useContext(ThemeContext)
-    if (context === undefined) {
-        throw new Error('useTheme must be used within a ThemeProvider')
+export const useTheme = (): ThemeContextValue => {
+    const ctx = useContext(ThemeContext)
+    if (!ctx) {
+        throw new Error('useTheme must be used within ThemeProvider')
     }
-    return context
+    return ctx
 }
 
 interface ThemeProviderProps {
     children: React.ReactNode
+    /** initial theme value when nothing stored */
     defaultTheme?: Theme
+    /** localStorage key */
     storageKey?: string
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     children,
-    defaultTheme = 'system',
+    defaultTheme = 'light',
     storageKey = 'hcm201-theme'
 }) => {
+    // stored user preference (light | dark | system)
     const [theme, setThemeState] = useState<Theme>(defaultTheme)
+    // resolved theme that is actually applied
     const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light')
 
-    // Get system theme preference
+    // get OS preference
     const getSystemTheme = (): 'light' | 'dark' => {
         if (typeof window !== 'undefined') {
             return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
@@ -43,89 +57,76 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
         return 'light'
     }
 
-    // Calculate actual theme based on current theme setting
-    const calculateActualTheme = (currentTheme: Theme): 'light' | 'dark' => {
-        if (currentTheme === 'system') {
-            return getSystemTheme()
-        }
-        return currentTheme
-    }
+    // resolve actual theme from preference
+    const calculateActualTheme = (_pref: Theme): 'light' | 'dark' => 'light'
 
-    // Set theme and persist to localStorage
-    const setTheme = (newTheme: Theme) => {
-        setThemeState(newTheme)
+    /**
+     * Persist preference to localStorage and update state
+     */
+    const setTheme = (_newTheme: Theme) => {
+        // Ignore any attempts to change theme – always stay in light mode
+        setThemeState('light')
         if (typeof window !== 'undefined') {
-            localStorage.setItem(storageKey, newTheme)
+            localStorage.setItem(storageKey, 'light')
         }
     }
 
-    // Toggle between light and dark (skip system)
+    /** Toggle between light and dark (system becomes light) */
     const toggleTheme = () => {
-        const newTheme = actualTheme === 'light' ? 'dark' : 'light'
+        const newTheme: Theme = actualTheme === 'light' ? 'dark' : 'light'
         setTheme(newTheme)
     }
 
-    // Initialize theme from localStorage or system preference
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const savedTheme = localStorage.getItem(storageKey) as Theme
-            if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
-                setThemeState(savedTheme)
-            }
-        }
-    }, [storageKey])
+    /**
+     * On mount: load saved preference from localStorage (if exists)
+     */
+    // Remove effect that loads saved preference
+    // useEffect(() => {
+    //     if (typeof window !== 'undefined') {
+    //         const stored = localStorage.getItem(storageKey) as Theme | null
+    //         if (stored === 'light' || stored === 'dark' || stored === 'system') {
+    //             setThemeState(stored)
+    //         }
+    //     }
+    // }, [storageKey])
 
-    // Update actual theme when theme changes or system preference changes
+    /**
+     * Whenever `theme` changes OR OS preference changes (when theme === system)
+     * update actualTheme and apply to <html> element
+     */
     useEffect(() => {
-        const newActualTheme = calculateActualTheme(theme)
-        setActualTheme(newActualTheme)
+        setActualTheme('light')
 
-        // Apply theme to document
         if (typeof window !== 'undefined') {
             const root = window.document.documentElement
             root.classList.remove('light', 'dark')
-            root.classList.add(newActualTheme)
+            root.classList.add('light')
 
-            // Update meta theme-color for mobile browsers
-            const metaThemeColor = document.querySelector('meta[name="theme-color"]')
-            if (metaThemeColor) {
-                metaThemeColor.setAttribute('content', newActualTheme === 'dark' ? '#1e293b' : '#ffffff')
+            const meta = document.querySelector('meta[name="theme-color"]')
+            if (meta) {
+                meta.setAttribute('content', '#ffffff')
             }
         }
     }, [theme])
 
-    // Listen for system theme changes
-    useEffect(() => {
-        if (typeof window === 'undefined') return
 
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
-        const handleChange = () => {
-            if (theme === 'system') {
-                const newActualTheme = calculateActualTheme('system')
-                setActualTheme(newActualTheme)
-
-                // Apply theme to document
-                const root = window.document.documentElement
-                root.classList.remove('light', 'dark')
-                root.classList.add(newActualTheme)
-            }
-        }
-
-        mediaQuery.addEventListener('change', handleChange)
-        return () => mediaQuery.removeEventListener('change', handleChange)
-    }, [theme])
-
-    const value: ThemeContextType = {
+    const value: ThemeContextValue = {
         theme,
         actualTheme,
         setTheme,
         toggleTheme
     }
 
-    return (
-        <ThemeContext.Provider value={value}>
-            {children}
-        </ThemeContext.Provider>
-    )
+    return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }
+
+// On mount: enforce defaultTheme and persist to localStorage
+// useEffect(() => {
+//     if (typeof window !== 'undefined') {
+//       setThemeState(defaultTheme)
+//       localStorage.setItem(storageKey, defaultTheme)
+//     }
+//   }, [defaultTheme, storageKey])
+
+// Remove previous localStorage read effect (if any)
