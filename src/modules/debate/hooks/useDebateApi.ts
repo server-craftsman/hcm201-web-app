@@ -107,20 +107,20 @@ export const useModerationQueue = (params: GetModerationQueueParams = {}): UseMo
                         support: response.data.support,
                         oppose: response.data.oppose
                     })
-                    
+
                     // Combine items for backward compatibility
                     const combinedItems = [
                         ...(response.data.support?.items || []),
                         ...(response.data.oppose?.items || [])
                     ]
-                    
+
                     setItems(combinedItems)
-                    
+
                     // Calculate total from both sides
-                    const totalItems = 
-                        (response.data.support?.totalItems || 0) + 
+                    const totalItems =
+                        (response.data.support?.totalItems || 0) +
                         (response.data.oppose?.totalItems || 0)
-                    
+
                     setMeta({
                         page: response.data.support?.page || 1,
                         limit: response.data.support?.limit || 20,

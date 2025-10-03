@@ -70,6 +70,18 @@ export interface ApiResponse<T> {
         totalItems: number
         page: number
         limit: number
+        support?: {
+            items: T[]
+            totalItems: number
+            page: number
+            limit: number
+        }
+        oppose?: {
+            items: T[]
+            totalItems: number
+            page: number
+            limit: number
+        }
     }
     timestamp: string
 }
