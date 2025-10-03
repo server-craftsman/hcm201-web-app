@@ -18,6 +18,7 @@ export interface Argument {
     argumentType: 'SUPPORT' | 'OPPOSE' | 'NEUTRAL'
     status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'FLAGGED'
     moderatorId?: string
+    parentArgumentId?: string
     moderationNotes?: string
     isHighlighted: boolean
     likesCount: number

@@ -234,8 +234,10 @@ const DebateDetailPage: React.FC = () => {
         const matchesSearch = !searchQuery ||
             arg.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             arg.content.toLowerCase().includes(searchQuery.toLowerCase())
+        // Chỉ hiển thị các argument không có parentArgumentId (argument chính)
+        const isMainArgument = !arg.parentArgumentId
 
-        return matchesFilter && matchesStatus && matchesSearch
+        return matchesFilter && matchesStatus && matchesSearch && isMainArgument
     })
 
     if (threadsLoading) {
