@@ -287,10 +287,10 @@ export default function HomePage() {
               {/* Left side: year and icon */}
               <div className="flex flex-col items-center md:w-1/4 w-full mb-4 md:mb-0">
                 <div className="flex flex-col items-center">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white border border-red-200 shadow-md mb-2">
+                  {/* <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white border border-red-200 shadow-md mb-2">
                     <CalendarDaysIcon className="w-6 h-6 text-red-600" />
-                  </div>
-                  <span className="inline-flex items-center justify-center px-3 py-1 text-sm font-semibold rounded-full bg-red-600 text-white shadow-sm mb-2">
+                  </div> */}
+                  <span className="inline-flex items-center justify-center px-3 py-1 text-3xl font-semibold rounded-full bg-red-600 text-white shadow-sm mb-2">
                     {item.year}
                   </span>
                 </div>
@@ -371,7 +371,7 @@ export default function HomePage() {
 
             {/* CTA Buttons with Hyper Speed Effects */}
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-              <Link href="/study" className="group relative">
+              <Link href="/ho-chi-minh/works" className="group relative">
                 <button
                   className="relative px-8 py-4 bg-white text-red-600 font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:bg-red-50 cursor-pointer"
                   type="button"

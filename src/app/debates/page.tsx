@@ -3,24 +3,18 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useInView } from 'react-intersection-observer'
-import { Button, Card, Input, Select } from '@/shared/components/ui'
+import { Button, Card } from '@/shared/components/ui'
 import { useMediaQuery } from '@/shared/hooks'
 import { DebateCard } from '@/modules/debate/components/DebateCard/DebateCard'
 import { useDebates, useDebateThreads } from '@/modules/debate/hooks'
-import { DEBATE_CATEGORIES, DIFFICULTY_LEVELS, DEBATE_CATEGORY_NAMES, DIFFICULTY_LEVEL_NAMES } from '@/shared/constants'
 import { HeroSection } from './hero-section'
 import {
     MagnifyingGlassIcon,
     PlusIcon,
-    FunnelIcon,
     ChevronUpDownIcon,
     XMarkIcon,
-    SparklesIcon,
     ChatBubbleLeftRightIcon,
     FireIcon,
-    TrophyIcon,
-    ChartBarIcon,
     UsersIcon,
     EyeIcon
 } from '@heroicons/react/24/outline'
@@ -31,8 +25,6 @@ export default function DebatesPage() {
     const [selectedDifficulty, setSelectedDifficulty] = useState('')
     const [sortBy, setSortBy] = useState('date')
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-    const [showFilters, setShowFilters] = useState(false)
-    const [hoveredStat, setHoveredStat] = useState<number | null>(null)
     const [currentPage, setCurrentPage] = useState(1)
     // API filters
     const [statusFilter, setStatusFilter] = useState<string>('ACTIVE')

@@ -11,7 +11,7 @@ export interface AppProvidersProps {
 
 export function AppProviders({ children }: AppProvidersProps) {
     return (
-        <ThemeProvider defaultTheme="system" storageKey="hcm201-theme">
+        <ThemeProvider defaultTheme="light" storageKey="hcm201-theme">
             <NotificationCenter>
                 <AuthProvider>
                     {children}
