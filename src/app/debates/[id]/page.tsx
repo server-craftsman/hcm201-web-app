@@ -164,6 +164,20 @@ const DebateDetailPage: React.FC = () => {
         }
     }
 
+    // Flag argument (new)
+    const handleFlagArgument = async (argumentId: string) => {
+        try {
+            await argumentApi.moderateArgument({
+                argumentId,
+                action: 'FLAG'
+            })
+            // We don't change status locally; refresh arguments list instead
+            loadArguments()
+        } catch (error) {
+            console.error('Error flagging argument:', error)
+        }
+    }
+
     // Add feedback to argument
     const handleAddFeedback = async (argumentId: string, feedback: string) => {
         try {
@@ -582,6 +596,9 @@ const DebateDetailPage: React.FC = () => {
                                                                         break
                                                                     case 'UNHIGHLIGHT':
                                                                         handleUnhighlightArgument(argumentId)
+                                                                        break
+                                                                    case 'FLAG': // new case
+                                                                        handleFlagArgument(argumentId)
                                                                         break
                                                                     case 'ADD_FEEDBACK':
                                                                         if (notes) handleAddFeedback(argumentId, notes)
