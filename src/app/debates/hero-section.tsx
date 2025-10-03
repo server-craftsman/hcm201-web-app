@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
     PlusIcon,
@@ -12,8 +13,33 @@ import {
     UsersIcon
 } from '@heroicons/react/24/outline'
 import bannerDebate from '@/shared/assets/images/bg-debate-1.jpg'
+import { useNotificationCenter } from '@/shared/providers/NotificationCenter'
+import { useAuth } from '@/modules/auth/hooks'
 
 export function HeroSection() {
+    const { user } = useAuth()
+    const router = useRouter()
+    const notification = useNotificationCenter()
+
+
+    // Handler cho nút CTA
+    const handleJoinDebate = (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (!user) {
+            e.preventDefault()
+            notification.showCorner({
+                type: 'warning',
+                title: 'Vui lòng đăng nhập trước khi tham gia tranh luận',
+                message: '',
+                duration: 3000, // Tự đóng sau 2.5 giây
+                dismissible: true
+            })
+            setTimeout(() => {
+                router.push('/login')
+            }, 3000)
+        }
+        // Nếu đã đăng nhập thì không làm gì, Link sẽ hoạt động bình thường
+    }
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -158,11 +184,12 @@ export function HeroSection() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 1 }}
                         >
-                            <Link href="/debates/request">
+                            <Link href={user ? "/debates/request" : "#"} legacyBehavior>
                                 <motion.button
                                     whileHover={{ scale: 1.05, y: -2 }}
                                     whileTap={{ scale: 0.98 }}
-                                    className="group relative overflow-hidden bg-gradient-to-r from-red-500 to-red-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-xl hover:shadow-red-500/25 transition-all duration-300"
+                                    className="group relative overflow-hidden bg-gradient-to-r from-red-500 to-red-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-xl hover:shadow-red-500/25 transition-all duration-300 cursor-pointer"
+                                    onClick={handleJoinDebate}
                                 >
                                     <motion.div
                                         className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"

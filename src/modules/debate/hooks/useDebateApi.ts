@@ -24,7 +24,11 @@ export interface UseModerationQueueResult {
         total: number
         totalPages: number
     }
-    refetch: () => void
+    refetch: () => Promise<void>
+    groupedItems: {
+        support?: { items: DebateModerationItem[], totalItems: number, page: number, limit: number },
+        oppose?: { items: DebateModerationItem[], totalItems: number, page: number, limit: number }
+    }
 }
 
 export const useDebateThreads = (params: GetDebateThreadsParams = {}): UseDebateThreadsResult => {
@@ -77,6 +81,10 @@ export const useDebateThreads = (params: GetDebateThreadsParams = {}): UseDebate
 
 export const useModerationQueue = (params: GetModerationQueueParams = {}): UseModerationQueueResult => {
     const [items, setItems] = useState<DebateModerationItem[]>([])
+    const [groupedItems, setGroupedItems] = useState<{
+        support?: { items: DebateModerationItem[], totalItems: number, page: number, limit: number },
+        oppose?: { items: DebateModerationItem[], totalItems: number, page: number, limit: number }
+    }>({})
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [meta, setMeta] = useState({
@@ -93,13 +101,42 @@ export const useModerationQueue = (params: GetModerationQueueParams = {}): UseMo
             const response = await debateApi.getModerationQueue(params)
 
             if (response.statusCode === 200) {
-                setItems(response.data.items)
-                setMeta({
-                    page: response.data.page,
-                    limit: response.data.limit,
-                    total: response.data.totalItems,
-                    totalPages: Math.ceil(response.data.totalItems / response.data.limit)
-                })
+                // Handle grouped response format
+                if (params.groupBySide && response.data.support && response.data.oppose) {
+                    setGroupedItems({
+                        support: response.data.support,
+                        oppose: response.data.oppose
+                    })
+                    
+                    // Combine items for backward compatibility
+                    const combinedItems = [
+                        ...(response.data.support?.items || []),
+                        ...(response.data.oppose?.items || [])
+                    ]
+                    
+                    setItems(combinedItems)
+                    
+                    // Calculate total from both sides
+                    const totalItems = 
+                        (response.data.support?.totalItems || 0) + 
+                        (response.data.oppose?.totalItems || 0)
+                    
+                    setMeta({
+                        page: response.data.support?.page || 1,
+                        limit: response.data.support?.limit || 20,
+                        total: totalItems,
+                        totalPages: Math.ceil(totalItems / (response.data.support?.limit || 20))
+                    })
+                } else {
+                    // Handle regular response format
+                    setItems(response.data.items)
+                    setMeta({
+                        page: response.data.page,
+                        limit: response.data.limit,
+                        total: response.data.totalItems,
+                        totalPages: Math.ceil(response.data.totalItems / response.data.limit)
+                    })
+                }
             } else {
                 setError(response.message || 'Failed to fetch moderation queue')
             }
@@ -116,6 +153,7 @@ export const useModerationQueue = (params: GetModerationQueueParams = {}): UseMo
 
     return {
         items,
+        groupedItems,
         loading,
         error,
         meta,

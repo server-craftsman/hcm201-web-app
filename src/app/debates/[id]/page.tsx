@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useParams } from 'next/navigation'
 import {
@@ -9,11 +9,6 @@ import {
     ChatBubbleLeftRightIcon,
     ClockIcon,
     UsersIcon,
-    FireIcon,
-    CheckBadgeIcon,
-    ExclamationTriangleIcon,
-    FunnelIcon,
-    AdjustmentsHorizontalIcon,
     PlusIcon,
     MagnifyingGlassIcon
 } from '@heroicons/react/24/outline'
@@ -59,68 +54,131 @@ const DebateDetailPage: React.FC = () => {
     }, [threadId, threads, currentThread, threadsLoading])
 
     // Load arguments
-    useEffect(() => {
-        const loadArguments = async () => {
-            if (!threadId) {
-                console.warn('No threadId provided')
+    const loadArguments = useCallback(async () => {
+        if (!threadId) {
+            console.warn('No threadId provided')
+            return
+        }
+
+        setIsLoadingArguments(true)
+        try {
+            console.log('Loading arguments for thread:', threadId)
+            const response = await argumentApi.getArguments({
+                threadId,
+                status: statusFilter === 'ALL' ? undefined : statusFilter,
+                argumentType: argumentFilter === 'ALL' ? undefined : argumentFilter,
+                search: searchQuery || undefined
+            })
+
+            console.log('Arguments response:', response)
+
+            if (!response || !response.data || !response.data.items) {
+                console.error('Invalid response structure:', response)
+                setArguments([])
                 return
             }
 
-            setIsLoadingArguments(true)
-            try {
-                console.log('Loading arguments for thread:', threadId)
-                const response = await argumentApi.getArguments({
-                    threadId,
-                    status: statusFilter === 'ALL' ? undefined : statusFilter,
-                    argumentType: argumentFilter === 'ALL' ? undefined : argumentFilter,
-                    search: searchQuery || undefined
-                })
+            let sortedArguments = response.data.items
 
-                console.log('Arguments response:', response)
-
-                if (!response || !response.data || !response.data.items) {
-                    console.error('Invalid response structure:', response)
-                    setArguments([])
-                    return
-                }
-
-                let sortedArguments = response.data.items
-
-                // Sort arguments
-                switch (sortBy) {
-                    case 'newest':
-                        sortedArguments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                        break
-                    case 'oldest':
-                        sortedArguments.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-                        break
-                    case 'most_liked':
-                        sortedArguments.sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0))
-                        break
-                }
-
-                setArguments(sortedArguments)
-            } catch (error) {
-                console.error('Error loading arguments:', error)
-                setArguments([]) // Set empty array on error
-            } finally {
-                setIsLoadingArguments(false)
+            // Sort arguments
+            switch (sortBy) {
+                case 'newest':
+                    sortedArguments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                    break
+                case 'oldest':
+                    sortedArguments.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+                    break
+                case 'most_liked':
+                    sortedArguments.sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0))
+                    break
             }
-        }
 
-        loadArguments()
+            setArguments(sortedArguments)
+        } catch (error) {
+            console.error('Error loading arguments:', error)
+            setArguments([]) // Set empty array on error
+        } finally {
+            setIsLoadingArguments(false)
+        }
     }, [threadId, argumentFilter, statusFilter, sortBy, searchQuery])
 
-    const handleArgumentSubmit = async (data: any) => {
+    useEffect(() => {
+        loadArguments()
+    }, [loadArguments])
+
+    // --- Moderation handlers ---
+
+    // Approve argument
+    const handleApproveArgument = async (argumentId: string) => {
         try {
-            const newArgument = await argumentApi.createArgument(data)
-            setArguments(prev => [newArgument, ...prev])
-            setShowArgumentForm(false)
+            await argumentApi.approveArgument(argumentId)
+            setArguments(prev =>
+                prev.map(arg =>
+                    arg._id === argumentId ? { ...arg, status: 'APPROVED' } : arg
+                )
+            )
         } catch (error) {
-            console.error('Error creating argument:', error)
+            console.error('Error approving argument:', error)
         }
     }
 
+    // Reject argument
+    const handleRejectArgument = async (argumentId: string) => {
+        try {
+            await argumentApi.rejectArgument(argumentId)
+            setArguments(prev =>
+                prev.map(arg =>
+                    arg._id === argumentId ? { ...arg, status: 'REJECTED' } : arg
+                )
+            )
+        } catch (error) {
+            console.error('Error rejecting argument:', error)
+        }
+    }
+
+    // Highlight argument
+    const handleHighlightArgument = async (argumentId: string) => {
+        try {
+            await argumentApi.highlightArgument(argumentId)
+            setArguments(prev =>
+                prev.map(arg =>
+                    arg._id === argumentId ? { ...arg, isHighlighted: true } : arg
+                )
+            )
+        } catch (error) {
+            console.error('Error highlighting argument:', error)
+        }
+    }
+
+    // Unhighlight argument
+    const handleUnhighlightArgument = async (argumentId: string) => {
+        try {
+            await argumentApi.unhighlightArgument(argumentId)
+            setArguments(prev =>
+                prev.map(arg =>
+                    arg._id === argumentId ? { ...arg, isHighlighted: false } : arg
+                )
+            )
+        } catch (error) {
+            console.error('Error unhighlighting argument:', error)
+        }
+    }
+
+    // Add feedback to argument
+    const handleAddFeedback = async (argumentId: string, feedback: string) => {
+        try {
+            const updated = await argumentApi.addFeedback(argumentId, feedback)
+            setArguments(prev =>
+                prev.map(arg =>
+                    arg._id === argumentId ? { ...arg, moderationNotes: updated.moderationNotes } : arg
+                )
+            )
+        } catch (error) {
+            console.error('Error adding feedback:', error)
+        }
+    }
+
+    // Like/dislike handlers
     const handleArgumentLike = async (argumentId: string) => {
         try {
             const response = await argumentApi.likeArgument(argumentId)
@@ -147,6 +205,17 @@ const DebateDetailPage: React.FC = () => {
         }
     }
 
+    // Argument submit
+    const handleArgumentSubmit = async (data: any) => {
+        try {
+            const newArgument = await argumentApi.createArgument(data)
+            setArguments(prev => [newArgument, ...prev])
+            setShowArgumentForm(false)
+        } catch (error) {
+            console.error('Error creating argument:', error)
+        }
+    }
+
     const formatRelativeTime = (dateString: string) => {
         const date = new Date(dateString)
         const now = new Date()
@@ -158,6 +227,7 @@ const DebateDetailPage: React.FC = () => {
         return `${Math.floor(diffInMinutes / 1440)} ngày trước`
     }
 
+    // Filter arguments
     const filteredArguments = arguments_.filter(arg => {
         const matchesFilter = argumentFilter === 'ALL' || arg.argumentType === argumentFilter
         const matchesStatus = statusFilter === 'ALL' || arg.status === statusFilter
@@ -437,24 +507,90 @@ const DebateDetailPage: React.FC = () => {
                                 ) : (
                                     <div className="space-y-6">
                                         <AnimatePresence>
-                                            {filteredArguments.map((argument, index) => (
-                                                <motion.div
-                                                    key={argument._id}
-                                                    initial={{ opacity: 0, y: 20 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: -20 }}
-                                                    transition={{ delay: index * 0.1 }}
-                                                >
-                                                    <ArgumentCard
-                                                        argument={argument}
-                                                        onLike={handleArgumentLike}
-                                                        onDislike={handleArgumentDislike}
-                                                        currentUserRole={user?.role as 'USER' | 'MODERATOR' | 'ADMIN' || 'USER'}
-                                                        showModerationActions={user?.role === 'MODERATOR' || user?.role === 'ADMIN'}
-                                                        currentUser={user}
-                                                    />
-                                                </motion.div>
-                                            ))}
+                                            {filteredArguments.map((argument, index) => {
+                                                // Determine if current user is moderator/admin
+                                                const isModerator = user?.role === 'MODERATOR' || user?.role === 'ADMIN'
+                                                // Only show approve/reject/highlight/unhighlight for correct side:
+                                                // - Only show approve/reject for arguments of the same team as the moderator's vote (if any)
+                                                // - Only show highlight/unhighlight for approved arguments
+                                                // - Only allow add feedback if not highlighted
+                                                // - Hide approve/reject for arguments of the opposite team
+                                                let canModerate = false
+                                                let canApproveReject = false
+                                                let canHighlight = false
+                                                let canUnhighlight = false
+                                                let canAddFeedback = false
+
+                                                if (isModerator) {
+                                                    // Admins can moderate all arguments
+                                                    const isAdmin = user?.role === 'ADMIN'
+
+                                                    // For now, allow moderators to moderate any arguments
+                                                    // TODO: Implement proper moderator assignment system based on thread.modForSideA/modForSideB
+                                                    const canModerateArgument = isAdmin || true // All moderators can moderate all arguments for now
+
+                                                    if (canModerateArgument) {
+                                                        // Allow approve/reject for pending arguments
+                                                        if (argument.status === 'PENDING') {
+                                                            canApproveReject = true
+                                                        }
+
+                                                        // Allow highlight/unhighlight for approved arguments
+                                                        if (argument.status === 'APPROVED') {
+                                                            if (!argument.isHighlighted) {
+                                                                canHighlight = true
+                                                            } else {
+                                                                canUnhighlight = true
+                                                            }
+                                                        }
+
+                                                        // Allow add feedback for approved arguments (both highlighted and non-highlighted)
+                                                        if (argument.status === 'APPROVED') {
+                                                            canAddFeedback = true
+                                                        }
+                                                    }
+
+                                                    canModerate = canApproveReject || canHighlight || canUnhighlight || canAddFeedback
+                                                }
+
+                                                return (
+                                                    <motion.div
+                                                        key={argument._id}
+                                                        initial={{ opacity: 0, y: 20 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        exit={{ opacity: 0, y: -20 }}
+                                                        transition={{ delay: index * 0.1 }}
+                                                    >
+                                                        <ArgumentCard
+                                                            argument={argument}
+                                                            onLike={handleArgumentLike}
+                                                            onDislike={handleArgumentDislike}
+                                                            currentUserRole={user?.role as 'USER' | 'MODERATOR' | 'ADMIN' || 'USER'}
+                                                            showModerationActions={canModerate}
+                                                            onModerate={(argumentId, action, notes) => {
+                                                                switch (action) {
+                                                                    case 'APPROVE':
+                                                                        handleApproveArgument(argumentId)
+                                                                        break
+                                                                    case 'REJECT':
+                                                                        handleRejectArgument(argumentId)
+                                                                        break
+                                                                    case 'HIGHLIGHT':
+                                                                        handleHighlightArgument(argumentId)
+                                                                        break
+                                                                    case 'UNHIGHLIGHT':
+                                                                        handleUnhighlightArgument(argumentId)
+                                                                        break
+                                                                    case 'ADD_FEEDBACK':
+                                                                        if (notes) handleAddFeedback(argumentId, notes)
+                                                                        break
+                                                                }
+                                                            }}
+                                                            currentUser={user}
+                                                        />
+                                                    </motion.div>
+                                                )
+                                            })}
                                         </AnimatePresence>
                                     </div>
                                 )}

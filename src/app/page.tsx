@@ -275,6 +275,48 @@ export default function HomePage() {
     setCurrentQuoteIndex(index)
   }
 
+  // Helper: Render timeline as a vertical calendar
+  function LifeTimelineCalendar() {
+    return (
+      <div className="relative flex flex-col items-center">
+        {/* Vertical line */}
+        <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-red-200 via-red-300 to-red-200 -translate-x-1/2 z-0" style={{ minHeight: 400 }} />
+        <div className="w-full flex flex-col gap-12 z-10">
+          {lifeTimeline.map((item, idx) => (
+            <div key={idx} className="relative flex flex-col md:flex-row items-center w-full">
+              {/* Left side: year and icon */}
+              <div className="flex flex-col items-center md:w-1/4 w-full mb-4 md:mb-0">
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white border border-red-200 shadow-md mb-2">
+                    <CalendarDaysIcon className="w-6 h-6 text-red-600" />
+                  </div>
+                  <span className="inline-flex items-center justify-center px-3 py-1 text-sm font-semibold rounded-full bg-red-600 text-white shadow-sm mb-2">
+                    {item.year}
+                  </span>
+                </div>
+              </div>
+              {/* Center: vertical line for md+ */}
+              <div className="hidden md:block w-1 bg-gradient-to-b from-red-200 via-red-300 to-red-200 h-full mx-4" />
+              {/* Right side: content */}
+              <div className="flex-1 md:w-3/4 w-full">
+                <div className="group relative rounded-2xl border border-gray-100 bg-white/70 backdrop-blur p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-red-50 to-yellow-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="relative group cursor-pointer">
+                    <div className="mb-4 relative w-full h-40 overflow-hidden rounded-xl">
+                      <Image src={item.image} alt={item.title} fill className="object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
+                    <p className="text-gray-600 leading-relaxed">{item.description}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-red-50">
       {/* Hero Section */}
@@ -427,8 +469,6 @@ export default function HomePage() {
         </div>
       </section>
 
-
-
       {/* Life Overview Section */}
       <section className="py-20 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -436,37 +476,8 @@ export default function HomePage() {
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Tổng quan cuộc đời Bác Hồ</h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">Những cột mốc quan trọng trong hành trình vì độc lập tự do của dân tộc</p>
           </div>
-
-          <div className="relative">
-            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-red-200 via-red-300 to-red-200 -translate-x-1/2" />
-            <div className="space-y-10">
-              {lifeTimeline.map((item, idx) => (
-                <div key={idx} className="relative flex flex-col md:flex-row items-center md:items-stretch">
-                  <div className="hidden md:block w-1/2" />
-                  <div className="z-10 flex items-center justify-center w-12 h-12 rounded-full bg-white border border-red-200 shadow-md mx-6 group cursor-pointer">
-                    <CalendarDaysIcon className="w-6 h-6 text-red-600" />
-                  </div>
-                  <div className="hidden md:block w-1/2" />
-
-                  <div className={`w-full md:w-[46%] ${idx % 2 === 0 ? 'md:ml-auto md:pr-10' : 'md:mr-auto md:pl-10'}`}>
-                    <div className="group relative rounded-2xl border border-gray-100 bg-white/70 backdrop-blur p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
-                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-red-50 to-yellow-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <div className="relative group cursor-pointer">
-                        <div className="mb-4 relative w-full h-40 overflow-hidden rounded-xl">
-                          <Image src={item.image} alt={item.title} fill className="object-cover" />
-                        </div>
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="inline-flex items-center justify-center px-3 py-1 text-sm font-semibold rounded-full bg-red-600 text-white shadow-sm">{item.year}</span>
-                          <h3 className="text-xl font-bold text-gray-900">{item.title}</h3>
-                        </div>
-                        <p className="text-gray-600 leading-relaxed">{item.description}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Calendar Timeline */}
+          <LifeTimelineCalendar />
         </div>
       </section>
 

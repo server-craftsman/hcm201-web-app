@@ -39,6 +39,7 @@ const AdminThreadsPage = () => {
     const [rejectModalOpen, setRejectModalOpen] = useState(false)
     const [rejectReason, setRejectReason] = useState('')
     const [threadToReject, setThreadToReject] = useState<string | null>(null)
+    const [refreshingStats, setRefreshingStats] = useState(false) // Thêm state loading cho nút làm mới
 
     const loadModerators = async () => {
         try {
@@ -378,7 +379,7 @@ const AdminThreadsPage = () => {
             return
         }
         try {
-            await debateApi.updateThreadStatus(threadToReject, 'REJECTED', rejectReason.trim())
+            await debateApi.updateThreadStatus(threadToReject, 'CLOSED', rejectReason.trim())
             await loadData(selectedTab)
             await refreshStats()
             toast.success('Từ chối thread thành công!', {
@@ -422,7 +423,9 @@ const AdminThreadsPage = () => {
         router.push(`/debates/${threadId}`)
     }
 
+    // Sửa hàm refreshStats để hiển thị trạng thái loading cho nút
     const refreshStats = async () => {
+        setRefreshingStats(true)
         try {
             const statsRes = await debateApi.getThreadStats()
             const stats = statsRes.data
@@ -433,9 +436,10 @@ const AdminThreadsPage = () => {
                 closed: stats.closed || 0,
                 archived: stats.archived || 0
             })
-            console.log('📊 Stats refreshed:', stats)
         } catch (error) {
             console.warn('Failed to refresh stats:', error)
+        } finally {
+            setRefreshingStats(false)
         }
     }
 
@@ -487,10 +491,23 @@ const AdminThreadsPage = () => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={refreshStats}
-                            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            className={`flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors relative ${refreshingStats ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            disabled={refreshingStats}
                         >
-                            <ArrowPathIcon className="h-4 w-4 mr-2" />
-                            Làm mới thống kê
+                            {refreshingStats ? (
+                                <>
+                                    <svg className="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                    </svg>
+                                    Đang làm mới...
+                                </>
+                            ) : (
+                                <>
+                                    <ArrowPathIcon className="h-4 w-4 mr-2" />
+                                    Làm mới thống kê
+                                </>
+                            )}
                         </motion.button>
                     </div>
                 </motion.div>
