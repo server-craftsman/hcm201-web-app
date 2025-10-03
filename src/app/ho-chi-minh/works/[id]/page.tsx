@@ -204,12 +204,12 @@ export default function WorkDetailPage() {
                         </div>
 
                         <div className="flex items-center space-x-3">
-                            <button
+                            {/* <button
                                 onClick={() => setIsDarkMode(!isDarkMode)}
                                 className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-300 hover:scale-105"
                             >
                                 {isDarkMode ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
-                            </button>
+                            </button> */}
 
                             <div className="flex items-center space-x-1 bg-slate-100/80 dark:bg-slate-700/80 backdrop-blur rounded-xl p-1 border border-slate-200/50 dark:border-slate-600/50">
                                 <button
@@ -229,7 +229,7 @@ export default function WorkDetailPage() {
                                 </button>
                             </div>
 
-                            <button
+                            {/* <button
                                 onClick={() => setIsBookmarked(!isBookmarked)}
                                 className={`p-2 rounded-xl transition-all duration-300 hover:scale-105 ${isBookmarked
                                     ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400 shadow-lg'
@@ -247,7 +247,7 @@ export default function WorkDetailPage() {
                                     }`}
                             >
                                 <HeartIcon className="w-5 h-5" />
-                            </button>
+                            </button> */}
                         </div>
                     </div>
                 </div>
@@ -465,7 +465,7 @@ export default function WorkDetailPage() {
                                             className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-rose-500 to-amber-500 text-white font-bold rounded-2xl hover:from-rose-600 hover:to-amber-600 transition-all duration-300 shadow-xl hover:shadow-2xl"
                                         >
                                             <BookOpenIcon className="w-6 h-6 mr-3" />
-                                            <span>Đọc sách ảo</span>
+                                            <span>Đọc sách</span>
                                         </Link>
                                     </motion.div>
 

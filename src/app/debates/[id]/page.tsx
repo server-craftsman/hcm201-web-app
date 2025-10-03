@@ -302,10 +302,10 @@ const DebateDetailPage: React.FC = () => {
                                     {currentThread?.title || 'Đang tải...'}
                                 </h1>
                                 <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
-                                    <div className="flex items-center space-x-1">
+                                    {/* <div className="flex items-center space-x-1">
                                         <EyeIcon className="h-4 w-4" />
                                         <span>0 lượt xem</span>
-                                    </div>
+                                    </div> */}
                                     <div className="flex items-center space-x-1">
                                         <ChatBubbleLeftRightIcon className="h-4 w-4" />
                                         <span>{arguments_.length} luận điểm</span>
@@ -645,10 +645,10 @@ const DebateDetailPage: React.FC = () => {
                                             {currentThread?.updatedAt ? formatRelativeTime(currentThread.updatedAt) : 'Không rõ'}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between text-sm">
+                                    {/* <div className="flex justify-between text-sm">
                                         <span className="text-gray-500">Lượt xem:</span>
                                         <span className="text-gray-900">0</span>
-                                    </div>
+                                    </div> */}
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-500">Luận điểm:</span>
                                         <span className="text-gray-900">{arguments_.length}</span>
