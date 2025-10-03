@@ -231,7 +231,7 @@ export const ArgumentCard: React.FC<ArgumentCardProps> = ({
             {/* Highlight glow effect */}
             {argument.isHighlighted && (
                 <motion.div
-                    className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 rounded-xl opacity-75 blur"
+                    className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 rounded-xl opacity-75 blur pointer-events-none"
                     animate={{
                         opacity: [0.5, 0.8, 0.5],
                         scale: [1, 1.02, 1]
@@ -458,7 +458,7 @@ export const ArgumentCard: React.FC<ArgumentCardProps> = ({
                                         initial={{ opacity: 0, scale: 0.95, y: -10 }}
                                         animate={{ opacity: 1, scale: 1, y: 0 }}
                                         exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                                        className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border z-10"
+                                        className="absolute right-0 top-auto bottom-full mb-2 w-48 bg-white rounded-lg shadow-xl border z-50"
                                     >
                                         <div className="p-2 space-y-1">
                                             {argument.status === 'PENDING' && (
@@ -489,6 +489,17 @@ export const ArgumentCard: React.FC<ArgumentCardProps> = ({
                                             >
                                                 {argument.isHighlighted ? '🌟 Bỏ nổi bật' : '⭐ Nổi bật'}
                                             </button>
+                                            {/* {argument.status === 'APPROVED' && (
+                                                <button
+                                                    onClick={() => {
+                                                        const feedback = prompt('Nhập phản hồi của bạn:');
+                                                        if (feedback) handleModeration('ADD_FEEDBACK');
+                                                    }}
+                                                    className="w-full text-left px-3 py-2 text-sm text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+                                                >
+                                                    📝 Thêm phản hồi
+                                                </button>
+                                            )} */}
                                         </div>
                                     </motion.div>
                                 )}

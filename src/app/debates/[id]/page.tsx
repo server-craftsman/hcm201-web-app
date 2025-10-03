@@ -416,7 +416,7 @@ const DebateDetailPage: React.FC = () => {
                                     </div>
 
                                     {/* Filters */}
-                                    <div className="flex space-x-2">
+                                    <div className="flex flex-wrap gap-2">
                                         <select
                                             value={argumentFilter}
                                             onChange={(e) => setArgumentFilter(e.target.value as any)}
