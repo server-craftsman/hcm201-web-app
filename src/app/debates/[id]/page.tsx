@@ -22,11 +22,14 @@ import { ArgumentCard } from '@/modules/debate/components/ArgumentCard'
 import { ArgumentForm } from '@/modules/debate/components/ArgumentForm'
 import { argumentApi, Argument } from '@/modules/debate/api/argumentApi'
 import { DebateDebug } from '@/shared/components/debug/DebateDebug'
+import { toast } from 'react-hot-toast'
+import { useNotificationCenter } from '@shared/providers/NotificationCenter'
 
 const DebateDetailPage: React.FC = () => {
     const params = useParams()
     const threadId = params.id as string
     const { user } = useAuth()
+    const notification = useNotificationCenter();
 
     const { threads, loading: threadsLoading } = useDebateThreads()
     const { stats, userVote, vote, isVoting } = useDebateVoting({
@@ -94,8 +97,20 @@ const DebateDetailPage: React.FC = () => {
             }
 
             setArguments(sortedArguments)
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading arguments:', error)
+            const statusCode = error?.response?.status
+            const errorMessage = error?.response?.data?.message || error?.message
+
+            // Show error notification
+            if (statusCode === 500) {
+                toast.error('Lỗi server khi tải luận điểm. Vui lòng thử lại sau.')
+            } else if (statusCode === 403) {
+                toast.error('Không có quyền xem luận điểm này')
+            } else if (errorMessage) {
+                toast.error(`Lỗi: ${errorMessage}`)
+            }
+
             setArguments([]) // Set empty array on error
         } finally {
             setIsLoadingArguments(false)
@@ -108,6 +123,38 @@ const DebateDetailPage: React.FC = () => {
 
     // --- Moderation handlers ---
 
+    // Helper function to handle API errors
+    const handleModerationError = (error: any, defaultMessage: string) => {
+        console.error('Moderation error:', error)
+
+        // Parse error response
+        const errorMessage = error?.response?.data?.message || error?.message || defaultMessage
+        const statusCode = error?.response?.status || error?.response?.data?.statusCode || error?.statusCode
+
+        // Handle specific error cases
+        if (statusCode === 403) {
+            // Translate common permission messages to Vietnamese
+            let vietnameseMessage = errorMessage
+            if (errorMessage?.includes('SUPPORT arguments only')) {
+                vietnameseMessage = 'Bạn chỉ được phép kiểm duyệt luận điểm ỦNG HỘ'
+            } else if (errorMessage?.includes('OPPOSE arguments only')) {
+                vietnameseMessage = 'Bạn chỉ được phép kiểm duyệt luận điểm PHẢN ĐỐI'
+            }
+
+            notification.showCorner({
+                type: 'error',
+                title: 'Không có quyền',
+                message: vietnameseMessage,
+                duration: 3500
+            })
+
+        } else if (statusCode === 401) {
+            toast.error('Vui lòng đăng nhập để thực hiện thao tác này')
+        } else {
+            toast.error(`Lỗi: ${errorMessage}`)
+        }
+    }
+
     // Approve argument
     const handleApproveArgument = async (argumentId: string) => {
         try {
@@ -117,8 +164,9 @@ const DebateDetailPage: React.FC = () => {
                     arg._id === argumentId ? { ...arg, status: 'APPROVED' } : arg
                 )
             )
+            toast.success('✅ Đã phê duyệt luận điểm')
         } catch (error) {
-            console.error('Error approving argument:', error)
+            handleModerationError(error, 'Không thể phê duyệt luận điểm')
         }
     }
 
@@ -131,8 +179,9 @@ const DebateDetailPage: React.FC = () => {
                     arg._id === argumentId ? { ...arg, status: 'REJECTED' } : arg
                 )
             )
+            toast.success('❌ Đã từ chối luận điểm')
         } catch (error) {
-            console.error('Error rejecting argument:', error)
+            handleModerationError(error, 'Không thể từ chối luận điểm')
         }
     }
 
@@ -145,8 +194,9 @@ const DebateDetailPage: React.FC = () => {
                     arg._id === argumentId ? { ...arg, isHighlighted: true } : arg
                 )
             )
+            toast.success('⭐ Đã đánh dấu luận điểm nổi bật')
         } catch (error) {
-            console.error('Error highlighting argument:', error)
+            handleModerationError(error, 'Không thể đánh dấu nổi bật')
         }
     }
 
@@ -159,8 +209,9 @@ const DebateDetailPage: React.FC = () => {
                     arg._id === argumentId ? { ...arg, isHighlighted: false } : arg
                 )
             )
+            toast.success('🔅 Đã bỏ đánh dấu nổi bật')
         } catch (error) {
-            console.error('Error unhighlighting argument:', error)
+            handleModerationError(error, 'Không thể bỏ đánh dấu nổi bật')
         }
     }
 
@@ -171,10 +222,11 @@ const DebateDetailPage: React.FC = () => {
                 argumentId,
                 action: 'FLAG'
             })
+            toast.success('🚩 Đã đánh dấu luận điểm')
             // We don't change status locally; refresh arguments list instead
             loadArguments()
         } catch (error) {
-            console.error('Error flagging argument:', error)
+            handleModerationError(error, 'Không thể đánh dấu luận điểm')
         }
     }
 
@@ -187,8 +239,9 @@ const DebateDetailPage: React.FC = () => {
                     arg._id === argumentId ? { ...arg, moderationNotes: updated.moderationNotes } : arg
                 )
             )
+            toast.success('💬 Đã thêm phản hồi')
         } catch (error) {
-            console.error('Error adding feedback:', error)
+            handleModerationError(error, 'Không thể thêm phản hồi')
         }
     }
 
