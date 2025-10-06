@@ -24,7 +24,6 @@ import { ArgumentCard } from '@/modules/debate/components/ArgumentCard'
 import { ArgumentForm } from '@/modules/debate/components/ArgumentForm'
 import { argumentApi, Argument } from '@/modules/debate/api/argumentApi'
 import { DebateDebug } from '@/shared/components/debug/DebateDebug'
-import { toast } from 'react-hot-toast'
 import { useNotificationCenter } from '@shared/providers/NotificationCenter'
 
 const DebateDetailPage: React.FC = () => {
@@ -106,11 +105,26 @@ const DebateDetailPage: React.FC = () => {
 
             // Show error notification
             if (statusCode === 500) {
-                toast.error('Lỗi server khi tải luận điểm. Vui lòng thử lại sau.')
+                notification.showCorner({
+                    type: 'error',
+                    title: 'Lỗi server',
+                    message: 'Lỗi server khi tải luận điểm. Vui lòng thử lại sau.',
+                    duration: 5000
+                })
             } else if (statusCode === 403) {
-                toast.error('Không có quyền xem luận điểm này')
+                notification.showCorner({
+                    type: 'error',
+                    title: 'Không có quyền',
+                    message: 'Không có quyền xem luận điểm này',
+                    duration: 5000
+                })
             } else if (errorMessage) {
-                toast.error(`Lỗi: ${errorMessage}`)
+                notification.showCorner({
+                    type: 'error',
+                    title: 'Lỗi tải luận điểm',
+                    message: errorMessage,
+                    duration: 5000
+                })
             }
 
             setArguments([]) // Set empty array on error
@@ -151,9 +165,19 @@ const DebateDetailPage: React.FC = () => {
             })
 
         } else if (statusCode === 401) {
-            toast.error('Vui lòng đăng nhập để thực hiện thao tác này')
+            notification.showCorner({
+                type: 'error',
+                title: 'Cần đăng nhập',
+                message: 'Vui lòng đăng nhập để thực hiện thao tác này',
+                duration: 4000
+            })
         } else {
-            toast.error(`Lỗi: ${errorMessage}`)
+            notification.showCorner({
+                type: 'error',
+                title: 'Lỗi',
+                message: errorMessage,
+                duration: 5000
+            })
         }
     }
 
@@ -166,7 +190,12 @@ const DebateDetailPage: React.FC = () => {
                     arg._id === argumentId ? { ...arg, status: 'APPROVED' } : arg
                 )
             )
-            toast.success('✅ Đã phê duyệt luận điểm')
+            notification.showCorner({
+                type: 'success',
+                title: 'Thành công',
+                message: 'Đã phê duyệt luận điểm',
+                duration: 3000
+            })
         } catch (error) {
             handleModerationError(error, 'Không thể phê duyệt luận điểm')
         }
@@ -181,7 +210,12 @@ const DebateDetailPage: React.FC = () => {
                     arg._id === argumentId ? { ...arg, status: 'REJECTED' } : arg
                 )
             )
-            toast.success('❌ Đã từ chối luận điểm')
+            notification.showCorner({
+                type: 'success',
+                title: 'Thành công',
+                message: 'Đã từ chối luận điểm',
+                duration: 3000
+            })
         } catch (error) {
             handleModerationError(error, 'Không thể từ chối luận điểm')
         }
@@ -196,7 +230,12 @@ const DebateDetailPage: React.FC = () => {
                     arg._id === argumentId ? { ...arg, isHighlighted: true } : arg
                 )
             )
-            toast.success('⭐ Đã đánh dấu luận điểm nổi bật')
+            notification.showCorner({
+                type: 'success',
+                title: 'Thành công',
+                message: 'Đã đánh dấu luận điểm nổi bật',
+                duration: 3000
+            })
         } catch (error) {
             handleModerationError(error, 'Không thể đánh dấu nổi bật')
         }
@@ -211,7 +250,12 @@ const DebateDetailPage: React.FC = () => {
                     arg._id === argumentId ? { ...arg, isHighlighted: false } : arg
                 )
             )
-            toast.success('🔅 Đã bỏ đánh dấu nổi bật')
+            notification.showCorner({
+                type: 'success',
+                title: 'Thành công',
+                message: 'Đã bỏ đánh dấu nổi bật',
+                duration: 3000
+            })
         } catch (error) {
             handleModerationError(error, 'Không thể bỏ đánh dấu nổi bật')
         }
@@ -224,7 +268,12 @@ const DebateDetailPage: React.FC = () => {
                 argumentId,
                 action: 'FLAG'
             })
-            toast.success('🚩 Đã đánh dấu luận điểm')
+            notification.showCorner({
+                type: 'success',
+                title: 'Thành công',
+                message: 'Đã đánh dấu luận điểm',
+                duration: 3000
+            })
             // We don't change status locally; refresh arguments list instead
             loadArguments()
         } catch (error) {
@@ -241,7 +290,12 @@ const DebateDetailPage: React.FC = () => {
                     arg._id === argumentId ? { ...arg, moderationNotes: updated.moderationNotes } : arg
                 )
             )
-            toast.success('💬 Đã thêm phản hồi')
+            notification.showCorner({
+                type: 'success',
+                title: 'Thành công',
+                message: 'Đã thêm phản hồi',
+                duration: 3000
+            })
         } catch (error) {
             handleModerationError(error, 'Không thể thêm phản hồi')
         }
@@ -291,11 +345,53 @@ const DebateDetailPage: React.FC = () => {
             const newArgument = await argumentApi.createArgument(data)
             setArguments(prev => [newArgument, ...prev])
             setShowArgumentForm(false)
-            toast.success('✅ Đã thêm luận điểm thành công')
+            notification.showCorner({
+                type: 'success',
+                title: 'Thành công',
+                message: 'Đã thêm luận điểm thành công',
+                duration: 3000
+            })
         } catch (error: any) {
             console.error('Error creating argument:', error)
-            const errorMessage = error?.response?.data?.message || error?.message || 'Không thể tạo luận điểm'
-            toast.error(`❌ ${errorMessage}`)
+
+            // Parse error response for better user feedback
+            const errorResponse = error?.response?.data
+            let errorMessage = 'Không thể tạo luận điểm'
+
+            if (errorResponse?.message) {
+                if (Array.isArray(errorResponse.message)) {
+                    // Handle validation errors array
+                    errorMessage = errorResponse.message.join(', ')
+                } else {
+                    errorMessage = errorResponse.message
+                }
+            } else if (error?.message) {
+                errorMessage = error.message
+            }
+
+            // Show specific error for evidenceUrls validation
+            if (errorMessage.includes('evidenceUrls') && errorMessage.includes('URL address')) {
+                notification.showCorner({
+                    type: 'error',
+                    title: 'Lỗi tài liệu bằng chứng',
+                    message: 'Vui lòng nhập URL đúng định dạng',
+                    duration: 5000
+                })
+            } else if (errorMessage.includes('each value in evidenceUrls must be a URL address')) {
+                notification.showCorner({
+                    type: 'error',
+                    title: 'Lỗi tài liệu bằng chứng',
+                    message: 'Tất cả URL phải có định dạng hợp lệ',
+                    duration: 5000
+                })
+            } else {
+                notification.showCorner({
+                    type: 'error',
+                    title: 'Lỗi tạo luận điểm',
+                    message: errorMessage,
+                    duration: 5000
+                })
+            }
         }
     }
 

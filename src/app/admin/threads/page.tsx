@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import {
     ShieldCheckIcon,
     PlusCircleIcon,
@@ -40,6 +41,8 @@ const AdminThreadsPage = () => {
     const [rejectReason, setRejectReason] = useState('')
     const [threadToReject, setThreadToReject] = useState<string | null>(null)
     const [refreshingStats, setRefreshingStats] = useState(false) // Thêm state loading cho nút làm mới
+    const [showSideADropdown, setShowSideADropdown] = useState(false)
+    const [showSideBDropdown, setShowSideBDropdown] = useState(false)
 
     const loadModerators = async () => {
         try {
@@ -48,8 +51,7 @@ const AdminThreadsPage = () => {
                 params: {
                     role: 'MODERATOR',
                     page: 1,
-                    limit: 50,
-                    status: 'ONLINE'
+                    limit: 50
                 }
             })
 
@@ -59,7 +61,7 @@ const AdminThreadsPage = () => {
                 username: mod.username,
                 email: mod.email,
                 avatar: mod.avatar,
-                specialty: 'Kiểm duyệt chuyên nghiệp',
+                specialty: mod.specialty || 'Kiểm duyệt chuyên nghiệp',
                 workload: mod.workload || 0,
                 status: mod.status || 'ONLINE',
                 lastActive: mod.lastActive || new Date().toISOString(),
@@ -67,9 +69,12 @@ const AdminThreadsPage = () => {
                 rating: mod.rating || '0.0'
             }))
 
+            console.log('📊 Moderators loaded:', apiModerators)
             setAvailableModerators(apiModerators)
         } catch (error) {
             console.error('Failed to load moderators:', error)
+
+            // Fallback: Set empty array if API fails
             setAvailableModerators([])
         } finally {
             setLoadingModerators(false)
@@ -99,16 +104,32 @@ const AdminThreadsPage = () => {
 
             if (tab === 'pending') {
                 const res = await threadApi.getThreadRequests(1, 20, 'DRAFT')
-                const items = res.data.items.map((r) => ({
+                const items = res.data.items.map((r: any) => ({
                     id: r._id,
                     title: r.title,
                     description: r.description,
-                    author: { name: `${r.requester?.firstName || ''} ${r.requester?.lastName || ''}`.trim() || r.requester?.username || 'User', avatar: (r.requester?.firstName || 'U').slice(0, 1).toUpperCase(), reputation: 0 },
-                    status: 'DRAFT',
+                    author: {
+                        name: `${r.createdBy?.firstName || ''} ${r.createdBy?.lastName || ''}`.trim() || r.createdBy?.username || 'User',
+                        avatar: r.createdBy?.avatar || (r.createdBy?.firstName || 'U').slice(0, 1).toUpperCase(),
+                        username: r.createdBy?.username,
+                        email: r.createdBy?.email,
+                        reputation: 0
+                    },
+                    status: r.status || 'DRAFT',
                     priority: 'MEDIUM',
                     createdAt: r.createdAt,
                     relatedTopics: [],
-                    assignedModerators: null
+                    assignedModerators: null,
+                    stats: {
+                        arguments: r.totalArguments || 0,
+                        votes: r.totalVotes || 0,
+                        participants: r.totalVotes || 0,
+                        pendingModeration: r.requireModeration ? (r.totalArguments - r.totalApprovedArguments) : 0
+                    },
+                    allowVoting: r.allowVoting,
+                    allowArguments: r.allowArguments,
+                    requireModeration: r.requireModeration,
+                    isTicketRequest: r.isTicketRequest
                 }))
                 setThreads(items)
             } else {
@@ -181,6 +202,22 @@ const AdminThreadsPage = () => {
         loadModerators()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedTab])
+
+    // Close dropdowns when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement
+            if (!target.closest('.moderator-dropdown')) {
+                setShowSideADropdown(false)
+                setShowSideBDropdown(false)
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [])
 
     const filteredThreads = threads.filter(thread => {
         switch (selectedTab) {
@@ -645,6 +682,12 @@ const AdminThreadsPage = () => {
                                                 Ưu tiên cao
                                             </span>
                                         )}
+                                        {thread.isTicketRequest && (
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                <UserIcon className="h-3 w-3 mr-1" />
+                                                Yêu cầu từ user
+                                            </span>
+                                        )}
                                     </div>
                                     <p className="text-gray-700 mb-3">
                                         {thread.description}
@@ -669,7 +712,7 @@ const AdminThreadsPage = () => {
                                                 />
                                             ) : (
                                                 <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-lg font-bold border-2 border-blue-200 shadow-lg">
-                                                    {thread.author.avatar}
+                                                    {thread.author.avatar || (thread.author.name || 'U').charAt(0).toUpperCase()}
                                                 </div>
                                             )}
                                             <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
@@ -679,7 +722,9 @@ const AdminThreadsPage = () => {
                                         <div>
                                             <p className="font-bold text-gray-900 text-sm">{thread.author.name}</p>
                                             <p className="text-xs text-gray-600 mb-1">@{thread.author.username}</p>
-                                            <p className="text-xs text-gray-500">Đề xuất bởi • {thread.author.email}</p>
+                                            <p className="text-xs text-gray-500">
+                                                {thread.isTicketRequest ? 'Yêu cầu từ user' : 'Đề xuất bởi'} • {thread.author.email}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -1010,28 +1055,86 @@ const AdminThreadsPage = () => {
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="relative">
-                                                    <select
-                                                        value={selectedModerators.sideA}
-                                                        onChange={(e) => setSelectedModerators({ ...selectedModerators, sideA: e.target.value })}
-                                                        className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 appearance-none cursor-pointer"
+                                                <div className="relative moderator-dropdown">
+                                                    {/* Custom Dropdown for Side A */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowSideADropdown(!showSideADropdown)}
+                                                        className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-left flex items-center justify-between"
                                                     >
-                                                        <option value="">Chọn kiểm duyệt viên cho bên A...</option>
-                                                        {availableModerators.map((mod) => (
-                                                            <option
-                                                                key={mod.id}
-                                                                value={mod.id}
-                                                                disabled={mod.id === selectedModerators.sideB}
-                                                            >
-                                                                {mod.name} (@{mod.username}) - ⭐{mod.rating} - 📊{mod.workload} việc - {mod.status === 'ONLINE' ? '🟢 Trực tuyến' : '⚫ Ngoại tuyến'}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                        <div className="flex items-center space-x-3">
+                                                            {selectedModerators.sideA ? (
+                                                                (() => {
+                                                                    const selectedMod = availableModerators.find(mod => mod.id === selectedModerators.sideA)
+                                                                    return selectedMod ? (
+                                                                        <>
+                                                                            {selectedMod.avatar && selectedMod.avatar.startsWith('http') ? (
+                                                                                <Image
+                                                                                    src={selectedMod.avatar}
+                                                                                    alt={selectedMod.name}
+                                                                                    width={32}
+                                                                                    height={32}
+                                                                                    className="w-8 h-8 rounded-full object-cover"
+                                                                                />
+                                                                            ) : (
+                                                                                <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                                                                    {selectedMod.name.charAt(0)}
+                                                                                </div>
+                                                                            )}
+                                                                            <div>
+                                                                                <p className="font-medium text-gray-900">{selectedMod.name}</p>
+                                                                                <p className="text-sm text-gray-500">@{selectedMod.username}</p>
+                                                                            </div>
+                                                                        </>
+                                                                    ) : null
+                                                                })()
+                                                            ) : (
+                                                                <span className="text-gray-500">Chọn kiểm duyệt viên cho bên A...</span>
+                                                            )}
+                                                        </div>
                                                         <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                                         </svg>
-                                                    </div>
+                                                    </button>
+
+                                                    {/* Dropdown Menu */}
+                                                    {showSideADropdown && (
+                                                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                                                            {availableModerators.map((mod) => (
+                                                                <button
+                                                                    key={mod.id}
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setSelectedModerators({ ...selectedModerators, sideA: mod.id })
+                                                                        setShowSideADropdown(false)
+                                                                    }}
+                                                                    disabled={mod.id === selectedModerators.sideB}
+                                                                    className="w-full px-4 py-3 text-left hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 flex items-center space-x-3"
+                                                                >
+                                                                    {mod.avatar && mod.avatar.startsWith('http') ? (
+                                                                        <Image
+                                                                            src={mod.avatar}
+                                                                            alt={mod.name}
+                                                                            width={32}
+                                                                            height={32}
+                                                                            className="w-8 h-8 rounded-full object-cover"
+                                                                        />
+                                                                    ) : (
+                                                                        <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                                                            {mod.name.charAt(0)}
+                                                                        </div>
+                                                                    )}
+                                                                    <div className="flex-1">
+                                                                        <p className="font-medium text-gray-900">{mod.name}</p>
+                                                                        <p className="text-sm text-gray-500">@{mod.username}</p>
+                                                                        <p className="text-xs text-gray-400">
+                                                                            {mod.status === 'ONLINE' ? '🟢 Trực tuyến' : '⚫ Ngoại tuyến'}
+                                                                        </p>
+                                                                    </div>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
@@ -1056,28 +1159,86 @@ const AdminThreadsPage = () => {
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="relative">
-                                                    <select
-                                                        value={selectedModerators.sideB}
-                                                        onChange={(e) => setSelectedModerators({ ...selectedModerators, sideB: e.target.value })}
-                                                        className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 appearance-none cursor-pointer"
+                                                <div className="relative moderator-dropdown">
+                                                    {/* Custom Dropdown for Side B */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowSideBDropdown(!showSideBDropdown)}
+                                                        className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 text-left flex items-center justify-between"
                                                     >
-                                                        <option value="">Chọn kiểm duyệt viên cho bên B...</option>
-                                                        {availableModerators.map((mod) => (
-                                                            <option
-                                                                key={mod.id}
-                                                                value={mod.id}
-                                                                disabled={mod.id === selectedModerators.sideA}
-                                                            >
-                                                                {mod.name} (@{mod.username}) - ⭐{mod.rating} - 📊{mod.workload} việc - {mod.status === 'ONLINE' ? '🟢 Trực tuyến' : '⚫ Ngoại tuyến'}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                        <div className="flex items-center space-x-3">
+                                                            {selectedModerators.sideB ? (
+                                                                (() => {
+                                                                    const selectedMod = availableModerators.find(mod => mod.id === selectedModerators.sideB)
+                                                                    return selectedMod ? (
+                                                                        <>
+                                                                            {selectedMod.avatar && selectedMod.avatar.startsWith('http') ? (
+                                                                                <Image
+                                                                                    src={selectedMod.avatar}
+                                                                                    alt={selectedMod.name}
+                                                                                    width={32}
+                                                                                    height={32}
+                                                                                    className="w-8 h-8 rounded-full object-cover"
+                                                                                />
+                                                                            ) : (
+                                                                                <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                                                                    {selectedMod.name.charAt(0)}
+                                                                                </div>
+                                                                            )}
+                                                                            <div>
+                                                                                <p className="font-medium text-gray-900">{selectedMod.name}</p>
+                                                                                <p className="text-sm text-gray-500">@{selectedMod.username}</p>
+                                                                            </div>
+                                                                        </>
+                                                                    ) : null
+                                                                })()
+                                                            ) : (
+                                                                <span className="text-gray-500">Chọn kiểm duyệt viên cho bên B...</span>
+                                                            )}
+                                                        </div>
                                                         <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                                         </svg>
-                                                    </div>
+                                                    </button>
+
+                                                    {/* Dropdown Menu */}
+                                                    {showSideBDropdown && (
+                                                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                                                            {availableModerators.map((mod) => (
+                                                                <button
+                                                                    key={mod.id}
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setSelectedModerators({ ...selectedModerators, sideB: mod.id })
+                                                                        setShowSideBDropdown(false)
+                                                                    }}
+                                                                    disabled={mod.id === selectedModerators.sideA}
+                                                                    className="w-full px-4 py-3 text-left hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 flex items-center space-x-3"
+                                                                >
+                                                                    {mod.avatar && mod.avatar.startsWith('http') ? (
+                                                                        <Image
+                                                                            src={mod.avatar}
+                                                                            alt={mod.name}
+                                                                            width={32}
+                                                                            height={32}
+                                                                            className="w-8 h-8 rounded-full object-cover"
+                                                                        />
+                                                                    ) : (
+                                                                        <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                                                            {mod.name.charAt(0)}
+                                                                        </div>
+                                                                    )}
+                                                                    <div className="flex-1">
+                                                                        <p className="font-medium text-gray-900">{mod.name}</p>
+                                                                        <p className="text-sm text-gray-500">@{mod.username}</p>
+                                                                        <p className="text-xs text-gray-400">
+                                                                            {mod.status === 'ONLINE' ? '🟢 Trực tuyến' : '⚫ Ngoại tuyến'}
+                                                                        </p>
+                                                                    </div>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
