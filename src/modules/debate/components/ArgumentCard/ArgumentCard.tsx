@@ -29,6 +29,44 @@ import { Argument, Reply, argumentApi } from '@/modules/debate/api/argumentApi'
 import { ReplyForm } from '../ReplyForm'
 import { ReplyCard } from '../ReplyCard'
 
+// Component để xử lý thu gọn/xem thêm content
+const ExpandableContent: React.FC<{
+    content: string,
+    maxLength?: number,
+    className?: string
+}> = ({ content, maxLength = 200, className = "" }) => {
+    const [isExpanded, setIsExpanded] = useState(false)
+    const shouldTruncate = content.length > maxLength
+
+    if (!shouldTruncate) {
+        return <p className={className}>{content}</p>
+    }
+
+    return (
+        <div className={className}>
+            <p className="text-gray-700 leading-relaxed">
+                {isExpanded ? content : `${content.substring(0, maxLength)}...`}
+            </p>
+            <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="mt-2 flex items-center space-x-1 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+            >
+                {isExpanded ? (
+                    <>
+                        <ChevronUpIcon className="h-4 w-4" />
+                        <span>Thu gọn</span>
+                    </>
+                ) : (
+                    <>
+                        <ChevronDownIcon className="h-4 w-4" />
+                        <span>Xem thêm</span>
+                    </>
+                )}
+            </button>
+        </div>
+    )
+}
+
 interface ArgumentCardProps {
     argument: Argument
     onLike?: (argumentId: string) => void
@@ -323,12 +361,14 @@ export const ArgumentCard: React.FC<ArgumentCardProps> = ({
                 </motion.h3>
 
                 {/* Content */}
-                <div className={cn(
-                    "text-gray-700 mb-4 leading-relaxed",
-                    isCompact ? "text-sm line-clamp-3" : "text-base"
-                )}>
-                    {argument.content}
-                </div>
+                <ExpandableContent
+                    content={argument.content}
+                    maxLength={isCompact ? 150 : 300}
+                    className={cn(
+                        "mb-4",
+                        isCompact ? "text-sm" : "text-base"
+                    )}
+                />
 
                 {/* Evidence URLs */}
                 {argument.evidenceUrls && argument.evidenceUrls.length > 0 && (

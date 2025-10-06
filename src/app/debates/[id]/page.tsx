@@ -10,7 +10,9 @@ import {
     ClockIcon,
     UsersIcon,
     PlusIcon,
-    MagnifyingGlassIcon
+    MagnifyingGlassIcon,
+    ChevronDownIcon,
+    ChevronUpIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { cn } from '@/shared/utils/shadcn'
@@ -275,11 +277,25 @@ const DebateDetailPage: React.FC = () => {
     // Argument submit
     const handleArgumentSubmit = async (data: any) => {
         try {
+            // Kiểm tra xem user đã vote chưa (phải vote SUPPORT hoặc OPPOSE)
+            if (!userVote) {
+                notification.showCorner({
+                    type: 'warning',
+                    title: 'Cần vote trước',
+                    message: 'Bạn cần bình chọn Ủng hộ hoặc Phản đối trước khi đóng góp luận điểm',
+                    duration: 4000
+                })
+                return
+            }
+
             const newArgument = await argumentApi.createArgument(data)
             setArguments(prev => [newArgument, ...prev])
             setShowArgumentForm(false)
-        } catch (error) {
+            toast.success('✅ Đã thêm luận điểm thành công')
+        } catch (error: any) {
             console.error('Error creating argument:', error)
+            const errorMessage = error?.response?.data?.message || error?.message || 'Không thể tạo luận điểm'
+            toast.error(`❌ ${errorMessage}`)
         }
     }
 
@@ -458,15 +474,44 @@ const DebateDetailPage: React.FC = () => {
                                         Luận điểm ({filteredArguments.length})
                                     </h2>
                                     {user && (
-                                        <motion.button
-                                            onClick={() => setShowArgumentForm(!showArgumentForm)}
-                                            className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                        >
-                                            <PlusIcon className="h-4 w-4" />
-                                            <span>Thêm luận điểm</span>
-                                        </motion.button>
+                                        <div className="relative group">
+                                            <motion.button
+                                                onClick={() => {
+                                                    // Check if user has voted
+                                                    if (!userVote) {
+                                                        notification.showCorner({
+                                                            type: 'warning',
+                                                            title: 'Cần vote trước',
+                                                            message: 'Bạn cần bình chọn Ủng hộ hoặc Phản đối trước khi đóng góp luận điểm',
+                                                            duration: 4000
+                                                        })
+                                                        return
+                                                    }
+                                                    setShowArgumentForm(!showArgumentForm)
+                                                }}
+                                                className={cn(
+                                                    "flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors",
+                                                    !userVote
+                                                        ? "bg-gray-400 text-white cursor-not-allowed"
+                                                        : "bg-blue-500 text-white hover:bg-blue-600"
+                                                )}
+                                                whileHover={{ scale: !userVote ? 1 : 1.05 }}
+                                                whileTap={{ scale: !userVote ? 1 : 0.95 }}
+                                            >
+                                                <PlusIcon className="h-4 w-4" />
+                                                <span>Thêm luận điểm</span>
+                                            </motion.button>
+
+                                            {/* Tooltip khi chưa vote */}
+                                            {!userVote && (
+                                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                                    Vote trước khi thêm luận điểm
+                                                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                                                        <div className="border-4 border-transparent border-t-gray-900"></div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
 
@@ -563,14 +608,43 @@ const DebateDetailPage: React.FC = () => {
                                             {user ? 'Hãy là người đầu tiên đóng góp luận điểm cho cuộc tranh luận này.' : 'Đăng nhập để thêm luận điểm đầu tiên.'}
                                         </p>
                                         {user && (
-                                            <motion.button
-                                                onClick={() => setShowArgumentForm(true)}
-                                                className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.95 }}
-                                            >
-                                                Thêm luận điểm đầu tiên
-                                            </motion.button>
+                                            <div className="relative group inline-block">
+                                                <motion.button
+                                                    onClick={() => {
+                                                        // Check if user has voted
+                                                        if (!userVote) {
+                                                            notification.showCorner({
+                                                                type: 'warning',
+                                                                title: 'Cần vote trước',
+                                                                message: '💥 Bạn cần bình chọn Ủng hộ hoặc Phản đối trước khi đóng góp luận điểm',
+                                                                duration: 4000
+                                                            })
+                                                            return
+                                                        }
+                                                        setShowArgumentForm(true)
+                                                    }}
+                                                    className={cn(
+                                                        "px-6 py-2 rounded-lg transition-colors",
+                                                        !userVote
+                                                            ? "bg-gray-400 text-white cursor-not-allowed"
+                                                            : "bg-blue-500 text-white hover:bg-blue-600"
+                                                    )}
+                                                    whileHover={{ scale: !userVote ? 1 : 1.05 }}
+                                                    whileTap={{ scale: !userVote ? 1 : 0.95 }}
+                                                >
+                                                    Thêm luận điểm đầu tiên
+                                                </motion.button>
+
+                                                {/* Tooltip khi chưa vote */}
+                                                {!userVote && (
+                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                                        💥 Vote trước khi thêm luận điểm
+                                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                                                            <div className="border-4 border-transparent border-t-gray-900"></div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 ) : (
