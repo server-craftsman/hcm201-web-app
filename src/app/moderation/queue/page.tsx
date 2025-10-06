@@ -68,23 +68,15 @@ const ModerationQueuePage = () => {
         }
     }, [])
 
-    // Calculate stats from API data
-    const normalizeStatus = (s: unknown) => (typeof s === 'string' ? s.toLowerCase() : '')
-    const pendingCount = apiQueueItems.filter(item => normalizeStatus(item.status) === 'PENDING').length
-    const flaggedCount = apiQueueItems.filter(item => normalizeStatus(item.status) === 'flagged').length
-    const approvedCount = apiQueueItems.filter(item => normalizeStatus(item.status) === 'APPROVED').length
-
+    // Use ONLY moderation-stats API for dashboard (KHÔNG dựa vào queue list)
+    // Response từ /api/v1/debate/moderator/moderation-stats:
+    // { totalModerated, approvedToday, rejectedToday, pendingCount, moderationRate }
     const queueStats = {
-        total: apiMeta.total || 0,
-        pending: pendingCount || 0,
-        flagged: flaggedCount || 0,
-        approved: approvedCount || 0,
-        // myAssigned: assignedThreads.length || 0, // Removed
-        avgWaitTime: apiQueueItems.length > 0 ?
-            Math.floor(apiQueueItems.reduce((acc, item) => {
-                const waitTime = Math.floor((new Date().getTime() - new Date(item.createdAt).getTime()) / 60000)
-                return acc + waitTime
-            }, 0) / apiQueueItems.length) : 0
+        totalHandled: moderatorStats?.totalModerated || 0,      // Tổng đã xử lý
+        pending: moderatorStats?.pendingCount || 0,             // Chờ duyệt
+        approved: moderatorStats?.approvedToday || 0,           // Đã duyệt hôm nay
+        rejected: moderatorStats?.rejectedToday || 0,           // Đã từ chối hôm nay
+        moderationRate: moderatorStats?.moderationRate || 0     // Tỷ lệ kiểm duyệt %
     }
 
 
@@ -229,21 +221,51 @@ const ModerationQueuePage = () => {
             refetchQueue()
             loadModeratorStats()
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Moderation action failed:', error)
-            toast.error('Có lỗi xảy ra khi xử lý luận điểm', {
-                duration: 4000,
-                style: {
-                    background: '#fef2f2',
-                    color: '#dc2626',
-                    border: '1px solid #fecaca',
-                    borderRadius: '12px',
-                    padding: '16px',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                },
-                icon: '❌'
-            })
+
+            // Parse error response
+            const errorMessage = error?.response?.data?.message || error?.message
+            const statusCode = error?.response?.status || error?.response?.data?.statusCode
+
+            // Handle specific error cases
+            if (statusCode === 403) {
+                // Translate permission messages to Vietnamese
+                let vietnameseMessage = errorMessage
+                if (errorMessage?.includes('SUPPORT arguments only')) {
+                    vietnameseMessage = 'Bạn chỉ được phép kiểm duyệt luận điểm ỦNG HỘ'
+                } else if (errorMessage?.includes('OPPOSE arguments only')) {
+                    vietnameseMessage = 'Bạn chỉ được phép kiểm duyệt luận điểm PHẢN ĐỐI'
+                }
+
+                toast.error(`⚠️ Không có quyền: ${vietnameseMessage}`, {
+                    duration: 5000,
+                    style: {
+                        background: '#fef2f2',
+                        color: '#dc2626',
+                        border: '1px solid #fecaca',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                    },
+                    icon: '🚫'
+                })
+            } else {
+                toast.error(errorMessage || 'Có lỗi xảy ra khi xử lý luận điểm', {
+                    duration: 4000,
+                    style: {
+                        background: '#fef2f2',
+                        color: '#dc2626',
+                        border: '1px solid #fecaca',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                    },
+                    icon: '❌'
+                })
+            }
         } finally {
             setIsModalOpen(false)
             setSelectedArgument(null)
@@ -283,21 +305,51 @@ const ModerationQueuePage = () => {
             refetchQueue()
             loadModeratorStats()
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Highlight action failed:', error)
-            toast.error('Có lỗi xảy ra khi xử lý luận điểm', {
-                duration: 4000,
-                style: {
-                    background: '#fef2f2',
-                    color: '#dc2626',
-                    border: '1px solid #fecaca',
-                    borderRadius: '12px',
-                    padding: '16px',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                },
-                icon: '❌'
-            })
+
+            // Parse error response
+            const errorMessage = error?.response?.data?.message || error?.message
+            const statusCode = error?.response?.status || error?.response?.data?.statusCode
+
+            // Handle specific error cases
+            if (statusCode === 403) {
+                // Translate permission messages to Vietnamese
+                let vietnameseMessage = errorMessage
+                if (errorMessage?.includes('SUPPORT arguments only')) {
+                    vietnameseMessage = 'Bạn chỉ được phép kiểm duyệt luận điểm ỦNG HỘ'
+                } else if (errorMessage?.includes('OPPOSE arguments only')) {
+                    vietnameseMessage = 'Bạn chỉ được phép kiểm duyệt luận điểm PHẢN ĐỐI'
+                }
+
+                toast.error(`⚠️ Không có quyền: ${vietnameseMessage}`, {
+                    duration: 5000,
+                    style: {
+                        background: '#fef2f2',
+                        color: '#dc2626',
+                        border: '1px solid #fecaca',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                    },
+                    icon: '🚫'
+                })
+            } else {
+                toast.error(errorMessage || 'Có lỗi xảy ra khi xử lý luận điểm', {
+                    duration: 4000,
+                    style: {
+                        background: '#fef2f2',
+                        color: '#dc2626',
+                        border: '1px solid #fecaca',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                    },
+                    icon: '❌'
+                })
+            }
         }
     }
 
@@ -386,87 +438,93 @@ const ModerationQueuePage = () => {
                     </p>
                 </motion.div>
 
-                {/* Quick Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-8">
+                {/* Quick Stats - Hiển thị đầy đủ thông tin từ moderation-stats API */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                    {/* Card 1: Tổng đã xử lý */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.1 }}
-                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4"
+                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
                     >
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600">Tổng hàng chờ</p>
-                                <p className="text-2xl font-bold text-blue-600">{queueStats.total}</p>
+                                <p className="text-sm font-medium text-gray-600">Tổng đã xử lý</p>
+                                <p className="text-2xl font-bold text-blue-600">
+                                    {statsLoading ? '...' : queueStats.totalHandled}
+                                </p>
                             </div>
                             <ClipboardDocumentListIcon className="h-8 w-8 text-blue-600" />
                         </div>
                     </motion.div>
 
+                    {/* Card 2: Chờ duyệt */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.2 }}
-                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4"
+                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
                     >
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-gray-600">Chờ duyệt</p>
-                                <p className="text-2xl font-bold text-yellow-600">{queueStats.pending}</p>
+                                <p className="text-2xl font-bold text-yellow-600">
+                                    {statsLoading ? '...' : queueStats.pending}
+                                </p>
                             </div>
                             <ClockIcon className="h-8 w-8 text-yellow-600" />
                         </div>
                     </motion.div>
 
+                    {/* Card 3: Đã duyệt hôm nay */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4"
+                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
                     >
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600">Đã flag</p>
-                                <p className="text-2xl font-bold text-red-600">{queueStats.flagged}</p>
+                                <p className="text-sm font-medium text-gray-600">Duyệt hôm nay</p>
+                                <p className="text-2xl font-bold text-green-600">
+                                    {statsLoading ? '...' : queueStats.approved}
+                                </p>
                             </div>
-                            <FlagIcon className="h-8 w-8 text-red-600" />
+                            <CheckCircleIcon className="h-8 w-8 text-green-600" />
                         </div>
                     </motion.div>
 
-                    {/* Removed "Của tôi" card */}
-
-                    {/* <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.5 }}
-                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4"
-                    >
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Thời gian chờ</p>
-                                <p className="text-2xl font-bold text-orange-600">{queueStats.avgWaitTime}p</p>
-                            </div>
-                            <ClockIcon className="h-8 w-8 text-orange-600" />
-                        </div>
-                    </motion.div> */}
-
-                    {/* Moderator Stats */}
+                    {/* Card 4: Đã từ chối hôm nay */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.6 }}
-                        className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-sm border border-indigo-200 p-6 text-white"
+                        transition={{ delay: 0.4 }}
+                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
                     >
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-purple-100">Đã kiểm duyệt</p>
-                                <p className="text-2xl font-bold text-white">
-                                    {statsLoading ? '...' : (moderatorStats?.totalModerated || 0)}
+                                <p className="text-sm font-medium text-gray-600">Từ chối hôm nay</p>
+                                <p className="text-2xl font-bold text-red-600">
+                                    {statsLoading ? '...' : queueStats.rejected}
                                 </p>
-                                <div className="flex items-center mt-1 text-xs text-purple-100">
-                                    <span className="mr-2">✅ {moderatorStats?.approvedToday || 0}</span>
-                                    <span>❌ {moderatorStats?.rejectedToday || 0}</span>
-                                </div>
+                            </div>
+                            <XCircleIcon className="h-8 w-8 text-red-600" />
+                        </div>
+                    </motion.div>
+
+                    {/* Card 5: Tỷ lệ kiểm duyệt */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.5 }}
+                        className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-sm border border-indigo-200 p-4 text-white hover:shadow-md transition-shadow"
+                    >
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-purple-100">Tỷ lệ kiểm duyệt</p>
+                                <p className="text-2xl font-bold text-white">
+                                    {statsLoading ? '...' : `${queueStats.moderationRate}%`}
+                                </p>
                             </div>
                             <UserIcon className="h-8 w-8 text-purple-100" />
                         </div>

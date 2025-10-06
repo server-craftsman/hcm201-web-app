@@ -10,7 +10,9 @@ import {
     ClockIcon,
     UsersIcon,
     PlusIcon,
-    MagnifyingGlassIcon
+    MagnifyingGlassIcon,
+    ChevronDownIcon,
+    ChevronUpIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { cn } from '@/shared/utils/shadcn'
@@ -22,11 +24,14 @@ import { ArgumentCard } from '@/modules/debate/components/ArgumentCard'
 import { ArgumentForm } from '@/modules/debate/components/ArgumentForm'
 import { argumentApi, Argument } from '@/modules/debate/api/argumentApi'
 import { DebateDebug } from '@/shared/components/debug/DebateDebug'
+import { toast } from 'react-hot-toast'
+import { useNotificationCenter } from '@shared/providers/NotificationCenter'
 
 const DebateDetailPage: React.FC = () => {
     const params = useParams()
     const threadId = params.id as string
     const { user } = useAuth()
+    const notification = useNotificationCenter();
 
     const { threads, loading: threadsLoading } = useDebateThreads()
     const { stats, userVote, vote, isVoting } = useDebateVoting({
@@ -94,8 +99,20 @@ const DebateDetailPage: React.FC = () => {
             }
 
             setArguments(sortedArguments)
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading arguments:', error)
+            const statusCode = error?.response?.status
+            const errorMessage = error?.response?.data?.message || error?.message
+
+            // Show error notification
+            if (statusCode === 500) {
+                toast.error('Lỗi server khi tải luận điểm. Vui lòng thử lại sau.')
+            } else if (statusCode === 403) {
+                toast.error('Không có quyền xem luận điểm này')
+            } else if (errorMessage) {
+                toast.error(`Lỗi: ${errorMessage}`)
+            }
+
             setArguments([]) // Set empty array on error
         } finally {
             setIsLoadingArguments(false)
@@ -108,6 +125,38 @@ const DebateDetailPage: React.FC = () => {
 
     // --- Moderation handlers ---
 
+    // Helper function to handle API errors
+    const handleModerationError = (error: any, defaultMessage: string) => {
+        console.error('Moderation error:', error)
+
+        // Parse error response
+        const errorMessage = error?.response?.data?.message || error?.message || defaultMessage
+        const statusCode = error?.response?.status || error?.response?.data?.statusCode || error?.statusCode
+
+        // Handle specific error cases
+        if (statusCode === 403) {
+            // Translate common permission messages to Vietnamese
+            let vietnameseMessage = errorMessage
+            if (errorMessage?.includes('SUPPORT arguments only')) {
+                vietnameseMessage = 'Bạn chỉ được phép kiểm duyệt luận điểm ỦNG HỘ'
+            } else if (errorMessage?.includes('OPPOSE arguments only')) {
+                vietnameseMessage = 'Bạn chỉ được phép kiểm duyệt luận điểm PHẢN ĐỐI'
+            }
+
+            notification.showCorner({
+                type: 'error',
+                title: 'Không có quyền',
+                message: vietnameseMessage,
+                duration: 3500
+            })
+
+        } else if (statusCode === 401) {
+            toast.error('Vui lòng đăng nhập để thực hiện thao tác này')
+        } else {
+            toast.error(`Lỗi: ${errorMessage}`)
+        }
+    }
+
     // Approve argument
     const handleApproveArgument = async (argumentId: string) => {
         try {
@@ -117,8 +166,9 @@ const DebateDetailPage: React.FC = () => {
                     arg._id === argumentId ? { ...arg, status: 'APPROVED' } : arg
                 )
             )
+            toast.success('✅ Đã phê duyệt luận điểm')
         } catch (error) {
-            console.error('Error approving argument:', error)
+            handleModerationError(error, 'Không thể phê duyệt luận điểm')
         }
     }
 
@@ -131,8 +181,9 @@ const DebateDetailPage: React.FC = () => {
                     arg._id === argumentId ? { ...arg, status: 'REJECTED' } : arg
                 )
             )
+            toast.success('❌ Đã từ chối luận điểm')
         } catch (error) {
-            console.error('Error rejecting argument:', error)
+            handleModerationError(error, 'Không thể từ chối luận điểm')
         }
     }
 
@@ -145,8 +196,9 @@ const DebateDetailPage: React.FC = () => {
                     arg._id === argumentId ? { ...arg, isHighlighted: true } : arg
                 )
             )
+            toast.success('⭐ Đã đánh dấu luận điểm nổi bật')
         } catch (error) {
-            console.error('Error highlighting argument:', error)
+            handleModerationError(error, 'Không thể đánh dấu nổi bật')
         }
     }
 
@@ -159,8 +211,9 @@ const DebateDetailPage: React.FC = () => {
                     arg._id === argumentId ? { ...arg, isHighlighted: false } : arg
                 )
             )
+            toast.success('🔅 Đã bỏ đánh dấu nổi bật')
         } catch (error) {
-            console.error('Error unhighlighting argument:', error)
+            handleModerationError(error, 'Không thể bỏ đánh dấu nổi bật')
         }
     }
 
@@ -171,10 +224,11 @@ const DebateDetailPage: React.FC = () => {
                 argumentId,
                 action: 'FLAG'
             })
+            toast.success('🚩 Đã đánh dấu luận điểm')
             // We don't change status locally; refresh arguments list instead
             loadArguments()
         } catch (error) {
-            console.error('Error flagging argument:', error)
+            handleModerationError(error, 'Không thể đánh dấu luận điểm')
         }
     }
 
@@ -187,8 +241,9 @@ const DebateDetailPage: React.FC = () => {
                     arg._id === argumentId ? { ...arg, moderationNotes: updated.moderationNotes } : arg
                 )
             )
+            toast.success('💬 Đã thêm phản hồi')
         } catch (error) {
-            console.error('Error adding feedback:', error)
+            handleModerationError(error, 'Không thể thêm phản hồi')
         }
     }
 
@@ -222,11 +277,25 @@ const DebateDetailPage: React.FC = () => {
     // Argument submit
     const handleArgumentSubmit = async (data: any) => {
         try {
+            // Kiểm tra xem user đã vote chưa (phải vote SUPPORT hoặc OPPOSE)
+            if (!userVote) {
+                notification.showCorner({
+                    type: 'warning',
+                    title: 'Cần vote trước',
+                    message: 'Bạn cần bình chọn Ủng hộ hoặc Phản đối trước khi đóng góp luận điểm',
+                    duration: 4000
+                })
+                return
+            }
+
             const newArgument = await argumentApi.createArgument(data)
             setArguments(prev => [newArgument, ...prev])
             setShowArgumentForm(false)
-        } catch (error) {
+            toast.success('✅ Đã thêm luận điểm thành công')
+        } catch (error: any) {
             console.error('Error creating argument:', error)
+            const errorMessage = error?.response?.data?.message || error?.message || 'Không thể tạo luận điểm'
+            toast.error(`❌ ${errorMessage}`)
         }
     }
 
@@ -405,15 +474,44 @@ const DebateDetailPage: React.FC = () => {
                                         Luận điểm ({filteredArguments.length})
                                     </h2>
                                     {user && (
-                                        <motion.button
-                                            onClick={() => setShowArgumentForm(!showArgumentForm)}
-                                            className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                        >
-                                            <PlusIcon className="h-4 w-4" />
-                                            <span>Thêm luận điểm</span>
-                                        </motion.button>
+                                        <div className="relative group">
+                                            <motion.button
+                                                onClick={() => {
+                                                    // Check if user has voted
+                                                    if (!userVote) {
+                                                        notification.showCorner({
+                                                            type: 'warning',
+                                                            title: 'Cần vote trước',
+                                                            message: 'Bạn cần bình chọn Ủng hộ hoặc Phản đối trước khi đóng góp luận điểm',
+                                                            duration: 4000
+                                                        })
+                                                        return
+                                                    }
+                                                    setShowArgumentForm(!showArgumentForm)
+                                                }}
+                                                className={cn(
+                                                    "flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors",
+                                                    !userVote
+                                                        ? "bg-gray-400 text-white cursor-not-allowed"
+                                                        : "bg-blue-500 text-white hover:bg-blue-600"
+                                                )}
+                                                whileHover={{ scale: !userVote ? 1 : 1.05 }}
+                                                whileTap={{ scale: !userVote ? 1 : 0.95 }}
+                                            >
+                                                <PlusIcon className="h-4 w-4" />
+                                                <span>Thêm luận điểm</span>
+                                            </motion.button>
+
+                                            {/* Tooltip khi chưa vote */}
+                                            {!userVote && (
+                                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                                    Vote trước khi thêm luận điểm
+                                                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                                                        <div className="border-4 border-transparent border-t-gray-900"></div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
 
@@ -510,14 +608,43 @@ const DebateDetailPage: React.FC = () => {
                                             {user ? 'Hãy là người đầu tiên đóng góp luận điểm cho cuộc tranh luận này.' : 'Đăng nhập để thêm luận điểm đầu tiên.'}
                                         </p>
                                         {user && (
-                                            <motion.button
-                                                onClick={() => setShowArgumentForm(true)}
-                                                className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.95 }}
-                                            >
-                                                Thêm luận điểm đầu tiên
-                                            </motion.button>
+                                            <div className="relative group inline-block">
+                                                <motion.button
+                                                    onClick={() => {
+                                                        // Check if user has voted
+                                                        if (!userVote) {
+                                                            notification.showCorner({
+                                                                type: 'warning',
+                                                                title: 'Cần vote trước',
+                                                                message: '💥 Bạn cần bình chọn Ủng hộ hoặc Phản đối trước khi đóng góp luận điểm',
+                                                                duration: 4000
+                                                            })
+                                                            return
+                                                        }
+                                                        setShowArgumentForm(true)
+                                                    }}
+                                                    className={cn(
+                                                        "px-6 py-2 rounded-lg transition-colors",
+                                                        !userVote
+                                                            ? "bg-gray-400 text-white cursor-not-allowed"
+                                                            : "bg-blue-500 text-white hover:bg-blue-600"
+                                                    )}
+                                                    whileHover={{ scale: !userVote ? 1 : 1.05 }}
+                                                    whileTap={{ scale: !userVote ? 1 : 0.95 }}
+                                                >
+                                                    Thêm luận điểm đầu tiên
+                                                </motion.button>
+
+                                                {/* Tooltip khi chưa vote */}
+                                                {!userVote && (
+                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                                        💥 Vote trước khi thêm luận điểm
+                                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                                                            <div className="border-4 border-transparent border-t-gray-900"></div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 ) : (
