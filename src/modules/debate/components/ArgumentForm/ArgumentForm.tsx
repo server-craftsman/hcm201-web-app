@@ -47,8 +47,10 @@ export const ArgumentForm: React.FC<ArgumentFormProps> = ({
     const [errors, setErrors] = useState<Record<string, string>>({})
 
     const isValidUrl = (url: string) => {
+        if (!url || typeof url !== 'string') return false
+
         try {
-            const u = new URL(url)
+            const u = new URL(url.trim())
             return u.protocol === 'http:' || u.protocol === 'https:'
         } catch {
             return false
@@ -103,6 +105,23 @@ export const ArgumentForm: React.FC<ArgumentFormProps> = ({
             newErrors.argumentType = 'Loại luận điểm không hợp lệ'
         }
 
+        // evidenceUrls: kiểm tra từng URL
+        if (formData.evidenceUrls && formData.evidenceUrls.length > 0) {
+            const invalidUrls = []
+            for (let i = 0; i < formData.evidenceUrls.length; i++) {
+                const url = formData.evidenceUrls[i]
+                // Kiểm tra URL không rỗng và không chỉ có khoảng trắng
+                if (!url || !url.trim()) {
+                    invalidUrls.push(`URL ${i + 1}: "Trống"`)
+                } else if (!isValidUrl(url)) {
+                    invalidUrls.push(`URL ${i + 1}: "${url}"`)
+                }
+            }
+            if (invalidUrls.length > 0) {
+                newErrors.evidenceUrls = `Các URL sau không hợp lệ: ${invalidUrls.join(', ')}`
+            }
+        }
+
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors)
             return
@@ -110,7 +129,16 @@ export const ArgumentForm: React.FC<ArgumentFormProps> = ({
 
         setIsSubmitting(true)
         try {
-            await onSubmit(formData)
+            // Clean up evidenceUrls before submission
+            const cleanedFormData = {
+                ...formData,
+                evidenceUrls: formData.evidenceUrls
+                    ?.filter(url => url && url.trim()) // Remove empty URLs
+                    ?.map(url => url.trim()) // Trim whitespace
+                    ?.filter((url, index, arr) => arr.indexOf(url) === index) // Remove duplicates
+            }
+
+            await onSubmit(cleanedFormData)
 
             // Reset form
             setFormData({
@@ -134,17 +162,29 @@ export const ArgumentForm: React.FC<ArgumentFormProps> = ({
         const value = evidenceUrl.trim()
         const current = formData.evidenceUrls || []
 
-        if (!value) return
+        if (!value) {
+            setErrors(prev => ({ ...prev, evidenceUrls: 'Vui lòng nhập URL' }))
+            return
+        }
+
+        // Kiểm tra URL không chỉ có khoảng trắng
+        if (value.length === 0) {
+            setErrors(prev => ({ ...prev, evidenceUrls: 'URL không được để trống' }))
+            return
+        }
+
         if (!isValidUrl(value)) {
-            setErrors(prev => ({ ...prev, evidenceUrls: 'URL không hợp lệ (chỉ chấp nhận http/https)' }))
+            setErrors(prev => ({ ...prev, evidenceUrls: 'URL không hợp lệ. Vui lòng nhập URL đúng định dạng (bắt đầu bằng http:// hoặc https://)' }))
             return
         }
+
         if (current.includes(value)) {
-            setErrors(prev => ({ ...prev, evidenceUrls: 'URL đã tồn tại trong danh sách' }))
+            setErrors(prev => ({ ...prev, evidenceUrls: 'URL này đã tồn tại trong danh sách' }))
             return
         }
+
         if (current.length >= 10) {
-            setErrors(prev => ({ ...prev, evidenceUrls: 'Chỉ được thêm tối đa 10 URL' }))
+            setErrors(prev => ({ ...prev, evidenceUrls: 'Chỉ được thêm tối đa 10 URL bằng chứng' }))
             return
         }
 
@@ -153,7 +193,7 @@ export const ArgumentForm: React.FC<ArgumentFormProps> = ({
             evidenceUrls: [...current, value]
         }))
         setEvidenceUrl('')
-        if (errors.evidenceUrls) setErrors(prev => ({ ...prev, evidenceUrls: '' }))
+        setErrors(prev => ({ ...prev, evidenceUrls: '' }))
     }
 
     const handleRemoveEvidenceUrl = (index: number) => {
@@ -388,9 +428,24 @@ export const ArgumentForm: React.FC<ArgumentFormProps> = ({
                                     <input
                                         type="url"
                                         value={evidenceUrl}
-                                        onChange={(e) => setEvidenceUrl(e.target.value)}
+                                        onChange={(e) => {
+                                            setEvidenceUrl(e.target.value)
+                                            // Clear error when user starts typing
+                                            if (errors.evidenceUrls) {
+                                                setErrors(prev => ({ ...prev, evidenceUrls: '' }))
+                                            }
+                                        }}
+                                        onKeyPress={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault()
+                                                handleAddEvidenceUrl()
+                                            }
+                                        }}
                                         placeholder="https://example.com/tai-lieu"
-                                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 transition-all duration-200"
+                                        className={cn(
+                                            "flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 transition-all duration-200",
+                                            errors.evidenceUrls ? "border-red-300 bg-red-50" : "border-gray-300"
+                                        )}
                                     />
                                     <motion.button
                                         type="button"
@@ -431,10 +486,16 @@ export const ArgumentForm: React.FC<ArgumentFormProps> = ({
                                     </div>
                                 )}
                                 {errors.evidenceUrls && (
-                                    <p className="mt-2 text-sm text-red-600 flex items-center">
-                                        <ExclamationTriangleIcon className="h-4 w-4 mr-1" />
-                                        {errors.evidenceUrls}
-                                    </p>
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg"
+                                    >
+                                        <p className="text-sm text-red-600 flex items-center">
+                                            <ExclamationTriangleIcon className="h-4 w-4 mr-2 flex-shrink-0" />
+                                            <span>{errors.evidenceUrls}</span>
+                                        </p>
+                                    </motion.div>
                                 )}
                             </div>
 
