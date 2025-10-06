@@ -85,6 +85,17 @@ export default function WorkReaderPage() {
             const voices = window.speechSynthesis.getVoices()
             console.log('🔊 Available voices:', voices.length)
 
+            // Kiểm tra có giọng tiếng Việt không
+            const vietnameseVoices = voices.filter(voice =>
+                voice.lang.startsWith('vi') ||
+                voice.lang.includes('Vietnamese') ||
+                voice.name.toLowerCase().includes('vietnamese')
+            )
+            console.log('🇻🇳 Vietnamese voices found:', vietnameseVoices.length)
+            vietnameseVoices.forEach(voice => {
+                console.log(`- ${voice.name} (${voice.lang})`)
+            })
+
             // Nếu chưa có giọng, đợi một chút rồi kiểm tra lại
             if (voices.length === 0) {
                 setTimeout(() => {
@@ -231,6 +242,31 @@ export default function WorkReaderPage() {
             utterance.rate = speechRate
             utterance.pitch = speechPitch
             utterance.volume = speechVolume
+
+            // Tìm và chọn giọng tiếng Việt tốt nhất
+            const voices = window.speechSynthesis.getVoices()
+            const vietnameseVoices = voices.filter(voice =>
+                voice.lang.startsWith('vi') ||
+                voice.lang.includes('Vietnamese') ||
+                voice.name.toLowerCase().includes('vietnamese')
+            )
+
+            if (vietnameseVoices.length > 0) {
+                // Ưu tiên giọng nữ tiếng Việt
+                const femaleVietnameseVoice = vietnameseVoices.find(voice =>
+                    voice.name.toLowerCase().includes('female') ||
+                    voice.name.toLowerCase().includes('nữ')
+                )
+                if (femaleVietnameseVoice) {
+                    utterance.voice = femaleVietnameseVoice
+                    console.log('🎤 Using Vietnamese female voice:', femaleVietnameseVoice.name)
+                } else {
+                    utterance.voice = vietnameseVoices[0]
+                    console.log('🎤 Using Vietnamese voice:', vietnameseVoices[0].name)
+                }
+            } else {
+                console.log('⚠️ No Vietnamese voices found, using default voice')
+            }
 
             utterance.onstart = () => {
                 console.log(`🎤 Started reading page ${pageIndex + 1}`)
@@ -601,7 +637,7 @@ export default function WorkReaderPage() {
                                             )}
                                         </button>
 
-                                        <button
+                                        {/* <button
                                             onClick={handleStop}
                                             className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${isPlaying
                                                 ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg'
@@ -612,7 +648,7 @@ export default function WorkReaderPage() {
                                             title="Dừng đọc"
                                         >
                                             <SpeakerXMarkIcon className="w-5 h-5 text-white" />
-                                        </button>
+                                        </button> */}
                                     </div>
 
                                     {/* Continuous Mode Toggle */}
@@ -703,18 +739,57 @@ export default function WorkReaderPage() {
                                         </div>
                                     )}
 
+                                    {/* Hướng dẫn cài đặt giọng tiếng Việt */}
+                                    {/* <div className="text-xs text-blue-600 dark:text-blue-400 mb-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                                        <div className="font-semibold mb-2">🇻🇳 Để đọc bằng tiếng Việt:</div>
+                                        <div className="space-y-1 text-xs">
+                                            <div><strong>Windows:</strong> Cài đặt "Microsoft Zira" hoặc "Microsoft Huihui"</div>
+                                            <div><strong>macOS:</strong> Cài đặt "Vietnamese" trong System Preferences</div>
+                                            <div><strong>Android:</strong> Cài đặt Google TTS Vietnamese</div>
+                                            <div><strong>iOS:</strong> Cài đặt Vietnamese voice trong Settings</div>
+                                        </div>
+                                    </div> */}
+
                                     {/* Quick Actions */}
                                     <div className="space-y-2 mb-4">
                                         {speechSupported && (
                                             <button
                                                 onClick={() => {
-                                                    const testUtterance = new window.SpeechSynthesisUtterance('Xin chào! Đây là bài kiểm tra giọng nói.')
+                                                    const testUtterance = new window.SpeechSynthesisUtterance('Xin chào! Đây là bài kiểm tra giọng nói. Tôi đang đọc tác phẩm của Chủ tịch Hồ Chí Minh.')
                                                     testUtterance.lang = 'vi-VN'
                                                     testUtterance.rate = speechRate
                                                     testUtterance.pitch = speechPitch
                                                     testUtterance.volume = speechVolume
+
+                                                    // Tìm giọng tiếng Việt tốt nhất
+                                                    const voices = window.speechSynthesis.getVoices()
+                                                    const vietnameseVoices = voices.filter(voice =>
+                                                        voice.lang.startsWith('vi') ||
+                                                        voice.lang.includes('Vietnamese') ||
+                                                        voice.name.toLowerCase().includes('vietnamese')
+                                                    )
+
+                                                    if (vietnameseVoices.length > 0) {
+                                                        const femaleVietnameseVoice = vietnameseVoices.find(voice =>
+                                                            voice.name.toLowerCase().includes('female') ||
+                                                            voice.name.toLowerCase().includes('nữ')
+                                                        )
+                                                        if (femaleVietnameseVoice) {
+                                                            testUtterance.voice = femaleVietnameseVoice
+                                                        } else {
+                                                            testUtterance.voice = vietnameseVoices[0]
+                                                        }
+                                                    }
+
                                                     window.speechSynthesis.speak(testUtterance)
-                                                    toast.success('🎤 Kiểm tra giọng nói')
+                                                    toast.success('🎤 Đang kiểm tra giọng nói tiếng Việt...', {
+                                                        duration: 3000,
+                                                        style: {
+                                                            background: '#f0f9ff',
+                                                            color: '#0369a1',
+                                                            border: '1px solid #bae6fd'
+                                                        }
+                                                    })
                                                 }}
                                                 className="w-full text-xs py-2 px-3 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/20 dark:hover:bg-blue-800/30 text-blue-700 dark:text-blue-300 rounded-lg transition-colors"
                                             >
