@@ -190,29 +190,65 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                             transition={{ duration: 0.4, delay: 0.5 }}
                         >
                             {/* Left side: Author info */}
-                            {showAuthor && debate.author && (
+                            {showAuthor && (debate.createdBy || debate.author) && (
                                 <motion.div
                                     className="flex items-center gap-2"
                                     whileHover={{ scale: 1.02 }}
                                 >
-                                    {debate.author.avatar && debate.author.avatar !== '👤' && !debate.author.avatar.startsWith('http') ? (
-                                        <div className="w-6 h-6 hcm-gradient-luxury rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                            {debate.author.avatar}
-                                        </div>
-                                    ) : debate.author.avatar && debate.author.avatar.startsWith('http') ? (
-                                        <img
-                                            src={debate.author.avatar}
-                                            alt={debate.author.name}
-                                            className="w-6 h-6 rounded-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-6 h-6 hcm-gradient-luxury rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                            {debate.author.name?.charAt(0)?.toUpperCase() || '👤'}
-                                        </div>
-                                    )}
-                                    <span className="font-medium text-neutral-700 text-sm">
-                                        {debate.author.name}
-                                    </span>
+                                    {(() => {
+                                        const author = debate.createdBy || debate.author
+
+                                        // Handle case where author.name already contains "undefined"
+                                        let displayName = 'User'
+
+                                        if (author) {
+                                            // If author.name exists and doesn't contain "undefined", use it
+                                            if ((author as any).name && !(author as any).name.includes('undefined')) {
+                                                displayName = (author as any).name
+                                            }
+                                            // Try to construct from firstName + lastName
+                                            else if (author.firstName || author.lastName) {
+                                                const fullName = `${author.firstName || ''} ${author.lastName || ''}`.trim()
+                                                if (fullName) {
+                                                    displayName = fullName
+                                                }
+                                            }
+                                            // Fallback to username
+                                            else if (author.username) {
+                                                displayName = author.username
+                                            }
+                                        }
+
+                                        return (
+                                            <>
+                                                {author?.avatar && author.avatar !== '👤' && !author.avatar.startsWith('http') ? (
+                                                    <div className="w-6 h-6 hcm-gradient-luxury rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                                        {author.avatar}
+                                                    </div>
+                                                ) : author?.avatar && author.avatar.startsWith('http') ? (
+                                                    <img
+                                                        src={author.avatar}
+                                                        alt={displayName}
+                                                        className="w-6 h-6 rounded-full object-cover"
+                                                        onError={(e) => {
+                                                            (e.target as HTMLImageElement).style.display = 'none'
+                                                            const fallback = document.createElement('div')
+                                                            fallback.className = 'w-6 h-6 hcm-gradient-luxury rounded-full flex items-center justify-center text-white text-xs font-bold'
+                                                            fallback.textContent = author?.firstName?.charAt(0)?.toUpperCase() || author?.lastName?.charAt(0)?.toUpperCase() || '👤'
+                                                            e.currentTarget.parentNode?.appendChild(fallback)
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <div className="w-6 h-6 hcm-gradient-luxury rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                                        {author?.firstName?.charAt(0)?.toUpperCase() || author?.lastName?.charAt(0)?.toUpperCase() || '👤'}
+                                                    </div>
+                                                )}
+                                                <span className="font-medium text-neutral-700 text-sm">
+                                                    {displayName}
+                                                </span>
+                                            </>
+                                        )
+                                    })()}
                                 </motion.div>
                             )}
 
@@ -241,7 +277,7 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                                         title="Luận điểm"
                                     >
                                         <ChatBubbleLeftRightIcon className="h-3 w-3" />
-                                        <span>{debate.argumentCount || 0}</span>
+                                        <span>{(debate as any).totalArguments || debate.argumentCount || 0}</span>
                                     </motion.div>
 
                                     <motion.div
@@ -263,7 +299,7 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5T6.5 15a2.5 2.5 0 002.5-2.5V6.5z" />
                                         </svg>
-                                        <span>{debate.viewCount || 0}</span>
+                                        <span>{(debate as any).totalVotes || debate.viewCount || 0}</span>
                                     </motion.div>
                                 </div>
 

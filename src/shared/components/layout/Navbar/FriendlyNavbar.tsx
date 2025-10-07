@@ -156,7 +156,13 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
 
     const getUserDisplayName = () => {
         if (!user) return ''
-        return user.firstName ? `${user.firstName} ${user.lastName}`.trim() : user.username
+        const firstName = user.firstName || ''
+        const lastName = user.lastName || ''
+        const fullName = `${firstName} ${lastName}`.trim()
+        if (fullName && fullName !== '') {
+            return fullName
+        }
+        return user.username || ''
     }
 
     // Helper to render avatar: show user.avatar if exists, else fallback to first letter

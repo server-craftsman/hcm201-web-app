@@ -85,7 +85,7 @@ export default function DebatesPage() {
         viewCount: thread.totalVotes,
         author: {
             id: thread.createdBy._id,
-            name: `${thread.createdBy.firstName} ${thread.createdBy.lastName}`,
+            name: `${thread.createdBy.firstName || ''} ${thread.createdBy.lastName || ''}`.trim() || thread.createdBy.username || 'User',
             avatar: (thread.createdBy as any).avatar || thread.createdBy.firstName?.[0]?.toUpperCase() || thread.createdBy.lastName?.[0]?.toUpperCase() || thread.createdBy.username?.[0]?.toUpperCase() || '👤'
         },
         totalApprovedArguments: thread.totalApprovedArguments,
@@ -94,8 +94,8 @@ export default function DebatesPage() {
         requireModeration: thread.requireModeration,
         isTicketRequest: thread.isTicketRequest,
         moderators: thread.moderators,
-        modForSideA: thread.modForSideA,
-        modForSideB: thread.modForSideB,
+        modForSideA: thread.modForSideA as any,
+        modForSideB: thread.modForSideB as any,
         isPinned: false,
         isFeatured: thread.totalVotes > 5,
         lastActivityAt: thread.updatedAt,

@@ -109,6 +109,15 @@ export interface DebateTopic {
         username?: string
         email?: string
     }
+    // API response fields
+    createdBy?: {
+        _id: string
+        email: string
+        username: string
+        firstName: string
+        lastName: string
+        avatar?: string
+    }
     viewCount?: number
     argumentCount?: number
     participantCount?: number
@@ -126,8 +135,22 @@ export interface DebateTopic {
     requireModeration?: boolean
     isTicketRequest?: boolean
     moderators?: string[]
-    modForSideA?: string
-    modForSideB?: string
+    modForSideA?: {
+        _id: string
+        email: string
+        username: string
+        firstName: string
+        lastName: string
+        avatar?: string
+    }
+    modForSideB?: {
+        _id: string
+        email: string
+        username: string
+        firstName: string
+        lastName: string
+        avatar?: string
+    }
     requestedBy?: string
 }
 
