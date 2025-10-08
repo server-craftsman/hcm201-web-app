@@ -122,8 +122,8 @@ const AdminDashboard = () => {
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-                                🎛️ Bảng điều khiển Admin
+                            <h1 className="text-4xl font-bold bg-[#dc2626] bg-clip-text text-transparent mb-2">
+                                Bảng điều khiển Admin
                             </h1>
                             <p className="text-gray-600 text-lg">
                                 Quản lý hệ thống tranh luận Tư tưởng Hồ Chí Minh
@@ -136,7 +136,7 @@ const AdminDashboard = () => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={loadDashboardData}
-                            className="flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                            className="flex items-center px-6 py-3 bg-[#dc2626] text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
                         >
                             <ArrowPathIcon className="h-5 w-5 mr-2" />
                             Làm mới

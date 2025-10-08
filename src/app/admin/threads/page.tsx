@@ -528,7 +528,7 @@ const AdminThreadsPage = () => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={refreshStats}
-                            className={`flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors relative ${refreshingStats ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            className={`flex items-center px-4 py-2 bg-[#dc2626] text-white rounded-lg transition-colors relative ${refreshingStats ? 'opacity-70 cursor-not-allowed' : ''}`}
                             disabled={refreshingStats}
                         >
                             {refreshingStats ? (

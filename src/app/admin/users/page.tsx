@@ -193,17 +193,17 @@ const AdminUsersPage = () => {
         return `${diffInDays} ngày trước`;
     }
 
-    // Get role style
+    // Get role style - Vietnam flag colors
     const getRoleStyle = (role: string) => {
         switch (role) {
             case 'ADMIN':
-                return 'bg-gradient-to-r from-red-500 to-rose-600 text-white'
+                return 'bg-[#dc2626] text-white' // Vietnam red
             case 'MODERATOR':
-                return 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white'
+                return 'bg-[#ffd700] text-white' // Vietnam yellow
             case 'USER':
-                return 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+                return 'bg-[#dc2626] text-white' // Vietnam flag gradient
             default:
-                return 'bg-gradient-to-r from-gray-500 to-gray-600 text-white'
+                return 'bg-[#808080] text-white'
         }
     }
 
@@ -256,7 +256,7 @@ const AdminUsersPage = () => {
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                                Quản lý người dùng
+                                🛡️ Quản lý người dùng
                             </h1>
                             <p className="text-gray-600">
                                 Quản lý và theo dõi tất cả người dùng trong hệ thống
@@ -267,9 +267,9 @@ const AdminUsersPage = () => {
                             whileTap={{ scale: 0.95 }}
                             onClick={loadUsers}
                             disabled={loading}
-                            className="group relative overflow-hidden bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+                            className="group relative overflow-hidden bg-[#dc2626] text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-yellow-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             <div className="relative flex items-center space-x-2">
                                 <ArrowPathIcon className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
                                 <span>Làm mới</span>
@@ -285,14 +285,14 @@ const AdminUsersPage = () => {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.1 }}
-                        className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200"
+                        className="bg-gradient-to-r from-red-50 to-yellow-50 rounded-2xl p-6 border border-red-200"
                     >
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-blue-600">Tổng người dùng</p>
-                                <p className="text-3xl font-bold text-blue-700">{totalUsers}</p>
+                                <p className="text-sm font-medium text-red-600">Tổng người dùng</p>
+                                <p className="text-3xl font-bold text-red-700">{totalUsers}</p>
                             </div>
-                            <UserGroupIcon className="h-8 w-8 text-blue-600" />
+                            <UserGroupIcon className="h-8 w-8 text-red-600" />
                         </div>
                     </motion.div>
 
@@ -304,7 +304,7 @@ const AdminUsersPage = () => {
                     >
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-red-600">Admin</p>
+                                <p className="text-sm font-medium text-red-600">👑 Quản trị viên</p>
                                 <p className="text-3xl font-bold text-red-700">
                                     {users.filter(user => user.role === 'ADMIN').length}
                                 </p>
@@ -317,16 +317,16 @@ const AdminUsersPage = () => {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200"
+                        className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-2xl p-6 border border-yellow-200"
                     >
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-blue-600">Moderator</p>
-                                <p className="text-3xl font-bold text-blue-700">
+                                <p className="text-sm font-medium text-yellow-600">🛡️ Kiểm duyệt viên</p>
+                                <p className="text-3xl font-bold text-yellow-700">
                                     {users.filter(user => user.role === 'MODERATOR').length}
                                 </p>
                             </div>
-                            <ShieldCheckIcon className="h-8 w-8 text-blue-600" />
+                            <ShieldCheckIcon className="h-8 w-8 text-yellow-600" />
                         </div>
                     </motion.div>
 
@@ -338,7 +338,7 @@ const AdminUsersPage = () => {
                     >
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-green-600">Online</p>
+                                <p className="text-sm font-medium text-green-600">🟢 Trực tuyến</p>
                                 <p className="text-3xl font-bold text-green-700">
                                     {users.filter(user => user.status === 'ONLINE').length}
                                 </p>
@@ -357,7 +357,7 @@ const AdminUsersPage = () => {
                 >
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                            <FunnelIcon className="h-5 w-5 mr-2 text-gray-600" />
+                            <FunnelIcon className="h-5 w-5 mr-2 text-red-600" />
                             Bộ lọc và tìm kiếm
                         </h3>
                     </div>
@@ -370,7 +370,7 @@ const AdminUsersPage = () => {
                                 placeholder="Tìm kiếm email, username..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
                             />
                         </div>
 
@@ -378,44 +378,44 @@ const AdminUsersPage = () => {
                         <select
                             value={selectedRole}
                             onChange={(e) => setSelectedRole(e.target.value)}
-                            className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                            className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
                         >
-                            <option value="">Tất cả role</option>
-                            <option value="ADMIN">Admin</option>
-                            <option value="MODERATOR">Moderator</option>
-                            <option value="USER">User</option>
+                            <option value="">Tất cả vai trò</option>
+                            <option value="ADMIN">👑 Quản trị viên</option>
+                            <option value="MODERATOR">🛡️ Kiểm duyệt viên</option>
+                            <option value="USER">👤 Người dùng</option>
                         </select>
 
                         {/* Status Filter */}
                         <select
                             value={selectedStatus}
                             onChange={(e) => setSelectedStatus(e.target.value)}
-                            className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                            className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
                         >
                             <option value="">Tất cả trạng thái</option>
-                            <option value="ONLINE">Online</option>
-                            <option value="OFFLINE">Offline</option>
-                            <option value="BUSY">Busy</option>
-                            <option value="AWAY">Away</option>
+                            <option value="ONLINE">🟢 Trực tuyến</option>
+                            <option value="OFFLINE">⚫ Ngoại tuyến</option>
+                            <option value="BUSY">🔴 Bận</option>
+                            <option value="AWAY">🟡 Ngoại tuyến</option>
                         </select>
 
                         {/* Sort By */}
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
-                            className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                            className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
                         >
-                            <option value="createdAt">Ngày tạo</option>
-                            <option value="lastSeen">Lần cuối online</option>
-                            <option value="username">Username</option>
-                            <option value="email">Email</option>
+                            <option value="createdAt">📅 Ngày tạo</option>
+                            <option value="lastSeen">🕐 Lần cuối trực tuyến</option>
+                            <option value="username">👤 Tên người dùng</option>
+                            <option value="email">📧 Email</option>
                         </select>
 
                         {/* Sort Order */}
                         <select
                             value={sortOrder}
                             onChange={(e) => setSortOrder(e.target.value)}
-                            className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                            className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
                         >
                             <option value="desc">Mới nhất</option>
                             <option value="asc">Cũ nhất</option>
@@ -432,15 +432,15 @@ const AdminUsersPage = () => {
                 >
                     {loading ? (
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
-                            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                            <p className="text-gray-600 text-lg">Đang tải danh sách người dùng...</p>
+                            <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                            <p className="text-gray-600 text-lg">⏳ Đang tải danh sách người dùng...</p>
                         </div>
                     ) : error ? (
                         <div className="bg-white rounded-2xl shadow-sm border border-red-200 p-8 text-center">
                             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <ExclamationTriangleIcon className="h-8 w-8 text-red-400" />
                             </div>
-                            <p className="text-red-600 text-lg">Có lỗi khi tải dữ liệu</p>
+                            <p className="text-red-600 text-lg">❌ Có lỗi khi tải dữ liệu</p>
                             <p className="text-red-400 text-sm mt-1">Vui lòng thử lại sau</p>
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
@@ -461,7 +461,7 @@ const AdminUsersPage = () => {
                             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <UserGroupIcon className="h-8 w-8 text-gray-400" />
                             </div>
-                            <p className="text-gray-500 text-lg">Không tìm thấy người dùng nào</p>
+                            <p className="text-gray-500 text-lg">🔍 Không tìm thấy người dùng nào</p>
                             <p className="text-gray-400 text-sm mt-1">Thử thay đổi bộ lọc để tìm kiếm</p>
                         </div>
                     ) : (
@@ -527,7 +527,7 @@ const AdminUsersPage = () => {
                                                     </div>
                                                     <div className="flex items-center space-x-2 text-sm text-gray-600">
                                                         <ClockIcon className="h-4 w-4" />
-                                                        <span>Online: {formatTimeAgo(user.lastSeen)}</span>
+                                                        <span>Trực tuyến: {formatTimeAgo(user.lastSeen)}</span>
                                                     </div>
                                                     {user.location && (
                                                         <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -547,7 +547,7 @@ const AdminUsersPage = () => {
                                             <div className="flex items-center space-x-4">
                                                 {user.isVerified && (
                                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                        Đã xác thực
+                                                        ✅ Đã xác thực
                                                     </span>
                                                 )}
                                                 {user.isActive && (
@@ -563,7 +563,7 @@ const AdminUsersPage = () => {
                                                         className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 hover:bg-purple-200 transition-colors"
                                                     >
                                                         <LinkIcon className="h-3 w-3 mr-1" />
-                                                        Website
+                                                        🌐 Website
                                                     </a>
                                                 )}
                                             </div>
@@ -576,29 +576,15 @@ const AdminUsersPage = () => {
                                             whileHover={{ scale: 1.05, y: -2 }}
                                             whileTap={{ scale: 0.95 }}
                                             onClick={() => openRoleChangeModal(user)}
-                                            className="group relative overflow-hidden bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 py-2 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                                            className="group relative overflow-hidden bg-[#dc2626] text-white px-4 py-2 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                                         >
-                                            <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-yellow-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                             <div className="relative flex items-center space-x-2">
                                                 <PencilIcon className="h-4 w-4" />
-                                                <span>Đổi role</span>
+                                                <span>Đổi vai trò</span>
                                             </div>
                                             <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                                         </motion.button>
-
-                                        {/* <motion.button
-                                            whileHover={{ scale: 1.05, y: -2 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={() => window.open(`/profile/${user._id}`, '_blank')}
-                                            className="group relative overflow-hidden bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                                        >
-                                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                            <div className="relative flex items-center space-x-2">
-                                                <EyeIcon className="h-4 w-4" />
-                                                <span>Xem profile</span>
-                                            </div>
-                                            <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                                        </motion.button> */}
                                     </div>
                                 </div>
                             </div>
@@ -625,8 +611,8 @@ const AdminUsersPage = () => {
                                 Trước
                             </motion.button>
 
-                            <span className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl text-sm font-medium">
-                                {currentPage} / {totalPages}
+                            <span className="px-4 py-2 bg-gradient-to-r from-red-500 to-yellow-500 text-white rounded-xl text-sm font-medium">
+                                📄 {currentPage} / {totalPages}
                             </span>
 
                             <motion.button
@@ -649,7 +635,7 @@ const AdminUsersPage = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+                            className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4 rounded-3xl"
                             onClick={() => setIsRoleModalOpen(false)}
                         >
                             <motion.div
@@ -660,15 +646,15 @@ const AdminUsersPage = () => {
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 {/* Header */}
-                                <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 p-8 text-white">
+                                <div className="bg-gradient-to-r from-red-500 to-yellow-500 p-8 text-white rounded-3xl">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center space-x-4">
                                             <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
                                                 <ShieldCheckIcon className="h-8 w-8" />
                                             </div>
                                             <div>
-                                                <h2 className="text-2xl font-bold">Thay đổi vai trò</h2>
-                                                <p className="text-orange-100 text-sm mt-1">
+                                                <h2 className="text-2xl text-white font-bold">🛡️ Thay đổi vai trò</h2>
+                                                <p className="text-yellow-100 text-sm mt-1">
                                                     Thay đổi vai trò của {selectedUser.firstName} {selectedUser.lastName}
                                                 </p>
                                             </div>
@@ -718,12 +704,12 @@ const AdminUsersPage = () => {
                                         {/* Role Selection */}
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-3">
-                                                Vai trò mới
+                                                🎭 Vai trò mới
                                             </label>
                                             <select
                                                 value={newRole}
                                                 onChange={(e) => setNewRole(e.target.value)}
-                                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                                             >
                                                 <option value="USER">👤 User - Người dùng thông thường</option>
                                                 <option value="MODERATOR">🛡️ Moderator - Kiểm duyệt viên</option>
@@ -734,14 +720,14 @@ const AdminUsersPage = () => {
                                         {/* Reason */}
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-3">
-                                                Lý do thay đổi
+                                                📝 Lý do thay đổi
                                             </label>
                                             <textarea
                                                 value={roleChangeReason}
                                                 onChange={(e) => setRoleChangeReason(e.target.value)}
                                                 placeholder="Nhập lý do thay đổi vai trò..."
                                                 rows={4}
-                                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none"
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 resize-none"
                                             />
                                         </div>
                                     </div>
@@ -767,12 +753,12 @@ const AdminUsersPage = () => {
                                             whileHover={{ scale: 1.05, y: -2 }}
                                             whileTap={{ scale: 0.95 }}
                                             onClick={handleChangeRole}
-                                            className="group relative overflow-hidden bg-gradient-to-r from-amber-500 to-orange-600 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                                            className="group relative overflow-hidden bg-gradient-to-r from-red-500 to-yellow-500 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                                         >
-                                            <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-yellow-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                             <div className="relative flex items-center space-x-2">
                                                 <ShieldCheckIcon className="h-5 w-5" />
-                                                <span>Thay đổi vai trò</span>
+                                                <span>✅ Thay đổi vai trò</span>
                                             </div>
                                             <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                                         </motion.button>
