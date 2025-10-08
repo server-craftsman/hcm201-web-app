@@ -113,59 +113,147 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     }
 
     return (
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
-            <Card padding="lg" className={`bg-white/80 dark:bg-slate-800/80 backdrop-blur border border-white/40 dark:border-slate-700 shadow-2xl ${className}`}>
-                <form onSubmit={handleSubmit} className="space-y-6">
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="relative"
+        >
+            <Card padding="lg" className={`bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden ${className}`}>
+                {/* Header */}
+                <div className="p-8 text-center">
+                    <div className="w-16 h-16 mx-auto bg-orange-500 rounded-2xl flex items-center justify-center mb-4">
+                        <UserPlusIcon className="w-8 h-8 text-white" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-black mb-2">
+                        Tạo tài khoản
+                    </h2>
+                    <p className="text-gray-600 text-sm">
+                        Tham gia cộng đồng học tập và tranh luận
+                    </p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="px-8 pb-8 space-y-4">
                     {submitError && (
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 text-sm font-medium"
+                            className="rounded-lg bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm"
                         >
                             {submitError}
                         </motion.div>
                     )}
-                    <div className="text-center pb-6">
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ duration: 0.5, delay: 0.2 }}
-                            className="mb-6"
-                        >
-                            <div className="w-16 h-16 mx-auto bg-[#dc2626] rounded-2xl flex items-center justify-center mb-4">
-                                <UserPlusIcon className="w-8 h-8 text-white" />
-                            </div>
-                            <h2 className="text-3xl font-bold bg-[#dc2626] bg-clip-text text-transparent">
-                                Tạo tài khoản
-                            </h2>
-                            <p className="text-slate-600 dark:text-slate-300 mt-2">
-                                Tham gia cộng đồng học tập và tranh luận
-                            </p>
-                        </motion.div>
+
+                    {/* Email Input */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Email</label>
+                        <input
+                            type="email"
+                            placeholder="you@example.com"
+                            value={formData.email}
+                            onChange={handleChange('email')}
+                            className={`w-full px-4 py-3 rounded-lg border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${errors.email
+                                    ? 'border-red-300 bg-red-50'
+                                    : 'border-gray-300 hover:border-gray-400 focus:bg-white'
+                                }`}
+                            required
+                        />
+                        {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4">
-                        <Input type="email" label="Email" placeholder="you@example.com" value={formData.email} onChange={handleChange('email')} error={errors.email} required fullWidth />
-                        <Input type="text" label="Tên hiển thị" placeholder="Nguyễn Văn A" value={formData.displayName} onChange={handleChange('displayName')} error={errors.displayName} required fullWidth />
-                        <Input type="text" label="Tên đăng nhập" placeholder="ten_dang_nhap" value={formData.username} onChange={handleChange('username')} error={errors.username} hint="Chỉ gồm chữ, số và gạch dưới" required fullWidth />
-                        <Input type="password" label="Mật khẩu" placeholder="••••••••" value={formData.password} onChange={handleChange('password')} error={errors.password} hint="Ít nhất 8 ký tự, có chữ hoa, chữ thường và số" required fullWidth />
-                        <Input type="password" label="Xác nhận mật khẩu" placeholder="••••••••" value={formData.confirmPassword} onChange={handleChange('confirmPassword')} error={errors.confirmPassword} required fullWidth />
-                        <label className="inline-flex items-start gap-3 text-sm text-neutral-800">
-                            <input type="checkbox" checked={formData.agreeToTerms} onChange={handleChange('agreeToTerms')} className="h-4 w-4 rounded border-neutral-300 text-red-600 focus:ring-red-500 mt-0.5" />
+                    {/* Display Name Input */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Tên hiển thị</label>
+                        <input
+                            type="text"
+                            placeholder="Nguyễn Văn A"
+                            value={formData.displayName}
+                            onChange={handleChange('displayName')}
+                            className={`w-full px-4 py-3 rounded-lg border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${errors.displayName
+                                    ? 'border-red-300 bg-red-50'
+                                    : 'border-gray-300 hover:border-gray-400 focus:bg-white'
+                                }`}
+                            required
+                        />
+                        {errors.displayName && <p className="text-red-500 text-sm">{errors.displayName}</p>}
+                    </div>
+
+                    {/* Username Input */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Tên đăng nhập</label>
+                        <input
+                            type="text"
+                            placeholder="ten_dang_nhap"
+                            value={formData.username}
+                            onChange={handleChange('username')}
+                            className={`w-full px-4 py-3 rounded-lg border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${errors.username
+                                    ? 'border-red-300 bg-red-50'
+                                    : 'border-gray-300 hover:border-gray-400 focus:bg-white'
+                                }`}
+                            required
+                        />
+                        <p className="text-xs text-gray-500">Chỉ gồm chữ, số và gạch dưới</p>
+                        {errors.username && <p className="text-red-500 text-sm">{errors.username}</p>}
+                    </div>
+
+                    {/* Password Input */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Mật khẩu</label>
+                        <input
+                            type="password"
+                            placeholder="••••••••"
+                            value={formData.password}
+                            onChange={handleChange('password')}
+                            className={`w-full px-4 py-3 rounded-lg border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${errors.password
+                                    ? 'border-red-300 bg-red-50'
+                                    : 'border-gray-300 hover:border-gray-400 focus:bg-white'
+                                }`}
+                            required
+                        />
+                        <p className="text-xs text-gray-500">Ít nhất 8 ký tự, có chữ hoa, chữ thường và số</p>
+                        {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+                    </div>
+
+                    {/* Confirm Password Input */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Xác nhận mật khẩu</label>
+                        <input
+                            type="password"
+                            placeholder="••••••••"
+                            value={formData.confirmPassword}
+                            onChange={handleChange('confirmPassword')}
+                            className={`w-full px-4 py-3 rounded-lg border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${errors.confirmPassword
+                                    ? 'border-red-300 bg-red-50'
+                                    : 'border-gray-300 hover:border-gray-400 focus:bg-white'
+                                }`}
+                            required
+                        />
+                        {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
+                    </div>
+
+                    {/* Terms Agreement */}
+                    <div className="space-y-2">
+                        <label className="inline-flex items-start gap-3 text-sm text-gray-700">
+                            <input
+                                type="checkbox"
+                                checked={formData.agreeToTerms}
+                                onChange={handleChange('agreeToTerms')}
+                                className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 mt-0.5"
+                            />
                             <span>
-                                Tôi đồng ý với <a href="/terms" className="text-red-600 hover:text-red-700 font-medium">điều khoản sử dụng</a> và <a href="/privacy" className="text-red-600 hover:text-red-700 font-medium">chính sách bảo mật</a>
+                                Tôi đồng ý với <a href="/terms" className="text-orange-600 hover:text-orange-700 font-medium">điều khoản sử dụng</a> và <a href="/privacy" className="text-orange-600 hover:text-orange-700 font-medium">chính sách bảo mật</a>
                             </span>
                         </label>
-                        {errors.agreeToTerms && (<p className="form-error">{errors.agreeToTerms}</p>)}
+                        {errors.agreeToTerms && <p className="text-red-500 text-sm">{errors.agreeToTerms}</p>}
                     </div>
 
-                    <Button
+                    {/* Submit Button */}
+                    <motion.button
                         type="submit"
-                        variant="default"
-                        size="lg"
-                        className="w-full group relative overflow-hidden bg-[#dc2626] shadow-lg hover:shadow-xl"
-                        isLoading={isLoading}
                         disabled={isLoading}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold shadow-sm hover:bg-orange-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <AnimatePresence mode="wait">
                             {isLoading ? (
@@ -174,7 +262,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                                     initial={{ opacity: 0, scale: 0.8 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.8 }}
-                                    className="flex items-center gap-2"
+                                    className="flex items-center justify-center gap-2"
                                 >
                                     <motion.div
                                         animate={{ rotate: 360 }}
@@ -189,29 +277,31 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: 10 }}
-                                    className="flex items-center gap-2"
+                                    className="flex items-center justify-center gap-2"
                                 >
                                     <UserPlusIcon className="w-5 h-5" />
                                     <span>Tạo tài khoản</span>
-                                    <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                                    <ArrowRightIcon className="w-4 h-4" />
                                 </motion.div>
                             )}
                         </AnimatePresence>
-                    </Button>
+                    </motion.button>
 
+                    {/* Divider */}
                     <div className="my-6 flex items-center gap-4">
-                        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-600" />
-                        <span className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">hoặc</span>
-                        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-600" />
+                        <div className="h-px flex-1 bg-gray-300" />
+                        <span className="text-sm text-gray-500">hoặc</span>
+                        <div className="h-px flex-1 bg-gray-300" />
                     </div>
 
+                    {/* Google Button */}
                     <motion.button
                         type="button"
                         onClick={() => loginWithGoogle()}
                         disabled={isLoading}
-                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="group flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-600 bg-white/60 dark:bg-slate-700/60 backdrop-blur py-4 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:y-0"
+                        className="group flex w-full items-center justify-center gap-3 rounded-xl border border-gray-300 bg-white py-3 shadow-sm hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <motion.div
                             animate={isLoading ? { rotate: 360 } : {}}
@@ -219,7 +309,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                         >
                             <Image src="/images/google.svg" alt="Google" width={20} height={20} />
                         </motion.div>
-                        <span className="font-semibold text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">
+                        <span className="font-medium text-gray-700">
                             {isLoading ? 'Đang kết nối...' : 'Đăng ký với Google'}
                         </span>
                     </motion.button>

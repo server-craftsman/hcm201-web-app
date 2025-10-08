@@ -92,31 +92,32 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     }
 
     return (
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
-            <Card variant="luxury" className={cn("w-full max-w-md bg-white/80 dark:bg-slate-800/80 backdrop-blur border border-white/40 dark:border-slate-700 shadow-2xl", className)}>
-                <CardHeader className="text-center pb-8">
-                    <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        className="mb-6"
-                    >
-                        <h2 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-                            Đăng nhập
-                        </h2>
-                        <p className="text-slate-600 dark:text-slate-300 mt-2">
-                            Chào mừng bạn trở lại với cộng đồng
-                        </p>
-                    </motion.div>
-                </CardHeader>
-                <CardContent>
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="relative"
+        >
+            <Card variant="luxury" className={cn("w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden", className)}>
+                {/* Header */}
+                <div className="p-8 text-center">
+                    <h2 className="text-2xl font-bold text-black mb-2">
+                        Đăng nhập
+                    </h2>
+                    <p className="text-gray-600 text-sm">
+                        Chào mừng bạn trở lại với cộng đồng
+                    </p>
+                </div>
+
+                <CardContent className="px-8 pb-8">
+                    {/* Google Login Button */}
                     <motion.button
                         type="button"
                         onClick={handleGoogleLogin}
                         disabled={isLoading}
-                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="group flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-600 bg-white/60 dark:bg-slate-700/60 backdrop-blur py-4 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:y-0"
+                        className="group flex w-full items-center justify-center gap-3 rounded-xl border border-gray-300 bg-white py-3 shadow-sm hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <motion.div
                             animate={isLoading ? { rotate: 360 } : {}}
@@ -124,15 +125,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({
                         >
                             <Image src="/images/google.svg" alt="Google" width={20} height={20} />
                         </motion.div>
-                        <span className="font-semibold text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">
+                        <span className="font-medium text-gray-700">
                             {isLoading ? 'Đang kết nối...' : 'Tiếp tục với Google'}
                         </span>
                     </motion.button>
 
+                    {/* Divider */}
                     <div className="my-6 flex items-center gap-4">
-                        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-600" />
-                        <span className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">hoặc</span>
-                        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-600" />
+                        <div className="h-px flex-1 bg-gray-300" />
+                        <span className="text-sm text-gray-500">hoặc</span>
+                        <div className="h-px flex-1 bg-gray-300" />
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -140,61 +142,81 @@ export const LoginForm: React.FC<LoginFormProps> = ({
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 text-sm font-medium"
+                                className="rounded-lg bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm"
                             >
                                 {submitError}
                             </motion.div>
                         )}
-                        <Input
-                            variant="luxury"
-                            type="text"
-                            label="Tên đăng nhập"
-                            placeholder="ten_dang_nhap"
-                            value={formData.username}
-                            onChange={handleChange('username')}
-                            error={errors.username}
-                            leftIcon={<UserIcon className="h-5 w-5" />}
-                            required
-                        />
 
-                        <Input
-                            variant="luxury"
-                            type={showPassword ? 'text' : 'password'}
-                            label="Mật khẩu"
-                            placeholder="••••••••"
-                            value={formData.password}
-                            onChange={handleChange('password')}
-                            error={errors.password}
-                            leftIcon={<LockClosedIcon className="h-5 w-5" />}
-                            rightIcon={
+                        {/* Username Input */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Tên đăng nhập</label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Nhập tên đăng nhập"
+                                    value={formData.username}
+                                    onChange={handleChange('username')}
+                                    className={`w-full px-4 py-3 pl-10 pr-4 rounded-lg border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${errors.username
+                                            ? 'border-red-300 bg-red-50'
+                                            : 'border-gray-300 hover:border-gray-400 focus:bg-white'
+                                        }`}
+                                    required
+                                />
+                                <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                            </div>
+                            {errors.username && <p className="text-red-500 text-sm">{errors.username}</p>}
+                        </div>
+
+                        {/* Password Input */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Mật khẩu</label>
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    placeholder="Nhập mật khẩu"
+                                    value={formData.password}
+                                    onChange={handleChange('password')}
+                                    className={`w-full px-4 py-3 pl-10 pr-10 rounded-lg border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${errors.password
+                                            ? 'border-red-300 bg-red-50'
+                                            : 'border-gray-300 hover:border-gray-400 focus:bg-white'
+                                        }`}
+                                    required
+                                />
+                                <LockClosedIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="text-neutral-500 hover:text-neutral-700 transition-colors p-1"
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
                                 >
                                     {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                                 </button>
-                            }
-                            required
-                        />
+                            </div>
+                            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+                        </div>
 
                         {showRememberMe && (
                             <div className="flex items-center justify-between">
-                                <label className="inline-flex items-center gap-2 text-sm text-neutral-700">
-                                    <input type="checkbox" checked={formData.remember} onChange={handleChange('remember')} className="h-4 w-4 rounded border-neutral-300 text-red-600 focus:ring-red-500" />
+                                <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.remember}
+                                        onChange={handleChange('remember')}
+                                        className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                                    />
                                     Ghi nhớ đăng nhập
                                 </label>
-                                <button type="button" className="text-sm text-red-600 hover:text-red-700">Quên mật khẩu?</button>
+                                <button type="button" className="text-sm text-orange-600 hover:text-orange-700 font-medium">Quên mật khẩu?</button>
                             </div>
                         )}
 
-                        <Button
+                        {/* Submit Button */}
+                        <motion.button
                             type="submit"
-                            variant="default"
-                            size="lg"
-                            className="w-full group relative overflow-hidden bg-[#dc2626] shadow-lg hover:shadow-xl"
-                            isLoading={isLoading}
                             disabled={isLoading}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold shadow-sm hover:bg-orange-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <AnimatePresence mode="wait">
                                 {isLoading ? (
@@ -203,7 +225,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
                                         initial={{ opacity: 0, scale: 0.8 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.8 }}
-                                        className="flex items-center gap-2"
+                                        className="flex items-center justify-center gap-2"
                                     >
                                         <motion.div
                                             animate={{ rotate: 360 }}
@@ -218,14 +240,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: 10 }}
-                                        className="flex items-center gap-2"
+                                        className="flex items-center justify-center gap-2"
                                     >
                                         <span>Đăng nhập</span>
-                                        <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                                        <ArrowRightIcon className="w-4 h-4" />
                                     </motion.div>
                                 )}
                             </AnimatePresence>
-                        </Button>
+                        </motion.button>
                     </form>
                 </CardContent>
             </Card>
