@@ -103,16 +103,16 @@ export default function LoginPage() {
                                     title: "Tranh luận sôi nổi",
                                     description: "Tham gia thảo luận về các chủ đề thời sự"
                                 },
-                                {
-                                    icon: DocumentTextIcon,
-                                    title: "Tác phẩm kinh điển",
-                                    description: "Khám phá những tác phẩm bất hủ của Bác"
-                                },
-                                {
-                                    icon: AcademicCapIcon,
-                                    title: "Quiz thú vị",
-                                    description: "Kiểm tra kiến thức qua các câu hỏi hấp dẫn"
-                                }
+                                // {
+                                //     icon: DocumentTextIcon,
+                                //     title: "Tác phẩm kinh điển",
+                                //     description: "Khám phá những tác phẩm bất hủ của Bác"
+                                // },
+                                // {
+                                //     icon: AcademicCapIcon,
+                                //     title: "Quiz thú vị",
+                                //     description: "Kiểm tra kiến thức qua các câu hỏi hấp dẫn"
+                                // }
                             ].map((feature, index) => (
                                 <motion.div
                                     key={feature.title}

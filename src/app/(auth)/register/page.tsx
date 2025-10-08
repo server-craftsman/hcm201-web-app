@@ -93,26 +93,26 @@ export default function RegisterPage() {
                             className="space-y-6"
                         >
                             {[
-                                {
-                                    icon: UserGroupIcon,
-                                    title: "Cộng đồng sôi động",
-                                    description: "Kết nối với hàng nghìn thành viên"
-                                },
+                                // {
+                                //     icon: UserGroupIcon,
+                                //     title: "Cộng đồng sôi động",
+                                //     description: "Kết nối với hàng nghìn thành viên"
+                                // },
                                 {
                                     icon: ChatBubbleLeftRightIcon,
                                     title: "Tranh luận thú vị",
                                     description: "Tham gia thảo luận về các chủ đề thời sự"
                                 },
-                                {
-                                    icon: DocumentTextIcon,
-                                    title: "Tác phẩm phong phú",
-                                    description: "Khám phá kho tàng tác phẩm bất hủ"
-                                },
-                                {
-                                    icon: AcademicCapIcon,
-                                    title: "Học tập không giới hạn",
-                                    description: "Quiz và bài học mọi lúc, mọi nơi"
-                                }
+                                // {
+                                //     icon: DocumentTextIcon,
+                                //     title: "Tác phẩm phong phú",
+                                //     description: "Khám phá kho tàng tác phẩm bất hủ"
+                                // },
+                                // {
+                                //     icon: AcademicCapIcon,
+                                //     title: "Học tập không giới hạn",
+                                //     description: "Quiz và bài học mọi lúc, mọi nơi"
+                                // }
                             ].map((feature, index) => (
                                 <motion.div
                                     key={feature.title}
