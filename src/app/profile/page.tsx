@@ -38,6 +38,7 @@ interface UserProfile {
     status: string
     isActive: boolean
     isVerified: boolean
+    googleId?: string
     createdAt: string
     lastSeen: string
     phone?: number
@@ -363,15 +364,15 @@ const ProfilePage = () => {
         return `${Math.floor(diffInHours / 24)} ngày trước`
     }
 
-    // Get role style
+    // Get role style - Vietnam flag colors
     const getRoleStyle = (role: string) => {
         switch (role) {
             case 'ADMIN':
-                return 'bg-gradient-to-r from-red-500 to-rose-600 text-white'
+                return 'bg-gradient-to-r from-red-600 to-red-700 text-white' // Vietnam red
             case 'MODERATOR':
-                return 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white'
+                return 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white' // Vietnam yellow
             case 'USER':
-                return 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+                return 'bg-gradient-to-r from-red-500 to-yellow-500 text-white' // Vietnam flag gradient
             default:
                 return 'bg-gradient-to-r from-gray-500 to-gray-600 text-white'
         }
@@ -458,32 +459,35 @@ const ProfilePage = () => {
                             </p>
                         </div>
                         <div className="flex items-center space-x-3">
-                            <motion.button
-                                whileHover={{ scale: 1.05, y: -2 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setIsPasswordModalOpen(true)}
-                                className="group relative overflow-hidden bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                <div className="relative flex items-center space-x-2">
-                                    <KeyIcon className="h-5 w-5" />
-                                    <span>Đổi mật khẩu</span>
-                                </div>
-                                <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                            </motion.button>
+                            {/* Only show password change button if user doesn't have googleId */}
+                            {!user.googleId && (
+                                <motion.button
+                                    whileHover={{ scale: 1.05, y: -2 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => setIsPasswordModalOpen(true)}
+                                    className="group relative overflow-hidden bg-[#dc2626] to-yellow-500 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-yellow-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                    <div className="relative flex items-center space-x-2">
+                                        <KeyIcon className="h-5 w-5" />
+                                        <span>Đổi mật khẩu</span>
+                                    </div>
+                                    <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                                </motion.button>
+                            )}
 
                             <motion.button
                                 whileHover={{ scale: 1.05, y: -2 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => setIsEditing(!isEditing)}
                                 className={`group relative overflow-hidden px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 ${isEditing
-                                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
-                                    : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white'
+                                    ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white'
+                                    : 'bg-gradient-to-r from-red-500 to-red-600 text-white'
                                     }`}
                             >
                                 <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${isEditing
-                                    ? 'bg-gradient-to-r from-green-600 to-emerald-700'
-                                    : 'bg-gradient-to-r from-blue-600 to-indigo-700'
+                                    ? 'bg-gradient-to-r from-yellow-600 to-yellow-700'
+                                    : 'bg-gradient-to-r from-red-600 to-red-700'
                                     }`}></div>
                                 <div className="relative flex items-center space-x-2">
                                     <PencilIcon className="h-5 w-5" />
@@ -502,8 +506,8 @@ const ProfilePage = () => {
                     transition={{ delay: 0.2 }}
                     className="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden"
                 >
-                    {/* Header Section */}
-                    <div className="bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600 p-8 text-white">
+                    {/* Header Section - Vietnam flag colors */}
+                    <div className="bg-[#dc2626] p-8 text-white">
                         <div className="flex items-center space-x-6">
                             {/* Avatar */}
                             <div className="relative">
@@ -538,17 +542,17 @@ const ProfilePage = () => {
                             {/* User Info */}
                             <div className="flex-1">
                                 <div className="flex items-center space-x-4 mb-3">
-                                    <h2 className="text-3xl font-bold">
+                                    <h2 className="text-3xl text-white font-bold">
                                         {user.firstName} {user.lastName}
                                     </h2>
                                     <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${getRoleStyle(user.role)}`}>
-                                        {user.role === 'ADMIN' ? '👑 Admin' :
-                                            user.role === 'MODERATOR' ? '🛡️ Moderator' : '👤 User'}
+                                        {user.role === 'ADMIN' ? '👑 Quản trị viên' :
+                                            user.role === 'MODERATOR' ? '🛡️ Kiểm duyệt viên' : 'Người dùng'}
                                     </span>
                                     <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${getStatusStyle(user.status)}`}>
-                                        {user.status === 'ONLINE' ? '🟢 Online' :
-                                            user.status === 'OFFLINE' ? '⚫ Offline' :
-                                                user.status === 'BUSY' ? '🔴 Busy' : '🟡 Away'}
+                                        {user.status === 'ONLINE' ? '🟢 Trực tuyến' :
+                                            user.status === 'OFFLINE' ? '⚫ Ngoại tuyến' :
+                                                user.status === 'BUSY' ? '🔴 Bận' : '🟡 Ngoại tuyến'}
                                     </span>
                                 </div>
                                 <p className="text-blue-100 text-lg mb-2">@{user.username}</p>
@@ -574,7 +578,7 @@ const ProfilePage = () => {
                             {/* Personal Information */}
                             <div className="space-y-6">
                                 <h3 className="text-xl font-bold text-gray-900 flex items-center">
-                                    <UserIcon className="h-6 w-6 mr-2 text-blue-600" />
+                                    <UserIcon className="h-6 w-6 mr-2 text-red-600" />
                                     Thông tin cá nhân
                                 </h3>
 
@@ -589,7 +593,7 @@ const ProfilePage = () => {
                                                     type="text"
                                                     value={editForm.firstName}
                                                     onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
-                                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                                                 />
                                             ) : (
                                                 <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">
@@ -606,7 +610,7 @@ const ProfilePage = () => {
                                                     type="text"
                                                     value={editForm.lastName}
                                                     onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
-                                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                                                 />
                                             ) : (
                                                 <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">
@@ -678,7 +682,7 @@ const ProfilePage = () => {
                             {/* Additional Information */}
                             <div className="space-y-6">
                                 <h3 className="text-xl font-bold text-gray-900 flex items-center">
-                                    <GlobeAltIcon className="h-6 w-6 mr-2 text-purple-600" />
+                                    <GlobeAltIcon className="h-6 w-6 mr-2 text-yellow-600" />
                                     Thông tin bổ sung
                                 </h3>
 
@@ -754,7 +758,7 @@ const ProfilePage = () => {
                                                 value={editForm.bio}
                                                 onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
                                                 rows={4}
-                                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none"
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 resize-none"
                                                 placeholder="Viết một chút về bản thân..."
                                             />
                                         ) : (
@@ -803,9 +807,9 @@ const ProfilePage = () => {
                                         whileHover={{ scale: 1.05, y: -2 }}
                                         whileTap={{ scale: 0.95 }}
                                         onClick={handleUpdateProfile}
-                                        className="group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                                        className="group relative overflow-hidden bg-gradient-to-r from-red-500 to-yellow-500 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                                     >
-                                        <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                        <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-yellow-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                         <div className="relative flex items-center space-x-2">
                                             <CheckCircleIcon className="h-5 w-5" />
                                             <span>Lưu thay đổi</span>
@@ -825,7 +829,7 @@ const ProfilePage = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+                            className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4 rounded-3xl"
                             onClick={() => setIsPasswordModalOpen(false)}
                         >
                             <motion.div
@@ -835,10 +839,10 @@ const ProfilePage = () => {
                                 className="bg-white/95 backdrop-blur-xl rounded-3xl max-w-2xl w-full shadow-2xl border border-white/30"
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                {/* Header */}
-                                <div className="bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-600 p-8 text-white">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center space-x-4">
+                                {/* Header - Vietnam flag colors */}
+                                <div className="bg-[#dc2626] p-8 text-white rounded-3xl">
+                                    <div className="flex items-center justify-between rounded-3xl">
+                                        <div className="flex items-center space-x-4 rounded-3xl">
                                             <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
                                                 <KeyIcon className="h-8 w-8" />
                                             </div>
@@ -873,7 +877,7 @@ const ProfilePage = () => {
                                                     type={showPasswords.current ? 'text' : 'password'}
                                                     value={passwordForm.currentPassword}
                                                     onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                                                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                                                     placeholder="Nhập mật khẩu hiện tại"
                                                 />
                                                 <button
@@ -900,7 +904,7 @@ const ProfilePage = () => {
                                                     type={showPasswords.new ? 'text' : 'password'}
                                                     value={passwordForm.newPassword}
                                                     onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                                                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                                                     placeholder="Nhập mật khẩu mới"
                                                 />
                                                 <button
@@ -927,7 +931,7 @@ const ProfilePage = () => {
                                                     type={showPasswords.confirm ? 'text' : 'password'}
                                                     value={passwordForm.confirmPassword}
                                                     onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                                                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                                                     placeholder="Nhập lại mật khẩu mới"
                                                 />
                                                 <button
@@ -966,9 +970,9 @@ const ProfilePage = () => {
                                             whileHover={{ scale: 1.05, y: -2 }}
                                             whileTap={{ scale: 0.95 }}
                                             onClick={handleChangePassword}
-                                            className="group relative overflow-hidden bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                                            className="group relative overflow-hidden bg-[#dc2626] to-yellow-500 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                                         >
-                                            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-yellow-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                             <div className="relative flex items-center space-x-2">
                                                 <KeyIcon className="h-5 w-5" />
                                                 <span>Đổi mật khẩu</span>
