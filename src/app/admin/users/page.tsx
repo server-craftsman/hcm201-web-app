@@ -171,13 +171,26 @@ const AdminUsersPage = () => {
 
     // Format time ago
     const formatTimeAgo = (dateString: string) => {
-        const date = new Date(dateString)
-        const now = new Date()
-        const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+        if (!dateString) return 'Không xác định';
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return 'Không xác định';
 
-        if (diffInHours < 1) return 'Vừa xong'
-        if (diffInHours < 24) return `${diffInHours} giờ trước`
-        return `${Math.floor(diffInHours / 24)} ngày trước`
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+
+        if (diffMs < 0) return 'Trong tương lai';
+
+        const diffInSeconds = Math.floor(diffMs / 1000);
+        if (diffInSeconds < 60) return 'Vừa xong';
+
+        const diffInMinutes = Math.floor(diffInSeconds / 60);
+        if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
+
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        if (diffInHours < 24) return `${diffInHours} giờ trước`;
+
+        const diffInDays = Math.floor(diffInHours / 24);
+        return `${diffInDays} ngày trước`;
     }
 
     // Get role style
@@ -243,7 +256,7 @@ const AdminUsersPage = () => {
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                                👥 Quản lý người dùng
+                                Quản lý người dùng
                             </h1>
                             <p className="text-gray-600">
                                 Quản lý và theo dõi tất cả người dùng trong hệ thống
@@ -480,13 +493,13 @@ const AdminUsersPage = () => {
                                                     {user.firstName} {user.lastName}
                                                 </h3>
                                                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getRoleStyle(user.role)}`}>
-                                                    {user.role === 'ADMIN' ? '👑 Admin' :
-                                                        user.role === 'MODERATOR' ? '🛡️ Moderator' : '👤 User'}
+                                                    {user.role === 'ADMIN' ? '👑 Quản trị viên' :
+                                                        user.role === 'MODERATOR' ? '🛡️ Kiểm duyệt viên' : 'Người dùng'}
                                                 </span>
                                                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusStyle(user.status)}`}>
-                                                    {user.status === 'ONLINE' ? '🟢 Online' :
-                                                        user.status === 'OFFLINE' ? '⚫ Offline' :
-                                                            user.status === 'BUSY' ? '🔴 Busy' : '🟡 Away'}
+                                                    {user.status === 'ONLINE' ? '🟢 Trực tuyến' :
+                                                        user.status === 'OFFLINE' ? '⚫ Ngoại tuyến' :
+                                                            user.status === 'BUSY' ? '🔴 Bận' : '🟡 Ngoại tuyến'}
                                                 </span>
                                             </div>
 
@@ -534,7 +547,7 @@ const AdminUsersPage = () => {
                                             <div className="flex items-center space-x-4">
                                                 {user.isVerified && (
                                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                        ✅ Đã xác thực
+                                                        Đã xác thực
                                                     </span>
                                                 )}
                                                 {user.isActive && (

@@ -133,7 +133,7 @@ const RequestThreadPage = () => {
                     transition={{ duration: 0.5 }}
                     className="mb-10"
                 >
-                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 via-fuchsia-600 to-rose-600">
+                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-[#dc2626]">
                         Yêu cầu chủ đề tranh luận mới
                     </h1>
                     <p className="mt-3 text-gray-600 text-lg">
@@ -260,7 +260,7 @@ const RequestThreadPage = () => {
                                     disabled={isSubmitting}
                                     whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
                                     whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
-                                    className="w-full py-3 px-6 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all bg-gradient-to-r from-indigo-600 via-fuchsia-600 to-rose-600 text-white shadow-lg hover:shadow-xl"
+                                    className="w-full py-3 px-6 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all bg-[#5B6DFF] text-white shadow-lg hover:shadow-xl"
                                 >
                                     {isSubmitting ? (
                                         <div className="flex items-center justify-center">

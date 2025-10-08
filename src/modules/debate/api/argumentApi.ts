@@ -121,7 +121,7 @@ export interface GetArgumentsParams {
     search?: string
     page?: number
     limit?: number
-    sort?: string
+    sortBy?: string
 }
 
 export const argumentApi = {

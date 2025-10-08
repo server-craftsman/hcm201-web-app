@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import {
     ArrowLeftIcon,
     EyeIcon,
@@ -28,6 +28,8 @@ import { useNotificationCenter } from '@shared/providers/NotificationCenter'
 
 const DebateDetailPage: React.FC = () => {
     const params = useParams()
+    const searchParams = useSearchParams()
+    const router = useRouter()
     const threadId = params.id as string
     const { user } = useAuth()
     const notification = useNotificationCenter();
@@ -57,8 +59,45 @@ const DebateDetailPage: React.FC = () => {
         console.log('Threads loading:', threadsLoading)
     }, [threadId, threads, currentThread, threadsLoading])
 
+    // Read URL params and update state
+    useEffect(() => {
+        const sortByParam = searchParams.get('sortBy') as 'newest' | 'oldest' | 'most_liked'
+        const argumentFilterParam = searchParams.get('argumentFilter') as 'ALL' | 'SUPPORT' | 'OPPOSE' | 'NEUTRAL'
+        const statusFilterParam = searchParams.get('statusFilter') as 'ALL' | 'APPROVED' | 'PENDING'
+        const searchParam = searchParams.get('search')
 
-    // Load arguments
+        if (sortByParam && ['newest', 'oldest', 'most_liked'].includes(sortByParam)) {
+            setSortBy(sortByParam)
+        }
+        if (argumentFilterParam && ['ALL', 'SUPPORT', 'OPPOSE', 'NEUTRAL'].includes(argumentFilterParam)) {
+            setArgumentFilter(argumentFilterParam)
+        }
+        if (statusFilterParam && ['ALL', 'APPROVED', 'PENDING'].includes(statusFilterParam)) {
+            setStatusFilter(statusFilterParam)
+        }
+        if (searchParam) {
+            setSearchQuery(searchParam)
+        }
+    }, [searchParams])
+
+    // Update URL params when state changes
+    const updateUrlParams = (newParams: Record<string, string>) => {
+        const current = new URLSearchParams(Array.from(searchParams.entries()))
+
+        Object.entries(newParams).forEach(([key, value]) => {
+            if (value && value !== 'ALL' && value !== '') {
+                current.set(key, value)
+            } else {
+                current.delete(key)
+            }
+        })
+
+        const search = current.toString()
+        const query = search ? `?${search}` : ''
+        router.replace(`/debates/${threadId}${query}`, { scroll: false })
+    }
+
+    // Load arguments - Backend handles all sorting and filtering
     const loadArguments = useCallback(async () => {
         if (!threadId) {
             console.warn('No threadId provided')
@@ -67,15 +106,32 @@ const DebateDetailPage: React.FC = () => {
 
         setIsLoadingArguments(true)
         try {
-            console.log('Loading arguments for thread:', threadId)
-            const response = await argumentApi.getArguments({
+            console.log('=== API CALL DEBUG ===')
+            console.log('Thread ID:', threadId)
+            console.log('User Role:', user?.role)
+            console.log('Status Filter:', statusFilter)
+            console.log('Argument Filter:', argumentFilter)
+            console.log('Search Query:', searchQuery)
+            console.log('Sort By:', sortBy)
+
+            // Prepare API parameters
+            const apiParams = {
                 threadId,
                 status: statusFilter === 'ALL' ? undefined : statusFilter,
                 argumentType: argumentFilter === 'ALL' ? undefined : argumentFilter,
-                search: searchQuery || undefined
-            })
+                search: searchQuery || undefined,
+                sortBy: sortBy
+            }
 
-            console.log('Arguments response:', response)
+            console.log('API Parameters:', apiParams)
+            console.log('=== CALLING API ===')
+
+            const response = await argumentApi.getArguments(apiParams)
+
+            console.log('=== API RESPONSE DEBUG ===')
+            console.log('Full Response:', response)
+            console.log('Response Data:', response.data)
+            console.log('Arguments Count:', response.data?.items?.length || 0)
 
             if (!response || !response.data || !response.data.items) {
                 console.error('Invalid response structure:', response)
@@ -83,22 +139,21 @@ const DebateDetailPage: React.FC = () => {
                 return
             }
 
-            let sortedArguments = response.data.items
+            // Log each argument with its status for debugging
+            console.log('=== ARGUMENTS STATUS CHECK ===')
+            response.data.items.forEach((arg, index) => {
+                console.log(`Argument ${index + 1}:`, {
+                    id: arg._id,
+                    title: arg.title,
+                    status: arg.status,
+                    argumentType: arg.argumentType,
+                    author: arg.author?.username || 'Unknown'
+                })
+            })
 
-            // Sort arguments
-            switch (sortBy) {
-                case 'newest':
-                    sortedArguments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                    break
-                case 'oldest':
-                    sortedArguments.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-                    break
-                case 'most_liked':
-                    sortedArguments.sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0))
-                    break
-            }
-
-            setArguments(sortedArguments)
+            // Backend handles all sorting, just set the response
+            setArguments(response.data.items)
+            console.log('=== ARGUMENTS SET SUCCESSFULLY ===')
         } catch (error: any) {
             console.error('Error loading arguments:', error)
             const statusCode = error?.response?.status
@@ -411,14 +466,16 @@ const DebateDetailPage: React.FC = () => {
     const filteredArguments = arguments_.filter(arg => {
         const matchesFilter = argumentFilter === 'ALL' || arg.argumentType === argumentFilter
 
-        // Status filter logic - USER can see all statuses, but only MODERATOR/ADMIN can filter by status
+        // Status filter logic based on user role
         let matchesStatus = true
-        if (user?.role === 'USER') {
-            // USER sees all statuses (APPROVED, PENDING, REJECTED, etc.)
-            matchesStatus = true
-        } else {
-            // MODERATOR/ADMIN can filter by status
+        if (user?.role === 'USER' || !user) {
+            // USER/GUEST: Only see APPROVED/REJECTED arguments
+            matchesStatus = arg.status === 'APPROVED' || arg.status === 'REJECTED'
+            console.log(`USER/GUEST filtering: ${arg.title} (${arg.status}) -> ${matchesStatus ? 'SHOW' : 'HIDE'}`)
+        } else if (user?.role === 'MODERATOR' || user?.role === 'ADMIN') {
+            // MODERATOR/ADMIN: Can see all statuses and filter by status
             matchesStatus = statusFilter === 'ALL' || arg.status === statusFilter
+            console.log(`MODERATOR/ADMIN filtering: ${arg.title} (${arg.status}) -> ${matchesStatus ? 'SHOW' : 'HIDE'}`)
         }
 
         const matchesSearch = !searchQuery ||
@@ -427,7 +484,10 @@ const DebateDetailPage: React.FC = () => {
         // Chỉ hiển thị các argument không có parentArgumentId (argument chính)
         const isMainArgument = !arg.parentArgumentId
 
-        return matchesFilter && matchesStatus && matchesSearch && isMainArgument
+        const shouldShow = matchesFilter && matchesStatus && matchesSearch && isMainArgument
+        console.log(`Final decision for ${arg.title}: ${shouldShow ? 'SHOW' : 'HIDE'}`)
+
+        return shouldShow
     })
 
     if (threadsLoading) {
@@ -631,7 +691,11 @@ const DebateDetailPage: React.FC = () => {
                                             type="text"
                                             placeholder="Tìm kiếm luận điểm..."
                                             value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            onChange={(e) => {
+                                                const value = e.target.value
+                                                setSearchQuery(value)
+                                                updateUrlParams({ search: value })
+                                            }}
                                             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         />
                                     </div>
@@ -640,7 +704,11 @@ const DebateDetailPage: React.FC = () => {
                                     <div className="flex flex-wrap gap-2">
                                         <select
                                             value={argumentFilter}
-                                            onChange={(e) => setArgumentFilter(e.target.value as any)}
+                                            onChange={(e) => {
+                                                const value = e.target.value as any
+                                                setArgumentFilter(value)
+                                                updateUrlParams({ argumentFilter: value })
+                                            }}
                                             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         >
                                             <option value="ALL">Tất cả loại</option>
@@ -653,7 +721,11 @@ const DebateDetailPage: React.FC = () => {
                                         {(user?.role === 'MODERATOR' || user?.role === 'ADMIN') && (
                                             <select
                                                 value={statusFilter}
-                                                onChange={(e) => setStatusFilter(e.target.value as any)}
+                                                onChange={(e) => {
+                                                    const value = e.target.value as any
+                                                    setStatusFilter(value)
+                                                    updateUrlParams({ statusFilter: value })
+                                                }}
                                                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             >
                                                 <option value="ALL">Tất cả trạng thái</option>
@@ -664,7 +736,11 @@ const DebateDetailPage: React.FC = () => {
 
                                         <select
                                             value={sortBy}
-                                            onChange={(e) => setSortBy(e.target.value as any)}
+                                            onChange={(e) => {
+                                                const value = e.target.value as any
+                                                setSortBy(value)
+                                                updateUrlParams({ sortBy: value })
+                                            }}
                                             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         >
                                             <option value="newest">Mới nhất</option>
