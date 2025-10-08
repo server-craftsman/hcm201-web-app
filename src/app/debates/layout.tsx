@@ -11,7 +11,7 @@ export default function DebatesLayout({
     children: React.ReactNode
 }) {
     return (
-        <div className="container-custom section-padding">
+        <div className="min-h-screen">
             {children}
         </div>
     )

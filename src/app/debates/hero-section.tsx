@@ -57,48 +57,12 @@ export function HeroSection() {
                 {/* Dark overlay for better text readability */}
                 <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/70" />
 
-                {/* Animated gradient overlay - Red & Yellow theme */}
-                <motion.div
-                    className="absolute inset-0 bg-gradient-to-tr from-red-600/15 via-yellow-500/10 to-red-500/15"
-                    animate={{
-                        background: [
-                            "linear-gradient(45deg, rgba(220, 38, 38, 0.15), rgba(251, 191, 36, 0.1), rgba(220, 38, 38, 0.15))",
-                            "linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(220, 38, 38, 0.1), rgba(251, 191, 36, 0.15))",
-                            "linear-gradient(225deg, rgba(220, 38, 38, 0.15), rgba(251, 191, 36, 0.1), rgba(220, 38, 38, 0.15))",
-                            "linear-gradient(315deg, rgba(251, 191, 36, 0.15), rgba(220, 38, 38, 0.1), rgba(251, 191, 36, 0.15))"
-                        ]
-                    }}
-                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                />
+                {/* Static gradient overlay - Red & Yellow theme */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-red-600/15 via-yellow-500/10 to-red-500/15" />
 
-                {/* Floating orbs - Red & Yellow theme */}
-                <motion.div
-                    className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-red-500/8 to-red-600/12 rounded-full blur-3xl"
-                    animate={{
-                        x: [0, 100, -50, 0],
-                        y: [0, -50, 100, 0],
-                        scale: [1, 1.2, 0.8, 1]
-                    }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-                />
-                <motion.div
-                    className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-yellow-500/8 to-yellow-600/12 rounded-full blur-3xl"
-                    animate={{
-                        x: [0, -80, 60, 0],
-                        y: [0, 60, -80, 0],
-                        scale: [1, 0.8, 1.3, 1]
-                    }}
-                    transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-                />
-                <motion.div
-                    className="absolute top-1/2 right-1/3 w-64 h-64 bg-gradient-to-r from-red-400/8 to-yellow-500/10 rounded-full blur-3xl"
-                    animate={{
-                        x: [0, 120, -40, 0],
-                        y: [0, -40, 120, 0],
-                        scale: [1, 1.4, 0.6, 1]
-                    }}
-                    transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-                />
+                {/* Simplified floating orbs - static with subtle animation */}
+                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-red-500/8 to-red-600/12 rounded-full blur-3xl" />
+                <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-yellow-500/8 to-yellow-600/12 rounded-full blur-3xl" />
             </div>
 
             {/* Geometric patterns overlay */}
@@ -109,25 +73,24 @@ export function HeroSection() {
                 }} />
             </div>
 
-            {/* Animated particles */}
+            {/* Simplified particles - only 5 instead of 30 */}
             <div className="absolute inset-0">
-                {Array.from({ length: 30 }).map((_, i) => (
+                {Array.from({ length: 5 }).map((_, i) => (
                     <motion.div
                         key={i}
                         className="absolute w-1 h-1 bg-white/20 rounded-full"
                         style={{
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
+                            left: `${20 + i * 20}%`,
+                            top: `${20 + i * 15}%`,
                         }}
                         animate={{
-                            y: [0, -100, 0],
-                            opacity: [0, 1, 0],
-                            scale: [0, 1, 0]
+                            y: [0, -50, 0],
+                            opacity: [0, 1, 0]
                         }}
                         transition={{
-                            duration: Math.random() * 3 + 2,
+                            duration: 4,
                             repeat: Infinity,
-                            delay: Math.random() * 2,
+                            delay: i * 0.8,
                             ease: "easeInOut"
                         }}
                     />
@@ -247,32 +210,18 @@ export function HeroSection() {
                                 <div className="w-2 h-2 bg-yellow-600 rounded-full" />
                             </motion.div>
 
-                            {/* Floating birds */}
-                            <motion.div
-                                className="absolute top-8 -right-8 w-6 h-6 text-red-300"
-                                animate={{
-                                    x: [0, 20, 0],
-                                    y: [0, -10, 0]
-                                }}
-                                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                            >
+                            {/* Static decorative elements */}
+                            <div className="absolute top-8 -right-8 w-6 h-6 text-red-300">
                                 <svg viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                                 </svg>
-                            </motion.div>
+                            </div>
 
-                            <motion.div
-                                className="absolute bottom-8 -left-8 w-6 h-6 text-red-300"
-                                animate={{
-                                    x: [0, -20, 0],
-                                    y: [0, -10, 0]
-                                }}
-                                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-                            >
+                            <div className="absolute bottom-8 -left-8 w-6 h-6 text-red-300">
                                 <svg viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                                 </svg>
-                            </motion.div>
+                            </div>
                         </div>
                     </motion.div>
                 </div>
