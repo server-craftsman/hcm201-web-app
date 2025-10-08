@@ -190,9 +190,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 
                         <Button
                             type="submit"
-                            variant="luxury"
+                            variant="default"
                             size="lg"
-                            className="w-full group relative overflow-hidden bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 shadow-lg hover:shadow-xl"
+                            className="w-full group relative overflow-hidden bg-[#dc2626] shadow-lg hover:shadow-xl"
                             isLoading={isLoading}
                             disabled={isLoading}
                         >

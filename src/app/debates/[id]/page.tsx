@@ -42,7 +42,7 @@ const DebateDetailPage: React.FC = () => {
     const [isLoadingArguments, setIsLoadingArguments] = useState(true)
     const [showArgumentForm, setShowArgumentForm] = useState(false)
     const [argumentFilter, setArgumentFilter] = useState<'ALL' | 'SUPPORT' | 'OPPOSE' | 'NEUTRAL'>('ALL')
-    const [statusFilter, setStatusFilter] = useState<'ALL' | 'APPROVED' | 'PENDING'>('APPROVED')
+    const [statusFilter, setStatusFilter] = useState<'ALL' | 'APPROVED' | 'PENDING'>('ALL')
     const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'most_liked'>('newest')
     const [searchQuery, setSearchQuery] = useState('')
 
@@ -643,8 +643,8 @@ const DebateDetailPage: React.FC = () => {
                                             onChange={(e) => setStatusFilter(e.target.value as any)}
                                             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         >
-                                            <option value="APPROVED">Đã duyệt</option>
                                             <option value="ALL">Tất cả trạng thái</option>
+                                            <option value="APPROVED">Đã duyệt</option>
                                             <option value="PENDING">Chờ duyệt</option>
                                         </select>
 

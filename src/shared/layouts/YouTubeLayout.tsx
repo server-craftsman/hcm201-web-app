@@ -71,14 +71,14 @@ export const YouTubeLayout: React.FC<YouTubeLayoutProps> = ({ children }) => {
                             </button>
 
                             {/* Logo for mobile or detail pages */}
-                            <div className="flex items-center space-x-3 lg:hidden">
+                            {/* <div className="flex items-center space-x-3 lg:hidden">
                                 <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-amber-500 rounded-lg flex items-center justify-center">
                                     <span className="text-white font-bold text-sm">HCM</span>
                                 </div>
                                 <span className="font-bold text-lg text-slate-900 dark:text-white hidden sm:block">
                                     Tư tưởng HCM
                                 </span>
-                            </div>
+                            </div> */}
                         </div>
 
                         {/* Right side of navbar */}
@@ -98,7 +98,7 @@ export const YouTubeLayout: React.FC<YouTubeLayoutProps> = ({ children }) => {
                             </div>
 
                             {/* User Menu - Use existing FriendlyNavbar user section */}
-                            <FriendlyNavbar showNavigation={false} className="bg-transparent border-none shadow-none" />
+                            <FriendlyNavbar showNavigation={false} />
                         </div>
                     </div>
                 </motion.header>

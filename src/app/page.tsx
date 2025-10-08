@@ -382,7 +382,7 @@ export default function HomePage() {
                   </span>
                 </button>
               </Link>
-              <Link href="/debates" className="group relative">
+              <Link href="/debates/request" className="group relative">
                 <button
                   className="relative px-8 py-4 bg-transparent border-2 border-white text-white font-semibold text-lg rounded-xl hover:bg-white hover:text-red-600 transition-all duration-300 hover:scale-105 cursor-pointer"
                   type="button"

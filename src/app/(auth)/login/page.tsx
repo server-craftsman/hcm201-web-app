@@ -65,8 +65,8 @@ export default function LoginPage() {
                                     </div>
 
                                     <div>
-                                        <h1 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-yellow-600 bg-clip-text text-transparent">
-                                            HCM201
+                                        <h1 className="text-3xl font-bold bg-[#dc2626] bg-clip-text text-transparent">
+                                            HCM202
                                         </h1>
                                         <p className="text-slate-600 dark:text-slate-300">Tư tưởng Hồ Chí Minh</p>
                                     </div>
