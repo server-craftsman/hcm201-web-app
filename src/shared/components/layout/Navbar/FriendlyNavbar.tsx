@@ -50,22 +50,22 @@ const defaultNavigation = [
         bgColor: 'bg-purple-50 hover:bg-purple-100',
         description: 'Tham gia thảo luận'
     },
-    {
-        name: 'Tác phẩm',
-        href: '/ho-chi-minh/works',
-        icon: DocumentTextIcon,
-        color: 'text-amber-500',
-        bgColor: 'bg-amber-50 hover:bg-amber-100',
-        description: 'Tác phẩm Hồ Chí Minh'
-    },
-    {
-        name: 'Học tập',
-        href: '/ho-chi-minh/quiz',
-        icon: AcademicCapIcon,
-        color: 'text-rose-500',
-        bgColor: 'bg-rose-50 hover:bg-rose-100',
-        description: 'Quiz tư tưởng Hồ Chí Minh'
-    }
+    // {
+    //     name: 'Tác phẩm',
+    //     href: '/ho-chi-minh/works',
+    //     icon: DocumentTextIcon,
+    //     color: 'text-amber-500',
+    //     bgColor: 'bg-amber-50 hover:bg-amber-100',
+    //     description: 'Tác phẩm Hồ Chí Minh'
+    // },
+    // {
+    //     name: 'Học tập',
+    //     href: '/ho-chi-minh/quiz',
+    //     icon: AcademicCapIcon,
+    //     color: 'text-rose-500',
+    //     bgColor: 'bg-rose-50 hover:bg-rose-100',
+    //     description: 'Quiz tư tưởng Hồ Chí Minh'
+    // }
 ]
 
 const getUserMenuItemsByRole = (userRole: string | undefined) => {
