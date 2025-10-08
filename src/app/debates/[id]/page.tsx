@@ -106,17 +106,32 @@ const DebateDetailPage: React.FC = () => {
 
         setIsLoadingArguments(true)
         try {
-            console.log('Loading arguments for thread:', threadId)
-            // Send all parameters to backend, backend handles sorting
-            const response = await argumentApi.getArguments({
+            console.log('=== API CALL DEBUG ===')
+            console.log('Thread ID:', threadId)
+            console.log('User Role:', user?.role)
+            console.log('Status Filter:', statusFilter)
+            console.log('Argument Filter:', argumentFilter)
+            console.log('Search Query:', searchQuery)
+            console.log('Sort By:', sortBy)
+
+            // Prepare API parameters
+            const apiParams = {
                 threadId,
                 status: statusFilter === 'ALL' ? undefined : statusFilter,
                 argumentType: argumentFilter === 'ALL' ? undefined : argumentFilter,
                 search: searchQuery || undefined,
-                sortBy: sortBy  // Backend will handle sortBy parameter
-            })
+                sortBy: sortBy
+            }
 
-            console.log('Arguments response:', response)
+            console.log('API Parameters:', apiParams)
+            console.log('=== CALLING API ===')
+
+            const response = await argumentApi.getArguments(apiParams)
+
+            console.log('=== API RESPONSE DEBUG ===')
+            console.log('Full Response:', response)
+            console.log('Response Data:', response.data)
+            console.log('Arguments Count:', response.data?.items?.length || 0)
 
             if (!response || !response.data || !response.data.items) {
                 console.error('Invalid response structure:', response)
@@ -124,8 +139,21 @@ const DebateDetailPage: React.FC = () => {
                 return
             }
 
+            // Log each argument with its status for debugging
+            console.log('=== ARGUMENTS STATUS CHECK ===')
+            response.data.items.forEach((arg, index) => {
+                console.log(`Argument ${index + 1}:`, {
+                    id: arg._id,
+                    title: arg.title,
+                    status: arg.status,
+                    argumentType: arg.argumentType,
+                    author: arg.author?.username || 'Unknown'
+                })
+            })
+
             // Backend handles all sorting, just set the response
             setArguments(response.data.items)
+            console.log('=== ARGUMENTS SET SUCCESSFULLY ===')
         } catch (error: any) {
             console.error('Error loading arguments:', error)
             const statusCode = error?.response?.status
@@ -438,14 +466,16 @@ const DebateDetailPage: React.FC = () => {
     const filteredArguments = arguments_.filter(arg => {
         const matchesFilter = argumentFilter === 'ALL' || arg.argumentType === argumentFilter
 
-        // Status filter logic - USER can see all statuses, but only MODERATOR/ADMIN can filter by status
+        // Status filter logic based on user role
         let matchesStatus = true
-        if (user?.role === 'USER') {
-            // USER sees all statuses (APPROVED, PENDING, REJECTED, etc.)
-            matchesStatus = true
-        } else {
-            // MODERATOR/ADMIN can filter by status
+        if (user?.role === 'USER' || !user) {
+            // USER/GUEST: Only see APPROVED/REJECTED arguments
+            matchesStatus = arg.status === 'APPROVED' || arg.status === 'REJECTED'
+            console.log(`USER/GUEST filtering: ${arg.title} (${arg.status}) -> ${matchesStatus ? 'SHOW' : 'HIDE'}`)
+        } else if (user?.role === 'MODERATOR' || user?.role === 'ADMIN') {
+            // MODERATOR/ADMIN: Can see all statuses and filter by status
             matchesStatus = statusFilter === 'ALL' || arg.status === statusFilter
+            console.log(`MODERATOR/ADMIN filtering: ${arg.title} (${arg.status}) -> ${matchesStatus ? 'SHOW' : 'HIDE'}`)
         }
 
         const matchesSearch = !searchQuery ||
@@ -454,7 +484,10 @@ const DebateDetailPage: React.FC = () => {
         // Chỉ hiển thị các argument không có parentArgumentId (argument chính)
         const isMainArgument = !arg.parentArgumentId
 
-        return matchesFilter && matchesStatus && matchesSearch && isMainArgument
+        const shouldShow = matchesFilter && matchesStatus && matchesSearch && isMainArgument
+        console.log(`Final decision for ${arg.title}: ${shouldShow ? 'SHOW' : 'HIDE'}`)
+
+        return shouldShow
     })
 
     if (threadsLoading) {
