@@ -646,7 +646,7 @@ const AdminUsersPage = () => {
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 {/* Header */}
-                                <div className="bg-gradient-to-r from-red-500 to-yellow-500 p-8 text-white rounded-3xl">
+                                <div className="bg-[#dc2626] p-8 text-white rounded-3xl">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center space-x-4">
                                             <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
@@ -753,12 +753,12 @@ const AdminUsersPage = () => {
                                             whileHover={{ scale: 1.05, y: -2 }}
                                             whileTap={{ scale: 0.95 }}
                                             onClick={handleChangeRole}
-                                            className="group relative overflow-hidden bg-gradient-to-r from-red-500 to-yellow-500 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                                            className="group relative overflow-hidden bg-[#dc2626] text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                                         >
                                             <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-yellow-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                             <div className="relative flex items-center space-x-2">
                                                 <ShieldCheckIcon className="h-5 w-5" />
-                                                <span>✅ Thay đổi vai trò</span>
+                                                <span>Thay đổi vai trò</span>
                                             </div>
                                             <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                                         </motion.button>
