@@ -106,53 +106,50 @@ export const DebateCard: React.FC<DebateCardProps> = ({
             <Card
                 variant={isFeatured ? "luxury" : "glass"}
                 className={cn(
-                    'group relative overflow-hidden backdrop-blur-sm border-0',
-                    'bg-gradient-to-br from-white/90 via-white/80 to-primary-50/30',
-                    'shadow-luxury hover:shadow-luxury-lg',
-                    isFeatured && 'ring-2 ring-primary-300/50 bg-gradient-to-br from-primary-50/90 to-secondary-50/80',
+                    'group relative overflow-hidden border-0 bg-white',
                     isCompact && 'p-3',
-                    'before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/10 before:to-transparent before:pointer-events-none'
+                    'h-[320px] flex flex-col'
                 )}
             >
-                {/* Status badges */}
-                <div className="absolute top-4 right-4 z-10 flex gap-2">
+                {/* Luxury Status badges */}
+                <div className="absolute right-0.5 z-10 flex gap-1">
                     <AnimatePresence>
                         {debate.isFeatured && (
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0, rotate: -180 }}
-                                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                                exit={{ opacity: 0, scale: 0, rotate: 180 }}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 hcm-gradient-luxury text-black rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm"
-                            >
-                                <StarSolidIcon className="h-3.5 w-3.5 animate-luxury-glow" />
-                                <span>Nổi bật</span>
-                            </motion.div>
-                        )}
-                        {debate.isPinned && (
                             <motion.div
                                 initial={{ opacity: 0, scale: 0, y: -20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0, y: -20 }}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm"
+                                className="relative group/featured"
                             >
-                                <PinSolidIcon className="h-3.5 w-3.5" />
-                                <span>Ghim</span>
+                                {/* Luxury pinned badge with glow effect */}
+                                <div className="absolute inset-0 bg-[#dc2626] rounded-full blur-sm opacity-75 group-hover/featured:opacity-100 transition-opacity duration-300" />
+                                <div className="relative inline-flex items-center gap-2 px-4 py-2 bg-[#dc2626] text-white rounded-full text-sm font-bold">
+                                    <StarSolidIcon className="h-4 w-4" />
+                                    <span>Nổi bật</span>
+                                </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
                 </div>
 
+                {/* Ultra Minimal Featured - Just background tint */}
+                {debate.isFeatured && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-50/20 to-transparent rounded-lg pointer-events-none" />
+                )}
+
                 {/* Decorative elements */}
-                <div className="absolute top-0 left-0 w-full h-1 hcm-gradient-luxury opacity-60" />
+                {!debate.isFeatured && (
+                    <div className="absolute top-0 left-0 w-full h-1 hcm-gradient-luxury opacity-60" />
+                )}
                 <div className="absolute -top-20 -right-20 w-32 h-32 bg-primary-200/20 rounded-full blur-2xl group-hover:bg-primary-300/30 transition-colors duration-500" />
+
                 <Link
                     href={`/debates/${debate.id}`}
-                    className="block group-hover:text-primary-600 transition-colors duration-300"
+                    className="group-hover:text-primary-600 transition-colors duration-300 flex-1 flex flex-col"
                 >
-                    <CardHeader className={cn("space-y-3 relative z-10 pb-3", isCompact && "p-3")}>
-                        <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1 min-w-0">
-
+                    <CardHeader className={cn("space-y-3 relative z-10 pb-3 flex-1", isCompact && "p-3")}>
+                        <div className="flex items-start justify-between gap-3 h-full">
+                            <div className="flex-1 min-w-0 flex flex-col">
                                 <motion.h3
                                     className={cn(
                                         'font-bold text-neutral-800 line-clamp-2 leading-tight',
@@ -165,10 +162,9 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                                     {debate.title}
                                 </motion.h3>
 
-
                                 {!isCompact && (
                                     <motion.p
-                                        className="text-neutral-600 text-sm line-clamp-2 mt-2 leading-relaxed"
+                                        className="text-neutral-600 text-sm line-clamp-3 mt-2 leading-relaxed flex-1"
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ duration: 0.4, delay: 0.2 }}
@@ -177,12 +173,10 @@ export const DebateCard: React.FC<DebateCardProps> = ({
                                     </motion.p>
                                 )}
                             </div>
-
                         </div>
-
                     </CardHeader>
 
-                    <CardContent className={cn("pt-0 relative z-10 p-4", isCompact && "p-3")}>
+                    <CardContent className={cn("pt-0 relative z-10 p-4 mt-auto", isCompact && "p-3")}>
                         <motion.div
                             className="flex items-center justify-between text-sm"
                             initial={{ opacity: 0, y: 10 }}
