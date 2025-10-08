@@ -43,13 +43,13 @@ const navigationItems = [
         gradient: 'from-purple-500 to-pink-600',
         description: 'Các chủ đề tranh luận'
     },
-    {
-        name: 'Tác phẩm',
-        href: '/ho-chi-minh/works',
-        icon: AcademicCapIcon,
-        gradient: 'from-green-500 to-emerald-600',
-        description: 'Tác phẩm Hồ Chí Minh'
-    }
+    // {
+    //     name: 'Tác phẩm',
+    //     href: '/ho-chi-minh/works',
+    //     icon: AcademicCapIcon,
+    //     gradient: 'from-green-500 to-emerald-600',
+    //     description: 'Tác phẩm Hồ Chí Minh'
+    // }
 ]
 
 const moderationItems = [

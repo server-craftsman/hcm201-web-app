@@ -132,10 +132,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                             transition={{ duration: 0.5, delay: 0.2 }}
                             className="mb-6"
                         >
-                            <div className="w-16 h-16 mx-auto bg-gradient-to-r from-rose-500 to-amber-500 rounded-2xl flex items-center justify-center mb-4">
+                            <div className="w-16 h-16 mx-auto bg-[#dc2626] rounded-2xl flex items-center justify-center mb-4">
                                 <UserPlusIcon className="w-8 h-8 text-white" />
                             </div>
-                            <h2 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                            <h2 className="text-3xl font-bold bg-[#dc2626] bg-clip-text text-transparent">
                                 Tạo tài khoản
                             </h2>
                             <p className="text-slate-600 dark:text-slate-300 mt-2">
@@ -161,9 +161,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
                     <Button
                         type="submit"
-                        variant="luxury"
+                        variant="default"
                         size="lg"
-                        className="w-full group relative overflow-hidden bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 shadow-lg hover:shadow-xl"
+                        className="w-full group relative overflow-hidden bg-[#dc2626] shadow-lg hover:shadow-xl"
                         isLoading={isLoading}
                         disabled={isLoading}
                     >

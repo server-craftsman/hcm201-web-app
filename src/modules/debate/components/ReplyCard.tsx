@@ -8,7 +8,11 @@ import {
     LinkIcon,
     PhotoIcon,
     DocumentIcon,
-    ChatBubbleLeftRightIcon
+    ChatBubbleLeftRightIcon,
+    CheckBadgeIcon,
+    ClockIcon as PendingIcon,
+    XMarkIcon,
+    FlagIcon
 } from '@heroicons/react/24/outline'
 import { Reply } from '../api/argumentApi'
 
@@ -36,6 +40,46 @@ export const ReplyCard: React.FC<ReplyCardProps> = ({ reply, index = 0 }) => {
             return <DocumentIcon className="h-4 w-4 text-red-500" />
         } else {
             return <LinkIcon className="h-4 w-4 text-gray-500" />
+        }
+    }
+
+    const getStatusConfig = () => {
+        switch (reply.status) {
+            case 'APPROVED':
+                return {
+                    icon: CheckBadgeIcon,
+                    label: 'Đã duyệt',
+                    color: 'text-green-700 bg-green-100 border-green-200',
+                    dotColor: 'bg-green-500'
+                }
+            case 'PENDING':
+                return {
+                    icon: PendingIcon,
+                    label: 'Chờ duyệt',
+                    color: 'text-amber-700 bg-amber-100 border-amber-200',
+                    dotColor: 'bg-amber-500'
+                }
+            case 'REJECTED':
+                return {
+                    icon: XMarkIcon,
+                    label: 'Bị từ chối',
+                    color: 'text-red-700 bg-red-100 border-red-200',
+                    dotColor: 'bg-red-500'
+                }
+            case 'FLAGGED':
+                return {
+                    icon: FlagIcon,
+                    label: 'Được đánh dấu',
+                    color: 'text-purple-700 bg-purple-100 border-purple-200',
+                    dotColor: 'bg-purple-500'
+                }
+            default:
+                return {
+                    icon: CheckBadgeIcon,
+                    label: 'Đã đăng',
+                    color: 'text-emerald-700 bg-emerald-100 border-emerald-200',
+                    dotColor: 'bg-emerald-500'
+                }
         }
     }
 
@@ -91,6 +135,15 @@ export const ReplyCard: React.FC<ReplyCardProps> = ({ reply, index = 0 }) => {
                             <span className="px-2 py-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold rounded-full shadow-lg">
                                 Phản hồi
                             </span>
+                            {(() => {
+                                const statusConfig = getStatusConfig()
+                                return (
+                                    <div className={`flex items-center space-x-1 px-2 py-1 text-xs font-medium rounded-full border ${statusConfig.color}`}>
+                                        <statusConfig.icon className="h-3 w-3" />
+                                        <span>{statusConfig.label}</span>
+                                    </div>
+                                )
+                            })()}
                         </div>
                         <div className="flex items-center space-x-3 text-sm text-gray-600">
                             <span className="flex items-center space-x-1">
@@ -186,8 +239,17 @@ export const ReplyCard: React.FC<ReplyCardProps> = ({ reply, index = 0 }) => {
                             <span>ID: {reply._id.slice(-8)}</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                            <span className="text-xs font-medium text-emerald-700">Đã đăng</span>
+                            {(() => {
+                                const statusConfig = getStatusConfig()
+                                return (
+                                    <>
+                                        <div className={`w-2 h-2 ${statusConfig.dotColor} rounded-full ${reply.status === 'PENDING' ? 'animate-pulse' : ''}`}></div>
+                                        <span className={`text-xs font-medium ${statusConfig.color.split(' ')[0]}`}>
+                                            {statusConfig.label}
+                                        </span>
+                                    </>
+                                )
+                            })()}
                         </div>
                     </div>
                 </div>

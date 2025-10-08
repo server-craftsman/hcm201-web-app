@@ -37,20 +37,20 @@ const navigationItems = [
         gradient: 'from-blue-500 to-indigo-600',
         description: 'Tổng quan hệ thống'
     },
-    {
-        name: 'Tranh luận',
-        href: '/debates',
-        icon: ChatBubbleLeftRightIcon,
-        gradient: 'from-purple-500 to-pink-600',
-        description: 'Các chủ đề tranh luận'
-    },
-    {
-        name: 'Tác phẩm',
-        href: '/ho-chi-minh/works',
-        icon: AcademicCapIcon,
-        gradient: 'from-green-500 to-emerald-600',
-        description: 'Tác phẩm Hồ Chí Minh'
-    }
+    // {
+    //     name: 'Tranh luận',
+    //     href: '/debates',
+    //     icon: ChatBubbleLeftRightIcon,
+    //     gradient: 'from-purple-500 to-pink-600',
+    //     description: 'Các chủ đề tranh luận'
+    // },
+    // {
+    //     name: 'Tác phẩm',
+    //     href: '/ho-chi-minh/works',
+    //     icon: AcademicCapIcon,
+    //     gradient: 'from-green-500 to-emerald-600',
+    //     description: 'Tác phẩm Hồ Chí Minh'
+    // }
 ]
 
 const adminItems = [

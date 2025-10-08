@@ -50,22 +50,22 @@ const defaultNavigation = [
         bgColor: 'bg-purple-50 hover:bg-purple-100',
         description: 'Tham gia thảo luận'
     },
-    {
-        name: 'Tác phẩm',
-        href: '/ho-chi-minh/works',
-        icon: DocumentTextIcon,
-        color: 'text-amber-500',
-        bgColor: 'bg-amber-50 hover:bg-amber-100',
-        description: 'Tác phẩm Hồ Chí Minh'
-    },
-    {
-        name: 'Học tập',
-        href: '/ho-chi-minh/quiz',
-        icon: AcademicCapIcon,
-        color: 'text-rose-500',
-        bgColor: 'bg-rose-50 hover:bg-rose-100',
-        description: 'Quiz tư tưởng Hồ Chí Minh'
-    }
+    // {
+    //     name: 'Tác phẩm',
+    //     href: '/ho-chi-minh/works',
+    //     icon: DocumentTextIcon,
+    //     color: 'text-amber-500',
+    //     bgColor: 'bg-amber-50 hover:bg-amber-100',
+    //     description: 'Tác phẩm Hồ Chí Minh'
+    // },
+    // {
+    //     name: 'Học tập',
+    //     href: '/ho-chi-minh/quiz',
+    //     icon: AcademicCapIcon,
+    //     color: 'text-rose-500',
+    //     bgColor: 'bg-rose-50 hover:bg-rose-100',
+    //     description: 'Quiz tư tưởng Hồ Chí Minh'
+    // }
 ]
 
 const getUserMenuItemsByRole = (userRole: string | undefined) => {
@@ -228,26 +228,41 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
                         className="flex items-center space-x-4"
                         whileHover={{ scale: 1.02 }}
                     >
-                        <Link href="/" className="flex items-center space-x-3">
-                            <div className="relative">
-                                <motion.div
-                                    animate={{ rotate: [0, 360] }}
-                                    transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                                    className="absolute inset-0 bg-gradient-to-r from-red-400 to-yellow-400 rounded-full blur opacity-30"
-                                />
+                        <Link href="/" className="flex items-center space-x-3 relative">
+                            <div className="flex-shrink-0">
                                 <Image
                                     src={logo}
                                     alt="HCM201"
                                     width={40}
                                     height={40}
-                                    className="relative rounded-full"
+                                    className="rounded-full"
                                 />
                             </div>
-                            <div>
-                                <h1 className="text-xl font-bold bg-gradient-to-r from-red-600 to-yellow-600 bg-clip-text text-transparent">
-                                    HCM201
-                                </h1>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Tư tưởng Hồ Chí Minh</p>
+                            <div className="flex flex-col justify-center min-h-[40px]">
+                                <div
+                                    className="text-xl font-bold leading-tight"
+                                    style={{
+                                        color: '#dc2626',
+                                        textShadow: 'none',
+                                        background: 'none',
+                                        WebkitBackgroundClip: 'unset',
+                                        WebkitTextFillColor: 'unset'
+                                    }}
+                                >
+                                    HCM202
+                                </div>
+                                <div
+                                    className="text-xs leading-tight mt-1"
+                                    style={{
+                                        color: '#6b7280',
+                                        textShadow: 'none',
+                                        background: 'none',
+                                        WebkitBackgroundClip: 'unset',
+                                        WebkitTextFillColor: 'unset'
+                                    }}
+                                >
+                                    Tư tưởng Hồ Chí Minh
+                                </div>
                             </div>
                         </Link>
                     </motion.div>
@@ -401,13 +416,20 @@ export const FriendlyNavbar: React.FC<FriendlyNavbarProps> = ({
                             <div className="flex items-center space-x-3">
                                 <Link
                                     href="/login"
-                                    className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors duration-200"
+                                    className="px-4 py-2 text-sm font-medium text-[#da251d] dark:text-[#ffcc29] hover:text-[#ffcc29] dark:hover:text-[#da251d] transition-colors duration-200"
+                                    style={{
+                                        fontWeight: 700,
+                                        letterSpacing: '0.01em'
+                                    }}
                                 >
                                     Đăng nhập
                                 </Link>
                                 <Link
                                     href="/register"
-                                    className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 text-white text-sm font-medium rounded-full hover:from-blue-600 hover:to-purple-700 dark:hover:from-blue-700 dark:hover:to-purple-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                                    className="px-6 py-2 bg-[#da251d] dark:bg-[#da251d] text-white text-sm font-bold rounded-full hover:from-[#b71c1c] hover:to-[#ffd700] dark:hover:from-[#b71c1c] dark:hover:to-[#ffd700] transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 border-2 border-[#ffcc29] dark:border-[#da251d]"
+                                    style={{
+                                        textShadow: '0 1px 8px rgba(218,37,29,0.15), 0 1px 8px rgba(255,204,41,0.15)'
+                                    }}
                                 >
                                     Đăng ký
                                 </Link>

@@ -40,20 +40,20 @@ const navigationItems = [
         gradient: 'from-purple-500 to-pink-600',
         description: 'Tham gia thảo luận'
     },
-    {
-        name: 'Tác phẩm',
-        href: '/ho-chi-minh/works',
-        icon: AcademicCapIcon,
-        gradient: 'from-green-500 to-emerald-600',
-        description: 'Tác phẩm Hồ Chí Minh'
-    },
-    {
-        name: 'Học tập',
-        href: '/ho-chi-minh/quiz',
-        icon: PlusCircleIcon,
-        gradient: 'from-orange-500 to-red-600',
-        description: 'Quiz tư tưởng Hồ Chí Minh'
-    }
+    // {
+    //     name: 'Tác phẩm',
+    //     href: '/ho-chi-minh/works',
+    //     icon: AcademicCapIcon,
+    //     gradient: 'from-green-500 to-emerald-600',
+    //     description: 'Tác phẩm Hồ Chí Minh'
+    // },
+    // {
+    //     name: 'Học tập',
+    //     href: '/ho-chi-minh/quiz',
+    //     icon: PlusCircleIcon,
+    //     gradient: 'from-orange-500 to-red-600',
+    //     description: 'Quiz tư tưởng Hồ Chí Minh'
+    // }
 ]
 
 const quickActions = [

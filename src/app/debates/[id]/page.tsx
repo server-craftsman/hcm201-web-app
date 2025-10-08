@@ -42,7 +42,7 @@ const DebateDetailPage: React.FC = () => {
     const [isLoadingArguments, setIsLoadingArguments] = useState(true)
     const [showArgumentForm, setShowArgumentForm] = useState(false)
     const [argumentFilter, setArgumentFilter] = useState<'ALL' | 'SUPPORT' | 'OPPOSE' | 'NEUTRAL'>('ALL')
-    const [statusFilter, setStatusFilter] = useState<'ALL' | 'APPROVED' | 'PENDING'>('APPROVED')
+    const [statusFilter, setStatusFilter] = useState<'ALL' | 'APPROVED' | 'PENDING'>('ALL')
     const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'most_liked'>('newest')
     const [searchQuery, setSearchQuery] = useState('')
 
@@ -56,6 +56,7 @@ const DebateDetailPage: React.FC = () => {
         console.log('Current thread found:', currentThread)
         console.log('Threads loading:', threadsLoading)
     }, [threadId, threads, currentThread, threadsLoading])
+
 
     // Load arguments
     const loadArguments = useCallback(async () => {
@@ -409,7 +410,17 @@ const DebateDetailPage: React.FC = () => {
     // Filter arguments
     const filteredArguments = arguments_.filter(arg => {
         const matchesFilter = argumentFilter === 'ALL' || arg.argumentType === argumentFilter
-        const matchesStatus = statusFilter === 'ALL' || arg.status === statusFilter
+
+        // Status filter logic - USER can see all statuses, but only MODERATOR/ADMIN can filter by status
+        let matchesStatus = true
+        if (user?.role === 'USER') {
+            // USER sees all statuses (APPROVED, PENDING, REJECTED, etc.)
+            matchesStatus = true
+        } else {
+            // MODERATOR/ADMIN can filter by status
+            matchesStatus = statusFilter === 'ALL' || arg.status === statusFilter
+        }
+
         const matchesSearch = !searchQuery ||
             arg.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             arg.content.toLowerCase().includes(searchQuery.toLowerCase())
@@ -638,15 +649,18 @@ const DebateDetailPage: React.FC = () => {
                                             <option value="NEUTRAL">Trung lập</option>
                                         </select>
 
-                                        <select
-                                            value={statusFilter}
-                                            onChange={(e) => setStatusFilter(e.target.value as any)}
-                                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        >
-                                            <option value="APPROVED">Đã duyệt</option>
-                                            <option value="ALL">Tất cả trạng thái</option>
-                                            <option value="PENDING">Chờ duyệt</option>
-                                        </select>
+                                        {/* Status filter - only show for MODERATOR/ADMIN */}
+                                        {(user?.role === 'MODERATOR' || user?.role === 'ADMIN') && (
+                                            <select
+                                                value={statusFilter}
+                                                onChange={(e) => setStatusFilter(e.target.value as any)}
+                                                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            >
+                                                <option value="ALL">Tất cả trạng thái</option>
+                                                <option value="APPROVED">Đã duyệt</option>
+                                                <option value="PENDING">Chờ duyệt</option>
+                                            </select>
+                                        )}
 
                                         <select
                                             value={sortBy}

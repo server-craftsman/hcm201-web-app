@@ -63,22 +63,22 @@ export const YouTubeSidebar: React.FC<YouTubeSidebarProps> = ({
             bgColor: 'bg-purple-50 dark:bg-purple-900/20',
             description: 'Tham gia thảo luận'
         },
-        {
-            name: 'Tác phẩm',
-            href: '/ho-chi-minh/works',
-            icon: AcademicCapIcon,
-            color: 'text-green-600 dark:text-green-400',
-            bgColor: 'bg-green-50 dark:bg-green-900/20',
-            description: 'Tác phẩm Hồ Chí Minh'
-        },
-        {
-            name: 'Học tập',
-            href: '/ho-chi-minh/quiz',
-            icon: UsersIcon,
-            color: 'text-orange-600 dark:text-orange-400',
-            bgColor: 'bg-orange-50 dark:bg-orange-900/20',
-            description: 'Quiz tư tưởng Hồ Chí Minh'
-        }
+        // {
+        //     name: 'Tác phẩm',
+        //     href: '/ho-chi-minh/works',
+        //     icon: AcademicCapIcon,
+        //     color: 'text-green-600 dark:text-green-400',
+        //     bgColor: 'bg-green-50 dark:bg-green-900/20',
+        //     description: 'Tác phẩm Hồ Chí Minh'
+        // },
+        // {
+        //     name: 'Học tập',
+        //     href: '/ho-chi-minh/quiz',
+        //     icon: UsersIcon,
+        //     color: 'text-orange-600 dark:text-orange-400',
+        //     bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+        //     description: 'Quiz tư tưởng Hồ Chí Minh'
+        // }
     ]
 
     // User-specific navigation
