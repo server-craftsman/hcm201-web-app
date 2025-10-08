@@ -23,7 +23,7 @@ export default function DebatesPage() {
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('')
     const [selectedDifficulty, setSelectedDifficulty] = useState('')
-    const [sortBy, setSortBy] = useState('date')
+    const [sortBy, setSortBy] = useState('popular')
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
     const [currentPage, setCurrentPage] = useState(1)
     // API filters
@@ -31,10 +31,12 @@ export default function DebatesPage() {
     const [createdBy, setCreatedBy] = useState<string>('')
     const [moderatorId, setModeratorId] = useState<string>('')
     const [limit, setLimit] = useState<number>(20)
+    const [minimum, setMinimum] = useState<number>(1)
+    const [maximum, setMaximum] = useState<number>(100)
 
     const isDesktop = useMediaQuery('(min-width: 1024px)')
 
-    // Use API hook for real data
+    // Use API hook for real data with all parameters
     const {
         threads: apiThreads,
         loading: apiLoading,
@@ -47,8 +49,8 @@ export default function DebatesPage() {
         createdBy: createdBy || undefined,
         moderatorId: moderatorId || undefined,
         page: currentPage,
-        limit,
-        sort: `${sortBy}:${sortOrder === 'desc' ? '-1' : '1'}`
+        limit: Math.min(Math.max(limit, minimum), maximum), // Ensure limit is within bounds
+        sort: sortBy // Use the sort parameter directly as expected by API
     })
 
     // Fallback to existing hook for UI compatibility
@@ -128,6 +130,26 @@ export default function DebatesPage() {
         setFilters({ sortBy: newSortBy })
     }, [setFilters])
 
+    const handleLimitChange = useCallback((newLimit: number) => {
+        const clampedLimit = Math.min(Math.max(newLimit, minimum), maximum)
+        setLimit(clampedLimit)
+        setCurrentPage(1) // Reset to first page when limit changes
+    }, [minimum, maximum])
+
+    const handleMinimumChange = useCallback((newMinimum: number) => {
+        setMinimum(newMinimum)
+        if (limit < newMinimum) {
+            setLimit(newMinimum)
+        }
+    }, [limit])
+
+    const handleMaximumChange = useCallback((newMaximum: number) => {
+        setMaximum(newMaximum)
+        if (limit > newMaximum) {
+            setLimit(newMaximum)
+        }
+    }, [limit])
+
     const handleSortOrderChange = useCallback(() => {
         const newOrder = sortOrder === 'asc' ? 'desc' : 'asc'
         setSortOrder(newOrder)
@@ -138,13 +160,15 @@ export default function DebatesPage() {
         setSearchTerm('')
         setSelectedCategory('')
         setSelectedDifficulty('')
-        setSortBy('date')
+        setSortBy('popular')
         setSortOrder('desc')
         setCurrentPage(1)
         setStatusFilter('ACTIVE')
         setCreatedBy('')
         setModeratorId('')
         setLimit(20)
+        setMinimum(1)
+        setMaximum(100)
         resetFilters()
     }, [resetFilters])
 
@@ -292,51 +316,44 @@ export default function DebatesPage() {
                             </div>
                         </div>
 
+                        {/* Sort field */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Sắp xếp</label>
+                            <select
+                                value={sortBy}
+                                onChange={(e) => handleSortChange(e.target.value)}
+                                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
+                            >
+                                <option value="popular">Phổ biến</option>
+                                <option value="oldest">Cũ nhất</option>
+                                <option value="newest">Mới nhất</option>
+                                <option value="most_arguments">Nhiều luận điểm nhất</option>
+                                {/* <option value="most_views">Nhiều lượt xem nhất</option> */}
+                            </select>
+                        </div>
 
                         {/* Limit */}
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Số mục/trang</label>
-                            <select
+                            <input
+                                type="number"
+                                min={minimum}
+                                max={maximum}
                                 value={limit}
-                                onChange={(e) => { setLimit(parseInt(e.target.value || '20')); setCurrentPage(1) }}
+                                onChange={(e) => handleLimitChange(parseInt(e.target.value || '20'))}
                                 className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
-                            >
-                                {[10, 20, 30, 50, 100].map(v => (
-                                    <option key={v} value={v}>{v}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Sort field */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Sắp xếp</label>
-                            <div className="flex gap-2">
-                                <select
-                                    value={sortBy}
-                                    onChange={(e) => handleSortChange(e.target.value)}
-                                    className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
-                                >
-                                    <option value="date">Ngày tạo</option>
-                                    <option value="popularity">Phổ biến</option>
-                                    <option value="arguments">Số lượng tranh luận</option>
-                                    <option value="views">Lượt xem</option>
-                                </select>
-                                <button
-                                    onClick={handleSortOrderChange}
-                                    className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors"
-                                >
-                                    <ChevronUpDownIcon className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
-                                </button>
-                            </div>
+                            />
                         </div>
                     </div>
 
                     {/* Filter summary and actions */}
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-6 mt-6 border-t border-neutral-200 dark:border-neutral-700 relative z-10">
-                        <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                            Trang <span className="font-semibold text-neutral-900 dark:text-white">{currentPage}</span> • Hiển thị <span className="font-semibold text-neutral-900 dark:text-white">{finalDebates.length}</span> mục / trang
-                        </p>
-                        {(searchTerm || statusFilter || createdBy || moderatorId || limit !== 20 || sortBy !== 'date' || sortOrder !== 'desc') && (
+                        <div className="space-y-2">
+                            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                                Trang <span className="font-semibold text-neutral-900 dark:text-white">{currentPage}</span> • Hiển thị <span className="font-semibold text-neutral-900 dark:text-white">{finalDebates.length}</span> mục / trang
+                            </p>
+                        </div>
+                        {(searchTerm || statusFilter !== 'ACTIVE' || createdBy || moderatorId || limit !== 20 || sortBy !== 'popular' || minimum !== 1 || maximum !== 100) && (
                             <Button variant="ghost" size="sm" onClick={handleResetFilters}>
                                 <XMarkIcon className="h-4 w-4 mr-2" />
                                 Xóa bộ lọc
@@ -450,25 +467,44 @@ export default function DebatesPage() {
                     </Card>
                 )}
 
-                {/* Simplified Pagination */}
+                {/* Beautiful Pagination */}
                 {totalPages > 1 && (
-                    <div className="flex justify-center">
-                        <div className="bg-white rounded-lg p-4 shadow-sm border">
-                            <div className="flex items-center justify-center gap-4">
+                    <div className="flex justify-center mt-8">
+                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
+                            <div className="flex items-center justify-center gap-3">
                                 {/* Previous Button */}
                                 <button
                                     disabled={currentPage === 1}
-                                    onClick={() => loadDebates(currentPage - 1)}
-                                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${currentPage === 1
+                                    onClick={() => setCurrentPage(currentPage - 1)}
+                                    className={`group flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-300 ${currentPage === 1
                                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : 'bg-blue-500 text-white hover:bg-blue-600'
+                                        : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 hover:shadow-lg hover:scale-105'
                                         }`}
                                 >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    </svg>
                                     Trước
                                 </button>
 
                                 {/* Page Numbers */}
                                 <div className="flex items-center space-x-2">
+                                    {/* First page */}
+                                    {currentPage > 3 && (
+                                        <>
+                                            <button
+                                                onClick={() => setCurrentPage(1)}
+                                                className="w-10 h-10 rounded-xl text-sm font-bold bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300 transition-all duration-300 hover:scale-105"
+                                            >
+                                                1
+                                            </button>
+                                            {currentPage > 4 && (
+                                                <span className="text-gray-400 font-bold">...</span>
+                                            )}
+                                        </>
+                                    )}
+
+                                    {/* Page range */}
                                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                                         let page: number
                                         if (totalPages <= 5) {
@@ -489,38 +525,56 @@ export default function DebatesPage() {
                                         return (
                                             <button
                                                 key={page}
-                                                onClick={() => loadDebates(page)}
-                                                className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${isActive
-                                                    ? 'bg-red-500 text-white'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                onClick={() => setCurrentPage(page)}
+                                                className={`w-10 h-10 rounded-xl text-sm font-bold transition-all duration-300 hover:scale-105 ${isActive
+                                                    ? 'bg-[#dc2626] text-white shadow-lg shadow-red-500/25'
+                                                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 hover:border-gray-300'
                                                     }`}
                                             >
                                                 {page}
                                             </button>
                                         )
                                     })}
+
+                                    {/* Last page */}
+                                    {currentPage < totalPages - 2 && (
+                                        <>
+                                            {currentPage < totalPages - 3 && (
+                                                <span className="text-gray-400 font-bold">...</span>
+                                            )}
+                                            <button
+                                                onClick={() => setCurrentPage(totalPages)}
+                                                className="w-10 h-10 rounded-xl text-sm font-bold bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300 transition-all duration-300 hover:scale-105"
+                                            >
+                                                {totalPages}
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
 
                                 {/* Next Button */}
                                 <button
                                     disabled={currentPage === totalPages}
-                                    onClick={() => loadDebates(currentPage + 1)}
-                                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${currentPage === totalPages
+                                    onClick={() => setCurrentPage(currentPage + 1)}
+                                    className={`group flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-300 ${currentPage === totalPages
                                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : 'bg-blue-500 text-white hover:bg-blue-600'
+                                        : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 hover:shadow-lg hover:scale-105'
                                         }`}
                                 >
                                     Sau
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
                                 </button>
                             </div>
 
                             {/* Page info */}
                             <div className="mt-4 text-center">
                                 <p className="text-sm text-gray-600 font-medium">
-                                    Trang {currentPage} / {totalPages}
+                                    Trang <span className="font-bold text-gray-900">{currentPage}</span> / <span className="font-bold text-gray-900">{totalPages}</span>
                                 </p>
                                 <p className="text-xs text-gray-500 mt-1">
-                                    Hiển thị {finalDebates.length} trong tổng số {totalCount} chủ đề
+                                    Hiển thị <span className="font-semibold">{finalDebates.length}</span> trong tổng số <span className="font-semibold">{totalCount}</span> chủ đề
                                 </p>
                             </div>
                         </div>
